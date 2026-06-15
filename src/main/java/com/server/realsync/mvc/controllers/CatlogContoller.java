@@ -347,6 +347,8 @@ public ResponseEntity<CatalogProduct> updateProduct(
     public CatalogTemplate createTemplate(@RequestBody CatalogTemplate template) {
         Account account = SecurityUtil.getCurrentAccountId();
         template.setAccountId(account.getId());
+        System.out.println("DTO Purpose = " + template.getPurpose());
+        System.out.println("Entity Purpose Before Save = " + template.getPurpose());
         return templateService.save(template);
     }
 
@@ -358,6 +360,8 @@ public ResponseEntity<CatalogProduct> updateProduct(
                 .map(existing -> {
                     template.setId(id);
                     template.setAccountId(account.getId());
+                    System.out.println("DTO Purpose = " + template.getPurpose());
+                    System.out.println("Entity Purpose Before Save = " + template.getPurpose());
                     return ResponseEntity.ok(templateService.save(template));
                 })
                 .orElse(ResponseEntity.notFound().build());

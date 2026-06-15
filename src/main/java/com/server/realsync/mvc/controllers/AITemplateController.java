@@ -44,65 +44,123 @@ public class AITemplateController {
             // Build Prompt
             String prompt = String.format(
                     """
-                                                                Generate a customer-friendly WhatsApp or SMS message.
-
-                            The message must sound natural, conversational, and written by a real business owner communicating directly with a customer.
-
-                            Business Details:
-                            Business Name: %s
-                            Business Category: %s
-                            Business Subcategory: %s
-
-                            Template Details:
-                            Purpose: %s
-                            Template Type: %s
-                            Language: %s
-
-                            Instructions:
-
-                            1. Generate ONLY the message content.
-                            2. Do NOT include titles, headings, labels, explanations, or markdown.
-                            3. Keep the message short and suitable for WhatsApp/SMS (50–120 words).
-                            4. Use a friendly and engaging tone.
-                            5. Avoid corporate phrases such as:
-
-                               * "regarding your upcoming service appointment"
-                               * "we appreciate your trust in us"
-                               * "please do not hesitate to contact us"
-                               * "sincerely"
-                            6. Make the message specific to the business category.
-                            7. Include a clear call-to-action when appropriate.
-                            8. Use supported variables naturally.
-                            9. Sound human, not AI-generated.
-
-                            Supported Variables:
-                            {customer_name}
-                            {amount}
-                            {due_date}
-                            {business_name}
-                            {plan_name}
-
-                            Examples:
-                            Car Wash:
-                            "Hello {customer_name}, your car is due for a fresh wash. Visit {business_name} before {due_date} and keep it looking its best."
-
-                            Payment Reminder:
-                            "Hi {customer_name}, this is a reminder that {amount} is due on {due_date}. Thank you for choosing {business_name}."
-
-                            Birthday Greeting:
-                            "Happy Birthday {customer_name}! Wishing you a wonderful day from all of us at {business_name}."
-
-                            Return only the final message content.
-
-
-
-                                                """,
+                    You are an AI assistant generating content for a WhatsApp approved template.
+                    
+                    The system uses only two WhatsApp templates.
+                    
+                    Template 1: Reminder Template
+                    Hello {{1}} 👋,
+                    {{2}}
+                    Thanks,
+                    {{3}}
+                    📞 {{4}}
+                    Thank you for trusting us
+                    
+                    Template 2: Document / URL Template
+                    Hello {{1}} 👋,
+                    {{2}}
+                    📄 Reference Number: {{3}}
+                    View Details:
+                    {{4}}
+                    If you have any questions or require assistance, please contact us.
+                    Thanks,
+                    {{5}}
+                    📞 {{6}}
+                    Have a great day!
+                    
+                    Important:
+                    Gemini must generate ONLY content for variable {{2}}.
+                    
+                    Never generate:
+                    * Hello
+                    * Hi
+                    * Greetings
+                    * Customer name
+                    * Business name
+                    * Phone number
+                    * Thanks
+                    * Regards
+                    * Signatures
+                    * Contact information
+                    * URLs
+                    * Reference numbers
+                    * Emojis
+                    * Markdown
+                    * Titles
+                    * Headings
+                    These are already provided by the WhatsApp templates.
+                    
+                    Business Context:
+                    Business Name: %s
+                    Business Category: %s
+                    Business Subcategory: %s
+                    
+                    Request Context:
+                    Title: %s
+                    Description: %s
+                    Purpose: %s
+                    Template Type: %s
+                    Language: %s
+                    
+                    User Requirement:
+                    %s
+                    
+                    Rules:
+                    1. Generate only plain message content.
+                    2. Output must fit inside WhatsApp variable {{2}}.
+                    3. Keep content between 20 and 120 words.
+                    4. Use a natural human tone.
+                    5. Make content specific to the business category.
+                    6. Include action-oriented language when appropriate.
+                    7. Do not repeat business name.
+                    8. Do not include greetings or closing lines.
+                    9. Do not include placeholders.
+                    10. Do not include quotation marks.
+                    11. Do not explain the message.
+                    12. Return only the final content.
+                    13. The generated content must be directly usable inside a WhatsApp approved template.
+                    14. Do not mention variable names.
+                    15. Do not mention template names.
+                    16. Do not generate greetings or signatures.
+                    17. Return plain text only.
+                    
+                    Supported Dynamic Data:
+                    {amount}
+                    {due_date}
+                    {plan_name}
+                    {document_type}
+                    {reference_number}
+                    
+                    Examples:
+                    Payment Reminder:
+                    A payment of {amount} is due on {due_date}. Kindly complete it on time to avoid any interruption in your service. If payment has already been made, please ignore this reminder.
+                    
+                    Medicine Refill Reminder:
+                    Your monthly medicine refill is due today. Staying on schedule helps ensure the best results from your treatment. If you need assistance, our team is ready to help.
+                    
+                    Membership Renewal:
+                    Your membership plan is approaching renewal. Renew before {due_date} to continue enjoying uninterrupted benefits and services.
+                    
+                    Appointment Notification:
+                    Your appointment has been successfully scheduled and is ready for review.
+                    
+                    Invoice Notification:
+                    Your invoice has been generated and is available for viewing.
+                    
+                    Promotion:
+                    Special offers are currently available for you. Explore the latest deals and take advantage of exclusive savings.
+                    
+                    Return ONLY the final content that will be placed into WhatsApp template variable {{2}}.
+                    """,
                     account.getBusinessName() != null ? account.getBusinessName() : "",
                     account.getCategory() != null ? account.getCategory() : "",
                     account.getSubcategory() != null ? account.getSubcategory() : "",
-                    request.getPurpose(),
-                    request.getTemplateType(),
-                    request.getLanguage());
+                    request.getTitle() != null ? request.getTitle() : "",
+                    request.getDescription() != null ? request.getDescription() : "",
+                    request.getPurpose() != null ? request.getPurpose() : "",
+                    request.getTemplateType() != null ? request.getTemplateType() : "",
+                    request.getLanguage() != null ? request.getLanguage() : "",
+                    request.getDescription() != null ? request.getDescription() : "");
 
             // Construct JSON request for Gemini
             JSONObject textPart = new JSONObject();
@@ -122,35 +180,55 @@ public class AITemplateController {
 
             // Send request to Gemini API
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(
-                            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key="
-                                    + apiKey))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString(), StandardCharsets.UTF_8))
-                    .build();
+            String[] models = {
+                "gemini-2.0-flash",
+                "gemini-2.0-flash-lite",
+                "gemini-flash-lite-latest",
+                "gemini-2.5-flash",
+                "gemini-1.5-flash"
+            };
 
-            HttpResponse<String> httpResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            if (httpResponse.statusCode() != 200) {
-                return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                        .body("Error from Gemini API: " + httpResponse.body());
+            String generatedContent = null;
+            HttpResponse<String> lastHttpResponse = null;
+
+            for (String model : models) {
+                try {
+                    HttpRequest httpRequest = HttpRequest.newBuilder()
+                            .uri(URI.create(
+                                    "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key="
+                                            + apiKey))
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString(), StandardCharsets.UTF_8))
+                            .build();
+
+                    lastHttpResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+                    if (lastHttpResponse.statusCode() == 200) {
+                        JSONObject responseJson = new JSONObject(lastHttpResponse.body());
+                        generatedContent = responseJson.getJSONArray("candidates")
+                                .getJSONObject(0)
+                                .getJSONObject("content")
+                                .getJSONArray("parts")
+                                .getJSONObject(0)
+                                .getString("text");
+                        break;
+                    }
+                } catch (Exception e) {
+                    // Log or ignore to try the next model
+                }
             }
 
-            JSONObject responseJson = new JSONObject(httpResponse.body());
-            String generatedContent = responseJson.getJSONArray("candidates")
-                    .getJSONObject(0)
-                    .getJSONObject("content")
-                    .getJSONArray("parts")
-                    .getJSONObject(0)
-                    .getString("text");
+            if (generatedContent == null) {
+                String errorBody = lastHttpResponse != null ? lastHttpResponse.body() : "No response from Gemini API";
+                int status = lastHttpResponse != null ? lastHttpResponse.statusCode() : 502;
+                return ResponseEntity.status(status)
+                        .body("Error from Gemini API: " + errorBody);
+            }
 
-            if (generatedContent != null) {
+            generatedContent = generatedContent.trim();
+            if (generatedContent.startsWith("```")) {
+                generatedContent = generatedContent.replaceAll("^```[a-zA-Z]*\\n", "");
+                generatedContent = generatedContent.replaceAll("\\n```$", "");
                 generatedContent = generatedContent.trim();
-                if (generatedContent.startsWith("```")) {
-                    generatedContent = generatedContent.replaceAll("^```[a-zA-Z]*\\n", "");
-                    generatedContent = generatedContent.replaceAll("\\n```$", "");
-                    generatedContent = generatedContent.trim();
-                }
             }
 
             return ResponseEntity.ok(new TemplateGenerateResponse(generatedContent));

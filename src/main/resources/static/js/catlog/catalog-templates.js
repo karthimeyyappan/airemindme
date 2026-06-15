@@ -162,7 +162,15 @@ function openTemplateModal(id) {
         document.getElementById('tm_desc').value = t.description || '';
         document.getElementById('tm_content').value = t.content || '';
         
-        if (purposeSelect) purposeSelect.value = t.purpose || 'Reminder';
+        const reversePurposeMap = {
+            'REMINDER': 'Reminder',
+            'GREETING': 'Greeting',
+            'PROMOTION': 'Promotion',
+            'ANNOUNCEMENT': 'Announcement',
+            'FOLLOW_UP': 'Follow Up',
+            'CUSTOM': 'Custom'
+        };
+        if (purposeSelect) purposeSelect.value = reversePurposeMap[t.purpose] || t.purpose || 'Reminder';
         onPurposeChange();
         if (typeSelect) typeSelect.value = t.templateType || '';
         if (langSelect) langSelect.value = t.language || 'English';
@@ -346,13 +354,24 @@ function saveTemplate() {
     const purposeVal = document.getElementById('tm_purpose')?.value || 'Reminder';
     const typeVal = document.getElementById('tm_type')?.value || 'Custom';
 
+    console.log("Selected Purpose:", document.getElementById("tm_purpose").value);
+
+    const purposeToDbMap = {
+        'Reminder': 'REMINDER',
+        'Greeting': 'GREETING',
+        'Promotion': 'PROMOTION',
+        'Announcement': 'ANNOUNCEMENT',
+        'Follow Up': 'FOLLOW_UP',
+        'Custom': 'CUSTOM'
+    };
+
     const payload = {
         title,
         category: typeToCategoryMap[typeVal] || 'CUSTOM',
         description: document.getElementById('tm_desc').value.trim(),
         content,
         channels: channels.join(','),   // backend stores as comma-delimited string
-        purpose: purposeVal,
+        purpose: purposeToDbMap[purposeVal] || 'CUSTOM',
         templateType: typeVal,
         language: document.getElementById('tm_language')?.value || 'English',
         status: 'active',
@@ -363,6 +382,8 @@ function saveTemplate() {
         prompt: document.getElementById('tm_desc').value.trim(),
         active: true
     };
+
+    console.log("Save Payload:", payload);
 
     const isEdit = editTemplateId !== null;
     api(isEdit ? `${API.templates}/${editTemplateId}` : API.templates, isEdit ? 'PUT' : 'POST', payload)
