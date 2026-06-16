@@ -11,5 +11,8 @@ public enum ExecutionResult {
     FAILED,
     PENDING,
     SENT,
-    DELIVERED
+    DELIVERED,
+    QUEUED,
+    SENDING,
+    RETRY
 }

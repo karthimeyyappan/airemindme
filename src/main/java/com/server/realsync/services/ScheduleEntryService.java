@@ -39,6 +39,10 @@ public class ScheduleEntryService {
         return scheduleEntryRepository.findByOccurrenceDateBefore(LocalDateTime.now());
     }
 
+    public List<ScheduleEntry> getDueEntriesInWindow(LocalDateTime maxTime) {
+        return scheduleEntryRepository.findByStatusAndOccurrenceDateBefore(com.server.realsync.entity.ScheduleEntryStatus.PENDING, maxTime);
+    }
+
     public void delete(Long id) {
         scheduleEntryRepository.deleteById(id);
     }

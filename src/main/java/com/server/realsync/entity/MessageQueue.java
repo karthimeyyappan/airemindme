@@ -47,6 +47,18 @@ public class MessageQueue {
     @Column(name = "retry_count")
     private Integer retryCount = 0;
 
+    @Column(name = "message_id")
+    private String messageId;
+
+    @Column(name = "sent_at")
+    private LocalDateTime sentAt;
+
+    @Column(name = "delivered_at")
+    private LocalDateTime deliveredAt;
+
+    @Column(name = "failed_reason", columnDefinition = "TEXT")
+    private String failedReason;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -132,4 +144,35 @@ public class MessageQueue {
 		this.updatedAt = updatedAt;
 	}
 
+	public String getMessageId() {
+		return messageId;
+	}
+
+	public void setMessageId(String messageId) {
+		this.messageId = messageId;
+	}
+
+	public LocalDateTime getSentAt() {
+		return sentAt;
+	}
+
+	public void setSentAt(LocalDateTime sentAt) {
+		this.sentAt = sentAt;
+	}
+
+	public LocalDateTime getDeliveredAt() {
+		return deliveredAt;
+	}
+
+	public void setDeliveredAt(LocalDateTime deliveredAt) {
+		this.deliveredAt = deliveredAt;
+	}
+
+	public String getFailedReason() {
+		return failedReason;
+	}
+
+	public void setFailedReason(String failedReason) {
+		this.failedReason = failedReason;
+	}
 }

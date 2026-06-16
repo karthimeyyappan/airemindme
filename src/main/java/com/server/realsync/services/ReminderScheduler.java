@@ -19,31 +19,59 @@ public class ReminderScheduler {
 
     private final ScheduleEntryService scheduleEntryService;
     private final MessageQueueService queueService;
+    private final ScheduleExecutionLogService logService;
 
     public ReminderScheduler(
             ScheduleEntryService scheduleEntryService,
-            MessageQueueService queueService) {
+            MessageQueueService queueService,
+            ScheduleExecutionLogService logService) {
 
         this.scheduleEntryService = scheduleEntryService;
         this.queueService = queueService;
+        this.logService = logService;
     }
 
-    //@Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelay = 10000)
     public void loadDueSchedules() {
 
         List<ScheduleEntry> entries =
-                scheduleEntryService.getDueEntries();
+                scheduleEntryService.getDueEntriesInWindow(java.time.LocalDateTime.now().plusHours(2));
 
         for (ScheduleEntry entry : entries) {
+            if (queueService.exists(EntityType.SCHEDULE, entry.getId())) {
+                continue;
+            }
 
             MessageQueue job = new MessageQueue();
 
             job.setEntityType(EntityType.SCHEDULE);
             job.setEntityEntryId(entry.getId());
             job.setChannel(QueueChannel.WHATSAPP);
-            job.setPriority(1); // reminder = high priority
+
+            int priority = 1;
+            if ("GREETING".equalsIgnoreCase(entry.getSourceType())) {
+                priority = 2;
+            }
+            job.setPriority(priority);
 
             queueService.save(job);
+
+            // Create execution log for queued state
+            try {
+                com.server.realsync.entity.ScheduleExecutionLog log = new com.server.realsync.entity.ScheduleExecutionLog();
+                log.setScheduleEntryId(entry.getId());
+                log.setChannel(com.server.realsync.entity.Channel.WHATSAPP);
+                log.setStatus(com.server.realsync.entity.ExecutionResult.QUEUED);
+                log.setResponse("Reminder added to WhatsApp queue");
+                logService.save(log);
+
+                System.out.println(String.format(
+                        "WA_QUEUE_CREATED | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=N/A | retryCount=0 | queueStatus=PENDING",
+                        entry.getId(), entry.getCustomerId() != null ? String.valueOf(entry.getCustomerId()) : "N/A", "N/A"
+                ));
+            } catch (Exception e) {
+                System.err.println("Failed to save execution log: " + e.getMessage());
+            }
         }
     }
 }

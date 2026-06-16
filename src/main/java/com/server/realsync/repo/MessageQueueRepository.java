@@ -25,4 +25,7 @@ public interface MessageQueueRepository extends JpaRepository<MessageQueue, Long
     """, nativeQuery = true)
     List<MessageQueue> fetchBatchForProcessing(@Param("batchSize") int batchSize);
 
+    boolean existsByEntityTypeAndEntityEntryId(com.server.realsync.entity.EntityType entityType, Long entityEntryId);
+
+    java.util.Optional<MessageQueue> findByMessageId(String messageId);
 }

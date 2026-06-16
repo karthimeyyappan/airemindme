@@ -29,7 +29,7 @@ public class Account {
 	@Column(nullable = false, length = 12, unique = true)
 	private String mobile;
 
-	@Column(length = 100)
+	@Column(length = 500)
 	private String address;
 
 	@Column(length = 100)

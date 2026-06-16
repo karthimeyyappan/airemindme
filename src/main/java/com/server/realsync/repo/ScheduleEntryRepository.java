@@ -31,6 +31,8 @@ public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Lo
 
     List<ScheduleEntry> findByOccurrenceDateBefore(LocalDateTime time);
 
+    List<ScheduleEntry> findByStatusAndOccurrenceDateBefore(ScheduleEntryStatus status, LocalDateTime time);
+
     List<ScheduleEntry> findByStatus(ScheduleEntryStatus status);
 
     List<ScheduleEntry> findByReminderIdOrderByOccurrenceDateAsc(Long reminderId);

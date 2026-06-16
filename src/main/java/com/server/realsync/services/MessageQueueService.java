@@ -4,8 +4,10 @@
 package com.server.realsync.services;
 
 import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.server.realsync.entity.MessageQueue;
 import com.server.realsync.entity.QueueStatus;
 import com.server.realsync.repo.MessageQueueRepository;
@@ -33,7 +35,7 @@ public class MessageQueueService {
         List<MessageQueue> jobs =
                 repository.fetchBatchForProcessing(batchSize);
 
-        jobs.forEach(j -> j.setStatus(QueueStatus.PROCESSING));
+        jobs.forEach(j -> j.setStatus(QueueStatus.SENDING));
 
         return jobs;
     }
@@ -52,4 +54,11 @@ public class MessageQueueService {
         repository.save(job);
     }
 
+    public boolean exists(com.server.realsync.entity.EntityType entityType, Long entityEntryId) {
+        return repository.existsByEntityTypeAndEntityEntryId(entityType, entityEntryId);
+    }
+
+    public java.util.Optional<MessageQueue> findByMessageId(String messageId) {
+        return repository.findByMessageId(messageId);
+    }
 }
