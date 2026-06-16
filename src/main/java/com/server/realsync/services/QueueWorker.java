@@ -83,7 +83,7 @@ public class QueueWorker {
                     }
 
                     String customerName = customer.getName();
-                    String content = entry.getRemarks();
+                    String content = entry.getMessageContent() != null && !entry.getMessageContent().isBlank() ? entry.getMessageContent() : entry.getRemarks();
                     String businessName = account.getBusinessName() != null ? account.getBusinessName() : account.getName();
                     String businessMobile = account.getBusinessPhone() != null ? account.getBusinessPhone() : account.getMobile();
 

@@ -41,6 +41,9 @@ public class AITemplateController {
                         .body("Gemini API key is not configured in application properties.");
             }
 
+            // Determine variant count
+            int count = request.getVariantCount() != null ? request.getVariantCount() : 1;
+
             // Build Prompt
             String prompt = String.format(
                     """
@@ -150,7 +153,19 @@ public class AITemplateController {
                     Promotion:
                     Special offers are currently available for you. Explore the latest deals and take advantage of exclusive savings.
                     
-                    Return ONLY the final content that will be placed into WhatsApp template variable {{2}}.
+                    You must return a JSON object containing exactly %d distinct variations of the message content.
+                    Each variant must follow all the business rules above and be placed in a JSON array under the key "variants".
+                    
+                    Format:
+                    {
+                      "variants": [
+                        "variant 1 content",
+                        "variant 2 content",
+                        ...
+                      ]
+                    }
+                    
+                    Return ONLY the raw JSON object. Do not wrap it in markdown or code blocks.
                     """,
                     account.getBusinessName() != null ? account.getBusinessName() : "",
                     account.getCategory() != null ? account.getCategory() : "",
@@ -160,7 +175,8 @@ public class AITemplateController {
                     request.getPurpose() != null ? request.getPurpose() : "",
                     request.getTemplateType() != null ? request.getTemplateType() : "",
                     request.getLanguage() != null ? request.getLanguage() : "",
-                    request.getDescription() != null ? request.getDescription() : "");
+                    request.getDescription() != null ? request.getDescription() : "",
+                    count);
 
             // Construct JSON request for Gemini
             JSONObject textPart = new JSONObject();
@@ -231,7 +247,30 @@ public class AITemplateController {
                 generatedContent = generatedContent.trim();
             }
 
-            return ResponseEntity.ok(new TemplateGenerateResponse(generatedContent));
+            java.util.List<String> variantsList = new java.util.ArrayList<>();
+            try {
+                JSONObject responseJson = new JSONObject(generatedContent);
+                if (responseJson.has("variants")) {
+                    JSONArray variantsArray = responseJson.getJSONArray("variants");
+                    for (int i = 0; i < variantsArray.length(); i++) {
+                        variantsList.add(variantsArray.getString(i));
+                    }
+                }
+            } catch (Exception e) {
+                // Fallback if parsing fails
+                variantsList.add(generatedContent);
+            }
+
+            if (variantsList.isEmpty()) {
+                variantsList.add(generatedContent);
+            }
+
+            return ResponseEntity.ok(new TemplateGenerateResponse(
+                    request.getTitle(),
+                    request.getDescription(),
+                    variantsList.size(),
+                    variantsList
+            ));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

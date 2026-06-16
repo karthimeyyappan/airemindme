@@ -330,17 +330,16 @@ public ResponseEntity<CatalogProduct> updateProduct(
     // =====================================================================
 
     @GetMapping("/templates")
-    public List<CatalogTemplate> getTemplates(
-            @RequestParam(required = false) String module,
-            @RequestParam(required = false) String category) {
+    public org.springframework.data.domain.Page<CatalogTemplate> getTemplates(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String templateType,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String channel) {
         Account account = SecurityUtil.getCurrentAccountId();
-        if (module != null && !module.isBlank()) {
-            if (category != null && !category.isBlank()) {
-                return templateService.getByModuleCodeAndCategoryAndAccountId(module, category, account.getId());
-            }
-            return templateService.getByModuleCodeAndAccountId(module, account.getId());
-        }
-        return templateService.getByAccountId(account.getId());
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return templateService.getTemplatesPaginated(account.getId(), search, templateType, status, channel, pageable);
     }
 
     @PostMapping("/templates")

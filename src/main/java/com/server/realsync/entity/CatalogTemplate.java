@@ -65,6 +65,12 @@ public class CatalogTemplate {
     @Column(name = "created_at")
     private LocalDate createdAt;
 
+    @Column(name = "variant_count")
+    private Integer variantCount = 1;
+
+    @Column(name = "variants_json", columnDefinition = "LONGTEXT")
+    private String variantsJson;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null)
@@ -272,5 +278,21 @@ public class CatalogTemplate {
     public void setCreatedAt(LocalDate d) {
         this.createdAt = d;
         this.createdDate = d;
+    }
+
+    public Integer getVariantCount() {
+        return variantCount;
+    }
+
+    public void setVariantCount(Integer variantCount) {
+        this.variantCount = variantCount;
+    }
+
+    public String getVariantsJson() {
+        return variantsJson;
+    }
+
+    public void setVariantsJson(String variantsJson) {
+        this.variantsJson = variantsJson;
     }
 }

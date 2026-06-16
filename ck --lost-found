@@ -1,0 +1,59 @@
+[33m0ea5128[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33m0ea5128[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{1}: commit: Remainder and Grettings Whatsapp integrated
+[33m1e84686[m[33m ([m[1;31mupstream/main[m[33m)[m HEAD@{2}: commit: Optimized AI Template Genration
+[33me37f298[m HEAD@{3}: commit: Remainders & Grettings A genration Working
+[33m22164fd[m HEAD@{4}: commit: apk key remove
+[33mfe93b27[m HEAD@{5}: commit: apk key remove
+[33me983663[m HEAD@{6}: commit: apk key remove
+[33m2b14954[m HEAD@{7}: commit: Ai template and Genaration is Updated with gemini api
+[33mb9eee29[m HEAD@{8}: commit: New Ai Templates
+[33m5057e65[m HEAD@{9}: commit: Changes
+[33m734e8f3[m HEAD@{10}: commit: Landing page and Signnup page worked
+[33mf218680[m HEAD@{11}: commit: Invoice Probblem fixed
+[33m58187af[m HEAD@{12}: commit: Promotion page
+[33m8b2e106[m HEAD@{13}: commit: Sales Payment page
+[33md75a79f[m HEAD@{14}: commit: Invoice Edit
+[33mb8a81dd[m HEAD@{15}: commit: Invoice Update
+[33mf745da7[m HEAD@{16}: commit: Customer details page updated
+[33m923e2e8[m HEAD@{17}: commit: Customer add & Edit Updateded
+[33m255e03c[m HEAD@{18}: commit: Customer Import
+[33m23d5839[m HEAD@{19}: commit: Fixed the issues in Dashboard page
+[33mc0e88fa[m HEAD@{20}: commit: Sales Dashbaord page Worked
+[33md21a103[m HEAD@{21}: commit (merge): Solved the Payment bugs In create Invoice
+[33m94b1327[m HEAD@{22}: commit: Solved the Payment bugs In create Invoice
+[33m25d25ed[m HEAD@{23}: pull: Fast-forward
+[33m2498e14[m HEAD@{24}: commit: Product Inventory done
+[33mdc665b5[m HEAD@{25}: commit: Sales Invoices Worked
+[33md7649f4[m HEAD@{26}: pull: Merge made by the 'ort' strategy.
+[33mdaa84ac[m HEAD@{27}: commit: Sales details page
+[33mf5a1679[m HEAD@{28}: commit (merge): Sales Page Backend using same invoice
+[33m5359710[m HEAD@{29}: commit: Create Invoice Ui Done
+[33md825556[m HEAD@{30}: commit: Fixed bugs
+[33m06bdd7c[m HEAD@{31}: commit: Fixed the issues in Enagagement Page
+[33md3e6020[m HEAD@{32}: commit: Fixed the Customer tab bugs
+[33m59ddcde[m[33m ([m[1;31mkarthi/main[m[33m, [m[1;31mkarthi/HEAD[m[33m)[m HEAD@{33}: merge karthi/main: Fast-forward
+[33m9f906cc[m HEAD@{34}: reset: moving to HEAD
+[33m9f906cc[m HEAD@{35}: checkout: moving from main to main
+[33m9f906cc[m HEAD@{36}: pull upstream main: Fast-forward
+[33m92dde0a[m[33m ([m[1;31morigin/ui-logo-modified[m[33m, [m[1;31mkarthi/ui-logo-modified[m[33m, [m[1;32mui-logo-modified[m[33m)[m HEAD@{37}: checkout: moving from main to main
+[33m92dde0a[m[33m ([m[1;31morigin/ui-logo-modified[m[33m, [m[1;31mkarthi/ui-logo-modified[m[33m, [m[1;32mui-logo-modified[m[33m)[m HEAD@{38}: merge ui-logo-modified: Fast-forward
+[33m8ccdfa0[m HEAD@{39}: checkout: moving from ui-logo-modified to main
+[33m92dde0a[m[33m ([m[1;31morigin/ui-logo-modified[m[33m, [m[1;31mkarthi/ui-logo-modified[m[33m, [m[1;32mui-logo-modified[m[33m)[m HEAD@{40}: commit: Feat/Changes made Logo,New Name NUMEN Updated
+[33m8ccdfa0[m HEAD@{41}: checkout: moving from main to ui-logo-modified
+[33m8ccdfa0[m HEAD@{42}: commit: Feat/Worked on Remainder,Greeting Entry
+[33m2301f80[m HEAD@{43}: commit: feat: updated the latest changes
+[33m67c4331[m HEAD@{44}: commit: Update the report page
+[33mae29920[m HEAD@{45}: commit: Added report template system, appointment module, and UI updates
+[33mc1d0f4c[m HEAD@{46}: commit: Worked on Promotions page
+[33m442be45[m HEAD@{47}: commit: Added dynamic grouping and dynamic customer page
+[33mbc8b610[m HEAD@{48}: commit: Feature:Custommer Grouping is added
+[33m276a93f[m HEAD@{49}: commit: Fetaures:Saved the New ui and files , with commmon Navbar
+[33m3287a7a[m HEAD@{50}: reset: moving to HEAD
+[33m3287a7a[m HEAD@{51}: commit: add the report Template
+[33m49d5206[m HEAD@{52}: commit: Working : Plans,Ai template , Product
+[33m3bc72a7[m HEAD@{53}: commit: Feature:Working add plan ,edit ,delete plan
+[33mfe25d83[m HEAD@{54}: pull: Merge made by the 'ort' strategy.
+[33mc9f3ac8[m HEAD@{55}: commit: Changed to black theme using theme.js,css & Setting works completed
+[33m4832c8c[m HEAD@{56}: commit: Customer module: add/edit, search, active filter, detail page UI, pagination
+[33m8a553d5[m HEAD@{57}: commit: Worked on Add cutomer
+[33m17eb3b1[m HEAD@{58}: clone: from https://github.com/nmuthukumarbe/airemindme.git

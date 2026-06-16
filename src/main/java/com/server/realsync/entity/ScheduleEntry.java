@@ -74,6 +74,9 @@ public class ScheduleEntry {
 	@Column(name = "execution_status")
 	private ExecutionStatus executionStatus = ExecutionStatus.PENDING;
 
+	@Column(name = "message_content", columnDefinition = "TEXT")
+	private String messageContent;
+
 	@PrePersist
 	protected void onCreate() {
 		createdAt = LocalDateTime.now();
@@ -212,4 +215,11 @@ public class ScheduleEntry {
 		this.executionStatus = executionStatus;
 	}
 
+	public String getMessageContent() {
+		return messageContent;
+	}
+
+	public void setMessageContent(String messageContent) {
+		this.messageContent = messageContent;
+	}
 }

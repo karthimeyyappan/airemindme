@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice</title>
+  <meta name="description" content="View your invoice securely online." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand: #6366f1;
+      --brand-light: #eef2ff;
+      --brand-dark: #4338ca;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gray-100);
+      min-height: 100vh;
+      color: var(--gray-800);
+    }
+
+    /* ===== TOP BRAND BAR ===== */
+    .top-bar {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(99,102,241,0.3);
+    }
+    .top-bar-brand { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+    .top-bar-badge {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== LOADING STATE ===== */
+    #loadingState {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 16px;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== ERROR STATE ===== */
+    #errorState {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 12px;
+      text-align: center;
+      padding: 24px;
+    }
+    .error-icon { font-size: 48px; }
+    .error-title { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+    .error-msg { font-size: 14px; color: var(--gray-500); max-width: 320px; }
+
+    /* ===== MAIN CONTENT ===== */
+    #invoiceContent { display: none; padding: 24px 16px 60px; max-width: 860px; margin: 0 auto; }
+
+    /* ===== INVOICE CARD ===== */
+    .invoice-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== INVOICE HEADER ===== */
+    .invoice-header {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      padding: 32px 36px;
+      color: white;
+    }
+    .invoice-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .business-logo {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800;
+      color: white; flex-shrink: 0;
+    }
+    .business-info h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .business-info p { font-size: 13px; opacity: 0.85; margin-bottom: 2px; }
+
+    .invoice-meta { text-align: right; }
+    .invoice-number-label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .invoice-number { font-size: 20px; font-weight: 700; }
+
+    .invoice-header-bottom {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .header-info-box {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .header-info-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 6px; }
+    .header-info-value { font-size: 13px; font-weight: 500; }
+
+    /* ===== STATUS BADGE ===== */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+      color: white; margin-top: 6px;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: white; }
+
+    /* ===== BODY ===== */
+    .invoice-body { padding: 32px 36px; }
+
+    /* ===== CUSTOMER SECTION ===== */
+    .section-label {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--brand); margin-bottom: 8px;
+    }
+    .customer-block {
+      background: var(--brand-light);
+      border-radius: 12px;
+      padding: 16px 20px;
+      border: 1px solid #e0e7ff;
+    }
+    .customer-name { font-size: 15px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+    .customer-detail { font-size: 13px; color: var(--gray-500); margin-bottom: 2px; }
+
+    /* ===== DATE ROW ===== */
+    .date-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .date-item {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .date-item-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gray-400); margin-bottom: 4px; }
+    .date-item-value { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+
+    /* ===== ITEMS TABLE ===== */
+    .items-section { margin-top: 28px; }
+    .items-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--gray-200); }
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .items-table thead th {
+      background: var(--gray-50);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--gray-500);
+      border-bottom: 1px solid var(--gray-200);
+      white-space: nowrap;
+    }
+    .items-table thead th:last-child { text-align: right; }
+    .items-table tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      color: var(--gray-700);
+    }
+    .items-table tbody tr:last-child td { border-bottom: none; }
+    .items-table tbody td:last-child { text-align: right; font-weight: 600; color: var(--gray-900); }
+    .item-name { font-weight: 600; color: var(--gray-900); margin-bottom: 2px; }
+    .item-desc { font-size: 12px; color: var(--gray-400); }
+
+    /* ===== TOTALS ===== */
+    .totals-section {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .totals-box {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 20px 24px;
+      min-width: 280px;
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+    .total-row-label { color: var(--gray-500); }
+    .total-row-value { font-weight: 500; color: var(--gray-800); }
+    .total-row.grand {
+      border-top: 2px solid var(--gray-200);
+      margin-top: 8px;
+      padding-top: 14px;
+    }
+    .total-row.grand .total-row-label { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+    .total-row.grand .total-row-value { font-size: 20px; font-weight: 800; color: var(--brand); }
+    .total-row.balance .total-row-value { color: var(--danger); font-weight: 700; }
+    .total-row.paid .total-row-value { color: var(--success); font-weight: 600; }
+
+    /* ===== NOTES / TERMS ===== */
+    .notes-section {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .notes-box {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .notes-box-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--gray-500); margin-bottom: 8px; }
+    .notes-box-text { font-size: 13px; color: var(--gray-600); line-height: 1.6; }
+
+    /* ===== FOOTER ===== */
+    .invoice-footer {
+      margin-top: 24px;
+      padding: 20px 36px;
+      border-top: 1px solid var(--gray-100);
+      text-align: center;
+      color: var(--gray-400);
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .footer-verified {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #ecfdf5; color: #059669;
+      border: 1px solid #a7f3d0;
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 11px; font-weight: 600;
+    }
+
+    /* ===== PRINT BUTTON ===== */
+    .action-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      justify-content: flex-end;
+    }
+    
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 640px) {
+      .invoice-header, .invoice-body { padding: 24px 20px; }
+      .invoice-footer { padding: 16px 20px; }
+      .invoice-header-bottom { grid-template-columns: 1fr; }
+      .date-row { grid-template-columns: 1fr 1fr; }
+      .notes-section { grid-template-columns: 1fr; }
+      .invoice-header-top { flex-direction: column; }
+      .invoice-meta { text-align: left; }
+    }
+
+    @media print {
+      .top-bar, .action-row { display: none !important; }
+      body { background: white; }
+      .invoice-card { box-shadow: none; border-radius: 0; }
+      #invoiceContent { padding: 0; max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <div class="top-bar">
+    <span class="top-bar-brand">📄 Invoice Portal</span>
+    <span class="top-bar-badge">🔒 Secure View</span>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loadingState">
+    <div class="spinner"></div>
+    <p style="color: var(--gray-500); font-size: 14px;">Loading your invoice…</p>
+  </div>
+
+  <!-- Error State -->
+  <div id="errorState">
+    <div class="error-icon">⚠️</div>
+    <div class="error-title">Invoice Not Found</div>
+    <div class="error-msg" id="errorMessage">This invoice link may be invalid or has expired. Please contact the business for a new link.</div>
+  </div>
+
+  <!-- Invoice Content -->
+  <div id="invoiceContent">
+    <div class="action-row no-print">
+      <button class="btn-print" onclick="window.print()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+        </svg>
+        Print / Save PDF
+      </button>
+    </div>
+
+    <div class="invoice-card">
+
+      <!-- Header -->
+      <div class="invoice-header">
+        <div class="invoice-header-top">
+          <div style="display:flex; align-items:flex-start; gap:16px;">
+            <div class="business-logo" id="businessLogoInitial">B</div>
+            <div class="business-info">
+              <h1 id="businessName">Business Name</h1>
+              <p id="businessPhone">—</p>
+              <p id="businessEmail">—</p>
+              <p id="businessGst" style="font-size:11px; opacity:0.7; margin-top:4px;"></p>
+            </div>
+          </div>
+          <div class="invoice-meta">
+            <div class="invoice-number-label">Invoice</div>
+            <div class="invoice-number" id="invoiceNumber">#—</div>
+            <div class="status-badge" id="statusBadge">
+              <div class="status-dot"></div>
+              <span id="statusText">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="invoice-header-bottom">
+          <div class="header-info-box">
+            <div class="header-info-label">Bill To</div>
+            <div class="header-info-value" id="billToName">—</div>
+            <div style="font-size:12px; opacity:0.8; margin-top:4px;" id="billToPhone"></div>
+          </div>
+          <div class="header-info-box">
+            <div class="header-info-label">Billing Address</div>
+            <div class="header-info-value" style="font-size:12px;" id="billToAddress">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="invoice-body">
+
+        <!-- Customer GST / Date Row -->
+        <div class="date-row">
+          <div class="date-item">
+            <div class="date-item-label">Invoice Date</div>
+            <div class="date-item-value" id="invoiceDate">—</div>
+          </div>
+          <div class="date-item">
+            <div class="date-item-label">Due Date</div>
+            <div class="date-item-value" id="dueDate">—</div>
+          </div>
+          <div class="date-item" id="gstItem" style="display:none;">
+            <div class="date-item-label">Customer GST</div>
+            <div class="date-item-value" id="customerGst">—</div>
+          </div>
+        </div>
+
+        <!-- Items -->
+        <div class="items-section">
+          <div class="section-label" style="margin-bottom:12px;">Items</div>
+          <div class="items-table-wrap">
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Item</th>
+                  <th>HSN/SAC</th>
+                  <th>Qty</th>
+                  <th>Rate</th>
+                  <th>GST%</th>
+                  <th>Tax</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="itemsTableBody">
+                <!-- filled by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="totals-section">
+          <div class="totals-box">
+            <div class="total-row">
+              <span class="total-row-label">Subtotal</span>
+              <span class="total-row-value" id="subtotal">—</span>
+            </div>
+            <div class="total-row" id="discountRow" style="display:none;">
+              <span class="total-row-label">Discount</span>
+              <span class="total-row-value" id="discountAmount">—</span>
+            </div>
+            <div class="total-row">
+              <span class="total-row-label">Tax</span>
+              <span class="total-row-value" id="taxAmount">—</span>
+            </div>
+            <div class="total-row" id="shippingRow" style="display:none;">
+              <span class="total-row-label">Shipping</span>
+              <span class="total-row-value" id="shippingAmount">—</span>
+            </div>
+            <div class="total-row grand">
+              <span class="total-row-label">Grand Total</span>
+              <span class="total-row-value" id="grandTotal">—</span>
+            </div>
+            <div class="total-row paid" id="paidRow" style="display:none;">
+              <span class="total-row-label">Paid</span>
+              <span class="total-row-value" id="paidAmount">—</span>
+            </div>
+            <div class="total-row balance" id="balanceRow" style="display:none;">
+              <span class="total-row-label">Balance Due</span>
+              <span class="total-row-value" id="balanceAmount">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes & Terms -->
+        <div class="notes-section" id="notesSection" style="display:none;">
+          <div class="notes-box" id="notesBox" style="display:none;">
+            <div class="notes-box-title">Notes</div>
+            <div class="notes-box-text" id="notesText"></div>
+          </div>
+          <div class="notes-box" id="termsBox" style="display:none;">
+            <div class="notes-box-title">Terms &amp; Conditions</div>
+            <div class="notes-box-text" id="termsText"></div>
+          </div>
+        </div>
+
+      </div><!-- /invoice-body -->
+
+      <!-- Footer -->
+      <div class="invoice-footer">
+        <div>
+          <span class="footer-verified">✓ This is a digitally generated invoice</span>
+        </div>
+        <div style="margin-top:8px;">Powered by <strong>Numen</strong> · Invoice management made simple</div>
+      </div>
+
+    </div><!-- /invoice-card -->
+  </div><!-- /invoiceContent -->
+
+  <script th:inline="javascript">
+    const TOKEN = /*[[${token}]]*/ null;
+
+    function fmt(amount, currency) {
+      if (amount === null || amount === undefined) return '—';
+      const val = parseFloat(amount);
+      return '₹' + val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function fmtDate(d) {
+      if (!d) return '—';
+      const dt = new Date(d);
+      return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function statusColor(status) {
+      const map = {
+        PAID: '#10b981', PARTIALLY_PAID: '#f59e0b',
+        OVERDUE: '#ef4444', DRAFT: '#9ca3af',
+        SENT: '#6366f1', CANCELLED: '#6b7280'
+      };
+      return map[status] || '#9ca3af';
+    }
+
+    function statusLabel(status) {
+      const map = {
+        PAID: 'Paid', PARTIALLY_PAID: 'Partially Paid',
+        OVERDUE: 'Overdue', DRAFT: 'Draft',
+        SENT: 'Sent', CANCELLED: 'Cancelled'
+      };
+      return map[status] || status;
+    }
+
+    async function loadInvoice() {
+      if (!TOKEN) {
+        showError('No invoice token found in the URL.');
+        return;
+      }
+      try {
+        const resp = await fetch('/api/public/invoices/' + encodeURIComponent(TOKEN));
+        if (!resp.ok) {
+          showError('Invoice not found or the link may have expired.');
+          return;
+        }
+        const inv = await resp.json();
+        renderInvoice(inv);
+      } catch (e) {
+        showError('Could not load invoice. Please try again later.');
+      }
+    }
+
+    function renderInvoice(inv) {
+      // Business info
+      const bizName = inv.businessName || 'Business';
+      document.getElementById('businessName').textContent = bizName;
+      document.getElementById('businessLogoInitial').textContent = bizName.charAt(0).toUpperCase();
+      document.getElementById('businessPhone').textContent = inv.businessPhone || '';
+      document.getElementById('businessEmail').textContent = inv.businessEmail || '';
+      if (inv.businessGst) {
+        document.getElementById('businessGst').textContent = 'GST: ' + inv.businessGst;
+      }
+
+      // Invoice meta
+      document.title = 'Invoice ' + (inv.invoiceNumber || '') + ' · ' + bizName;
+      document.getElementById('invoiceNumber').textContent = '#' + (inv.invoiceNumber || '—');
+
+      // Status badge
+      const statusEl = document.getElementById('statusBadge');
+      const color = statusColor(inv.status);
+      statusEl.style.background = 'rgba(255,255,255,0.15)';
+      document.getElementById('statusText').textContent = statusLabel(inv.status);
+
+      // Bill To
+      document.getElementById('billToName').textContent = inv.customerName || '—';
+      document.getElementById('billToPhone').textContent = inv.customerPhone || '';
+      document.getElementById('billToAddress').textContent = inv.customerAddress || '—';
+
+      // Dates
+      document.getElementById('invoiceDate').textContent = fmtDate(inv.invoiceDate);
+      document.getElementById('dueDate').textContent = fmtDate(inv.dueDate);
+      if (inv.customerGst) {
+        document.getElementById('customerGst').textContent = inv.customerGst;
+        document.getElementById('gstItem').style.display = '';
+      }
+
+      // Items
+      const tbody = document.getElementById('itemsTableBody');
+      tbody.innerHTML = '';
+      (inv.items || []).forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color:var(--gray-400); font-size:12px;">${idx + 1}</td>
+          <td>
+            <div class="item-name">${item.itemName || '—'}</div>
+            ${item.description ? `<div class="item-desc">${item.description}</div>` : ''}
+          </td>
+          <td>${item.hsnSac || '—'}</td>
+          <td>${item.qty || 0}</td>
+          <td>${fmt(item.rate)}</td>
+          <td>${item.gst != null ? item.gst + '%' : '—'}</td>
+          <td>${fmt(item.taxAmount)}</td>
+          <td>${fmt(item.lineTotal)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Totals
+      document.getElementById('subtotal').textContent = fmt(inv.subtotal);
+      document.getElementById('taxAmount').textContent = fmt(inv.taxAmount);
+      document.getElementById('grandTotal').textContent = fmt(inv.grandTotal);
+
+      const disc = parseFloat(inv.discountAmount || 0);
+      if (disc > 0) {
+        document.getElementById('discountAmount').textContent = '-' + fmt(inv.discountAmount);
+        document.getElementById('discountRow').style.display = '';
+      }
+      const ship = parseFloat(inv.shippingAmount || 0);
+      if (ship > 0) {
+        document.getElementById('shippingAmount').textContent = fmt(inv.shippingAmount);
+        document.getElementById('shippingRow').style.display = '';
+      }
+      const paid = parseFloat(inv.paidAmount || 0);
+      if (paid > 0) {
+        document.getElementById('paidAmount').textContent = fmt(inv.paidAmount);
+        document.getElementById('paidRow').style.display = '';
+      }
+      const balance = parseFloat(inv.balanceAmount || 0);
+      if (balance > 0) {
+        document.getElementById('balanceAmount').textContent = fmt(inv.balanceAmount);
+        document.getElementById('balanceRow').style.display = '';
+      }
+
+      // Notes & Terms
+      let showNotesSection = false;
+      if (inv.notes) {
+        document.getElementById('notesText').textContent = inv.notes;
+        document.getElementById('notesBox').style.display = '';
+        showNotesSection = true;
+      }
+      if (inv.terms) {
+        document.getElementById('termsText').textContent = inv.terms;
+        document.getElementById('termsBox').style.display = '';
+        showNotesSection = true;
+      }
+      if (showNotesSection) document.getElementById('notesSection').style.display = '';
+
+      // Show content
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('invoiceContent').style.display = 'block';
+    }
+
+    function showError(msg) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorMessage').textContent = msg;
+      document.getElementById('errorState').style.display = 'flex';
+    }
+
+    window.addEventListener('DOMContentLoaded', loadInvoice);
+  </script>
+
+</body>
+</html>

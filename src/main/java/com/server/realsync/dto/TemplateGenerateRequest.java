@@ -7,7 +7,17 @@ public class TemplateGenerateRequest {
     private String title;
     private String description;
 
+    private Integer variantCount;
+
     // Getters and Setters
+    public Integer getVariantCount() {
+        return variantCount;
+    }
+
+    public void setVariantCount(Integer variantCount) {
+        this.variantCount = variantCount;
+    }
+
     public String getPurpose() {
         return purpose;
     }

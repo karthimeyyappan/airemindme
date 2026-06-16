@@ -58,4 +58,10 @@ public class CatalogTemplateService {
     public List<CatalogTemplate> getByModuleCodeAndCategoryAndAccountId(String moduleCode, String category, Integer accountId) {
         return repo.findByModuleCodeAndCategoryAndAccountIdOrderByCreatedAtDesc(moduleCode, category, accountId);
     }
+
+    public org.springframework.data.domain.Page<CatalogTemplate> getTemplatesPaginated(
+            Integer accountId, String search, String templateType, String status, String channel,
+            org.springframework.data.domain.Pageable pageable) {
+        return repo.searchAndFilterTemplates(accountId, search, templateType, status, channel, pageable);
+    }
 }

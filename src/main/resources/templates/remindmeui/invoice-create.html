@@ -373,13 +373,13 @@
           </div>
 
           <!-- Column Labels Desktop -->
-          <div class="hidden md:grid grid-cols-[2fr_60px_100px_80px_100px_90px_36px] gap-2 px-1 mb-1">
+           <div class="hidden md:grid grid-cols-[2fr_60px_100px_80px_100px_90px_36px] gap-2 px-1 mb-1">
             <span class="text-xs font-semibold text-gray-400 uppercase">Item / Description</span>
             <span class="text-xs font-semibold text-gray-400 uppercase text-center">Qty</span>
-            <span class="text-xs font-semibold text-gray-400 uppercase text-right">Rate (₹)</span>
+            <span class="text-xs font-semibold text-gray-400 uppercase text-right">Rate (<span class="currency-symbol">₹</span>)</span>
             <span class="text-xs font-semibold text-gray-400 uppercase text-center">GST%</span>
-            <span class="text-xs font-semibold text-gray-400 uppercase text-right">Tax (₹)</span>
-            <span class="text-xs font-semibold text-gray-400 uppercase text-right">Amount (₹)</span>
+            <span class="text-xs font-semibold text-gray-400 uppercase text-right">Tax (<span class="currency-symbol">₹</span>)</span>
+            <span class="text-xs font-semibold text-gray-400 uppercase text-right">Amount (<span class="currency-symbol">₹</span>)</span>
             <span></span>
           </div>
 
@@ -545,8 +545,8 @@
       const base = qty * rate;
       const tax = base * gst / 100;
       const amt = base + tax;
-      document.getElementById(id + '_tax').value = '₹' + tax.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      document.getElementById(id + '_amt').value = '₹' + amt.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById(id + '_tax').value = window.formatMoney ? window.formatMoney(tax) : '₹' + tax.toFixed(2);
+      document.getElementById(id + '_amt').value = window.formatMoney ? window.formatMoney(amt) : '₹' + amt.toFixed(2);
       calcTotals();
     }
 

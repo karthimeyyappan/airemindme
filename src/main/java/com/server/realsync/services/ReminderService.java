@@ -22,6 +22,16 @@ public class ReminderService {
     private ScheduleEntryRepository scheduleEntryRepository;
     @Autowired
     private ScheduleRepository scheduleRepository;
+    @Autowired
+    private CatalogTemplateRepository catalogTemplateRepository;
+    @Autowired
+    private CustomerRepository customerRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private CatalogPlanRepository catalogPlanRepository;
+    @Autowired
+    private CatalogProductRepository catalogProductRepository;
 
     @Transactional
     public Reminder save(Reminder reminder) {
@@ -45,7 +55,7 @@ public class ReminderService {
         // One-time logic
         if (!"recurring".equalsIgnoreCase(r.getReminderType())) {
             Schedule schedule = createParentSchedule(r, base);
-            createEntryForSchedule(schedule, r, base);
+            createEntryForSchedule(schedule, r, base, 0);
             return;
         }
 
@@ -92,7 +102,7 @@ public class ReminderService {
                 case "yearly" -> base.plusYears(i);
                 default -> base;
             };
-            createEntryForSchedule(schedule, r, next);
+            createEntryForSchedule(schedule, r, next, i);
         }
     }
 
@@ -110,7 +120,92 @@ public class ReminderService {
         return scheduleRepository.save(schedule);
     }
 
-    private void createEntryForSchedule(Schedule schedule, Reminder r, LocalDateTime time) {
+    private void createEntryForSchedule(Schedule schedule, Reminder r, LocalDateTime time, int occurrenceIndex) {
+        String rawMessage = r.getMessage();
+        String finalMessage = rawMessage;
+
+        // Try to load variants from matching catalog template
+        if (rawMessage != null && !rawMessage.isBlank()) {
+            List<CatalogTemplate> templates = catalogTemplateRepository.findByContentAndAccountId(rawMessage, r.getAccountId());
+            CatalogTemplate matchedTemplate = null;
+            if (templates != null && !templates.isEmpty()) {
+                matchedTemplate = templates.get(0);
+            } else {
+                // Fallback: search by title
+                List<CatalogTemplate> allTemplates = catalogTemplateRepository.findByAccountIdOrderByCreatedAtDesc(r.getAccountId());
+                if (allTemplates != null) {
+                    for (CatalogTemplate t : allTemplates) {
+                        if (rawMessage.equals(t.getContent()) || rawMessage.equals(t.getTitle())) {
+                            matchedTemplate = t;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            if (matchedTemplate != null && matchedTemplate.getVariantsJson() != null && !matchedTemplate.getVariantsJson().isBlank()) {
+                try {
+                    org.json.JSONArray variantsArray = new org.json.JSONArray(matchedTemplate.getVariantsJson());
+                    if (variantsArray.length() > 0) {
+                        int variantIdx = occurrenceIndex % variantsArray.length();
+                        rawMessage = variantsArray.getString(variantIdx);
+                    }
+                } catch (Exception ex) {
+                    // Ignore JSON parsing errors and use default message
+                }
+            }
+        }
+
+        // Perform variable replacement
+        if (rawMessage != null) {
+            finalMessage = rawMessage;
+            
+            // Load customer
+            Customer customer = r.getCustomerId() != null ? customerRepository.findById(r.getCustomerId()).orElse(null) : null;
+            String customerName = customer != null ? customer.getName() : "";
+            
+            // Load Account / Business info
+            Account account = accountRepository.findById(r.getAccountId()).orElse(null);
+            String businessName = "";
+            String businessPhone = "";
+            if (account != null) {
+                businessName = account.getBusinessName() != null ? account.getBusinessName() : (account.getName() != null ? account.getName() : "");
+                businessPhone = account.getBusinessPhone() != null ? account.getBusinessPhone() : (account.getMobile() != null ? account.getMobile() : "");
+            }
+            
+            // Load attached item details for plan/product name
+            String planName = "";
+            if (r.getAttachedItemId() != null && r.getAttachedItemType() != null) {
+                if ("plan".equalsIgnoreCase(r.getAttachedItemType())) {
+                    CatalogPlan plan = catalogPlanRepository.findById(r.getAttachedItemId()).orElse(null);
+                    if (plan != null) planName = plan.getName();
+                } else if ("product".equalsIgnoreCase(r.getAttachedItemType())) {
+                    CatalogProduct prod = catalogProductRepository.findById(r.getAttachedItemId()).orElse(null);
+                    if (prod != null) planName = prod.getName();
+                }
+            }
+            
+            // Format Amount
+            String amountStr = "";
+            if (r.getAmount() != null) {
+                amountStr = String.format("₹%.2f", r.getAmount());
+            }
+            
+            // Format Due Date (occurrence date)
+            String dueDateStr = "";
+            if (time != null) {
+                dueDateStr = time.format(java.time.format.DateTimeFormatter.ofPattern("dd-MMM-yyyy"));
+            }
+            
+            // Replace placeholders
+            finalMessage = finalMessage.replace("{customer_name}", customerName)
+                                       .replace("{amount}", amountStr)
+                                       .replace("{due_date}", dueDateStr)
+                                       .replace("{plan_name}", planName)
+                                       .replace("{business_name}", businessName)
+                                       .replace("{business_phone}", businessPhone);
+        }
+
         ScheduleEntry e = new ScheduleEntry();
         e.setScheduleId(schedule.getId());
         e.setReminderId(r.getId().longValue());
@@ -123,6 +218,7 @@ public class ReminderService {
         e.setRemarks(r.getMessage());
         e.setSourceType("REMINDER");
         e.setSourceId(r.getId().longValue());
+        e.setMessageContent(finalMessage);
         scheduleEntryRepository.save(e);
     }
 

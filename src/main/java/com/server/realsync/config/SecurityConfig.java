@@ -36,13 +36,15 @@ public class SecurityConfig {
     "/api/accounts/check-mobile","/mweb/login", "/signup.html", "/register.html",
 								"/login", "/privacy",
 								"/terms", "/css/**", "/js/**", "/img/**", "/assets/**", "/realsync-assets/**",
-								"/promo/**", "/api/promotions/public/**")
+								"/promo/**", "/api/promotions/public/**",
+								"/api/public/invoices/**", "/i/**", "/invoice-view/**")
 						.permitAll().requestMatchers("/").permitAll()
 						.requestMatchers("/register").permitAll()
 						.requestMatchers("/register.html").permitAll()
 						.requestMatchers(new AntPathRequestMatcher("/realsync-assets/**")).permitAll()
 						.requestMatchers("/realsync/**").permitAll().requestMatchers("/mweb/register").permitAll()
 						.requestMatchers("/mweb/terms").permitAll().requestMatchers("/api/auth/register").permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/**/invoice/**")).permitAll()
 						.requestMatchers("/register").permitAll().anyRequest().authenticated())
 				.formLogin(form -> form
 						.loginPage("/login.html") // GET /login (login page)

@@ -70,4 +70,10 @@ public class InvoiceController {
         InvoiceDetailResponseDTO cancelled = invoiceService.cancelInvoice(id);
         return ResponseEntity.ok(cancelled);
     }
+
+    @PostMapping("/{id}/send")
+    public ResponseEntity<Map<String, String>> sendInvoice(@PathVariable Long id) {
+        String result = invoiceService.sendInvoiceWhatsApp(id);
+        return ResponseEntity.ok(Map.of("message", result));
+    }
 }

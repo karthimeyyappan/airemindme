@@ -20,4 +20,20 @@ public interface CatalogTemplateRepository extends JpaRepository<CatalogTemplate
     List<CatalogTemplate> findByModuleCodeAndAccountIdOrderByCreatedAtDesc(String moduleCode, Integer accountId);
 
     List<CatalogTemplate> findByModuleCodeAndCategoryAndAccountIdOrderByCreatedAtDesc(String moduleCode, String category, Integer accountId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT t FROM CatalogTemplate t WHERE t.accountId = :accountId " +
+            "AND (:search IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.description) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(t.content) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:templateType IS NULL OR LOWER(t.templateType) = LOWER(:templateType)) " +
+            "AND (:status IS NULL OR LOWER(t.status) = LOWER(:status)) " +
+            "AND (:channel IS NULL OR LOWER(t.channels) LIKE LOWER(CONCAT('%', :channel, '%'))) " +
+            "ORDER BY t.createdAt DESC, t.id DESC")
+    org.springframework.data.domain.Page<CatalogTemplate> searchAndFilterTemplates(
+            @org.springframework.data.repository.query.Param("accountId") Integer accountId,
+            @org.springframework.data.repository.query.Param("search") String search,
+            @org.springframework.data.repository.query.Param("templateType") String templateType,
+            @org.springframework.data.repository.query.Param("status") String status,
+            @org.springframework.data.repository.query.Param("channel") String channel,
+            org.springframework.data.domain.Pageable pageable);
+
+    List<CatalogTemplate> findByContentAndAccountId(String content, Integer accountId);
 }

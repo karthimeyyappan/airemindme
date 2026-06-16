@@ -1,18 +1,23 @@
 package com.server.realsync.services;
 
 import com.server.realsync.dto.*;
+import com.server.realsync.entity.Account;
 import com.server.realsync.entity.CatalogProduct;
+import com.server.realsync.entity.Customer;
 import com.server.realsync.entity.InventoryTransaction;
 import com.server.realsync.entity.Invoice;
 import com.server.realsync.entity.InvoiceItem;
 import com.server.realsync.entity.InvoiceStatus;
 import com.server.realsync.mapper.InvoiceMapper;
+import com.server.realsync.repo.AccountRepository;
 import com.server.realsync.repo.CustomerRepository;
 import com.server.realsync.repo.InvoiceRepository;
 import com.server.realsync.spec.InvoiceSpecification;
+import com.server.realsync.util.PublicTokenUtil;
 import com.server.realsync.util.SecurityUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -29,9 +34,20 @@ public class InvoiceService {
     private final CustomerRepository customerRepository;
 
     @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
     private InventoryTransactionService txnService;
     @Autowired
     private CatalogProductService productService;
+    @Autowired
+    private RealSyncWhatsappService whatsappService;
+
+    @Autowired
+    private InvoiceTimelineService timelineService;
+
+    @Value("${app.public.base-url:https://numen.uno}")
+    private String publicBaseUrl;
 
     public InvoiceService(InvoiceRepository invoiceRepository, CustomerRepository customerRepository) {
         this.invoiceRepository = invoiceRepository;
@@ -96,6 +112,13 @@ public class InvoiceService {
             saved.setInventoryProcessed(true);
 
             saved = invoiceRepository.save(saved);
+        }
+
+        // Auto-create the first timeline entry for every new invoice
+        try {
+            timelineService.addEntry(saved.getId(), "created");
+        } catch (Exception ignore) {
+            // Non-fatal: timeline write should never block invoice creation
         }
 
         return InvoiceMapper.toDetailDTO(saved);
@@ -287,5 +310,147 @@ public class InvoiceService {
             // fallback
         }
         return String.format("INV-%d-001", currentYear);
+    }
+
+    // ==========================
+    // PUBLIC INVOICE (token-based)
+    // ==========================
+
+    /**
+     * Fetch invoice by public token (no auth required).
+     * Enriches the DTO with business info from the Account.
+     */
+    public PublicInvoiceDTO getPublicInvoice(String token) {
+        long invoiceId = PublicTokenUtil.decode(token);
+        if (invoiceId < 0) {
+            throw new RuntimeException("Invalid invoice token");
+        }
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+        PublicInvoiceDTO dto = new PublicInvoiceDTO();
+        dto.setInvoiceNumber(invoice.getInvoiceNumber());
+        dto.setCustomerName(invoice.getCustomerName());
+        dto.setCustomerAddress(invoice.getCustomerAddress());
+        dto.setCustomerPhone(invoice.getCustomerPhone());
+        dto.setCustomerGst(invoice.getCustomerGst());
+        dto.setShippingAddress(invoice.getShippingAddress());
+        dto.setInvoiceDate(invoice.getInvoiceDate());
+        dto.setDueDate(invoice.getDueDate());
+        dto.setSubtotal(invoice.getSubtotal());
+        dto.setTaxAmount(invoice.getTaxAmount());
+        dto.setDiscountAmount(invoice.getDiscountAmount());
+        dto.setShippingAmount(invoice.getShippingAmount());
+        dto.setGrandTotal(invoice.getGrandTotal());
+        dto.setPaidAmount(invoice.getPaidAmount());
+        dto.setBalanceAmount(invoice.getBalanceAmount());
+        dto.setStatus(invoice.getStatus() != null ? invoice.getStatus().name() : null);
+        dto.setNotes(invoice.getNotes());
+        dto.setTerms(invoice.getTerms());
+
+        // Map items
+        if (invoice.getItems() != null) {
+            dto.setItems(invoice.getItems().stream().map(it -> {
+                InvoiceItemDTO i = new InvoiceItemDTO();
+                i.setId(it.getId());
+                i.setItemType(it.getItemType());
+                i.setItemRefId(it.getItemRefId());
+                i.setItemName(it.getItemName());
+                i.setDescription(it.getDescription());
+                i.setHsnSac(it.getHsnSac());
+                i.setQty(it.getQty());
+                i.setRate(it.getRate());
+                i.setGst(it.getGst());
+                i.setTaxAmount(it.getTaxAmount());
+                i.setLineTotal(it.getLineTotal());
+                return i;
+            }).collect(java.util.stream.Collectors.toList()));
+        }
+
+        // Enrich with business info via Customer -> Account
+        if (invoice.getCustomerId() != null) {
+            customerRepository.findById(invoice.getCustomerId().intValue()).ifPresent(customer -> {
+                accountRepository.findById(customer.getAccountId()).ifPresent(account -> {
+                    dto.setBusinessName(account.getBusinessName() != null ? account.getBusinessName() : account.getName());
+                    dto.setBusinessPhone(account.getBusinessPhone() != null ? account.getBusinessPhone() : account.getMobile());
+                    dto.setBusinessEmail(account.getBusinessEmail() != null ? account.getBusinessEmail() : account.getEmail());
+                    dto.setBusinessAddress(account.getAddress());
+                    dto.setBusinessGst(account.getGstNumber());
+                });
+            });
+        }
+
+        return dto;
+    }
+
+    // ==========================
+    // SEND INVOICE VIA WHATSAPP
+    // ==========================
+
+    /**
+     * Generate a public URL and send via MSG91 customer_document_ready template.
+     */
+    public String sendInvoiceWhatsApp(Long invoiceId) {
+        Invoice invoice = invoiceRepository.findById(invoiceId)
+                .orElseThrow(() -> new RuntimeException("Invoice not found"));
+
+        String customerPhone = invoice.getCustomerPhone();
+        if (customerPhone == null || customerPhone.isBlank()) {
+            throw new RuntimeException("Customer phone number is not available on this invoice");
+        }
+
+        // Build token & public URL
+        String token = PublicTokenUtil.encode(invoiceId);
+
+        // Build slug from business name
+        Account account = null;
+        if (invoice.getCustomerId() != null) {
+            Optional<Customer> optCustomer = customerRepository.findById(invoice.getCustomerId().intValue());
+            if (optCustomer.isPresent()) {
+                account = accountRepository.findById(optCustomer.get().getAccountId()).orElse(null);
+            }
+        }
+        // Fallback: use current logged-in account
+        if (account == null) {
+            Integer currentAccountId = SecurityUtil.getCurrentAccountId().getId();
+            if (currentAccountId != null && currentAccountId > 0) {
+                account = accountRepository.findById(currentAccountId).orElse(null);
+            }
+        }
+
+        String rawName = (account != null && account.getBusinessName() != null)
+                ? account.getBusinessName() : (account != null ? account.getName() : "invoice");
+        String slug = toSlug(rawName);
+
+        String publicUrl = publicBaseUrl + "/" + slug + "/invoice/" + token;
+
+        String businessName = (account != null && account.getBusinessName() != null)
+                ? account.getBusinessName() : (account != null ? account.getName() : "");
+        String businessPhone = (account != null && account.getBusinessPhone() != null)
+                ? account.getBusinessPhone() : (account != null ? account.getMobile() : "");
+
+        try {
+            whatsappService.sendDocumentReadyTemplate(
+                    customerPhone,
+                    invoice.getCustomerName() != null ? invoice.getCustomerName() : "Customer",
+                    invoice.getInvoiceNumber(),
+                    publicUrl,
+                    businessName,
+                    businessPhone
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send WhatsApp message: " + e.getMessage(), e);
+        }
+
+        return "Invoice sent successfully via WhatsApp";
+    }
+
+    /** Convert business name to URL slug. E.g. "Muthu Pharmacy" -> "muthu-pharmacy" */
+    private static String toSlug(String name) {
+        if (name == null) return "shop";
+        return name.trim()
+                .toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-+|-+$", "");
     }
 }

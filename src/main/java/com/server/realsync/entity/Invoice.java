@@ -84,6 +84,15 @@ public class Invoice {
 
     private Boolean inventoryProcessed = false;
 
+    /**
+     * JSON array of timeline events stored directly on the invoice row.
+     * Format: [{"action":"created","note":null,"createdAt":"..."},...]
+     * No separate DB table is needed.
+     * SQL: ALTER TABLE invoices ADD COLUMN IF NOT EXISTS timeline_json MEDIUMTEXT NULL;
+     */
+    @Column(name = "timeline_json", columnDefinition = "MEDIUMTEXT")
+    private String timelineJson;
+
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InvoiceItem> items = new ArrayList<>();
 
@@ -292,5 +301,12 @@ public class Invoice {
     }
     public void setInventoryProcessed(Boolean inventoryProcessed) {
         this.inventoryProcessed = inventoryProcessed;
+    }
+
+    public String getTimelineJson() {
+        return timelineJson;
+    }
+    public void setTimelineJson(String timelineJson) {
+        this.timelineJson = timelineJson;
     }
 }
