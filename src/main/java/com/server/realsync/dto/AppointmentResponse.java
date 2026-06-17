@@ -23,6 +23,13 @@ public class AppointmentResponse {
     private String status;
     private String notes;
 
+    private String appointmentNumber;
+    private String requiredDocuments;
+    private String cancelReason;
+    private String priority;
+    private Integer customerId;
+    private String publicToken;
+
     // ===== GETTERS & SETTERS =====
 
     public Long getId() {
@@ -119,5 +126,53 @@ public class AppointmentResponse {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getAppointmentNumber() {
+        return appointmentNumber;
+    }
+
+    public void setAppointmentNumber(String appointmentNumber) {
+        this.appointmentNumber = appointmentNumber;
+    }
+
+    public String getRequiredDocuments() {
+        return requiredDocuments;
+    }
+
+    public void setRequiredDocuments(String requiredDocuments) {
+        this.requiredDocuments = requiredDocuments;
+    }
+
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public Integer getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Integer customerId) {
+        this.customerId = customerId;
+    }
+
+    public String getPublicToken() {
+        return publicToken;
+    }
+
+    public void setPublicToken(String publicToken) {
+        this.publicToken = publicToken;
     }
 }

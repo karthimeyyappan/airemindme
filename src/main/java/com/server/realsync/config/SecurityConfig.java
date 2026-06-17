@@ -45,6 +45,7 @@ public class SecurityConfig {
 						.requestMatchers("/realsync/**").permitAll().requestMatchers("/mweb/register").permitAll()
 						.requestMatchers("/mweb/terms").permitAll().requestMatchers("/api/auth/register").permitAll()
 						.requestMatchers(new AntPathRequestMatcher("/**/invoice/**")).permitAll()
+						.requestMatchers(new AntPathRequestMatcher("/**/appointment/**")).permitAll()
 						.requestMatchers("/register").permitAll().anyRequest().authenticated())
 				.formLogin(form -> form
 						.loginPage("/login.html") // GET /login (login page)

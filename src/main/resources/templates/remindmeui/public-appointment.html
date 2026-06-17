@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment Details - Numen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12 flex flex-col justify-between">
+
+  <!-- Main Container -->
+  <div class="w-full max-w-lg mx-auto px-4 pt-6 space-y-6">
+
+    <!-- Business Header Block (Business Name Primary) -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 text-center space-y-4">
+      <div class="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-extrabold text-2xl mx-auto shadow-md"
+           th:text="${account != null ? #strings.substring(account.businessName != null && !account.businessName.isEmpty() ? account.businessName : (account.name != null && !account.name.isEmpty() ? account.name : 'Numen'), 0, 1).toUpperCase() : 'N'}">
+        B
+      </div>
+      <div>
+        <h1 class="text-xl font-extrabold text-slate-900" th:text="${account != null ? (account.businessName != null && !account.businessName.isEmpty() ? account.businessName : account.name) : 'Business'}">ABC Salon</h1>
+        <p class="text-xs text-slate-400 mt-1" th:text="${account != null ? (account.businessPhone != null && !account.businessPhone.isEmpty() ? account.businessPhone : account.mobile) : ''}">+91 9876543210</p>
+        <p class="text-xs text-slate-400" th:text="${account != null ? account.address : ''}">123 Main Street, City</p>
+      </div>
+    </div>
+
+    <!-- Status & Trust Badge Card -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</span>
+        <span id="publicStatusBadge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border"
+              th:text="${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING') ? 'Upcoming' : (#strings.equalsIgnoreCase(appointment.status, 'CONFIRMED') ? 'Confirmed' : (#strings.equalsIgnoreCase(appointment.status, 'COMPLETED') ? 'Completed' : 'Cancelled'))}"
+              th:classappend="${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING') || #strings.equalsIgnoreCase(appointment.status, 'CONFIRMED')} ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                             (${#strings.equalsIgnoreCase(appointment.status, 'COMPLETED')} ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100')">
+          Upcoming
+        </span>
+      </div>
+
+      <!-- Trust Badge -->
+      <div class="flex items-start gap-3 p-3 rounded-2xl bg-emerald-50/50 border border-emerald-100/50">
+        <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[10px] mt-0.5">✓</div>
+        <div>
+          <p class="text-xs font-bold text-emerald-800">Secure Appointment Link</p>
+          <p class="text-[10px] text-emerald-600/90 font-medium">Managed through Numen</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appointment Details Card -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-5">
+      <div class="border-b border-slate-50 pb-4">
+        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Service</p>
+        <h2 class="text-lg font-bold text-slate-900" th:text="${appointment.serviceName}">Consultation</h2>
+        <span class="inline-block px-2.5 py-0.5 mt-1.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 uppercase tracking-wider"
+              th:text="${appointment.serviceType}">Clinic</span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs font-semibold text-slate-400">Date</p>
+          <p class="text-sm font-bold text-slate-800 mt-0.5" th:text="${appointment.appointmentDate}">17 Jun 2026</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400">Time</p>
+          <p class="text-sm font-bold text-slate-800 mt-0.5" th:text="${appointment.appointmentTime}">12:00 PM</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400">Duration</p>
+          <p class="text-sm font-bold text-slate-800 mt-0.5" th:text="${appointment.durationMinutes + ' mins'}">30 mins</p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-400">Assigned Staff</p>
+          <p class="text-sm font-bold text-slate-800 mt-0.5" th:text="${appointment.assignee != null && !appointment.assignee.isEmpty() ? appointment.assignee : 'Unassigned'}">Dr. John Doe</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Details Card -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-4">
+      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Customer Details</h3>
+      <div class="space-y-2.5">
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400">Name</span>
+          <span class="font-bold text-slate-800" th:text="${customer.name}">Customer Name</span>
+        </div>
+        <div class="flex justify-between items-center text-sm">
+          <span class="text-slate-400">Mobile</span>
+          <span class="font-bold text-slate-800" th:text="${customer.mobile}">+91 9876543210</span>
+        </div>
+        <div class="flex justify-between items-center text-sm" th:if="${customer.email != null && !customer.email.isEmpty()}">
+          <span class="text-slate-400">Email</span>
+          <span class="font-bold text-slate-800" th:text="${customer.email}">customer@email.com</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Required Documents Card -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-3"
+         th:if="${appointment.requiredDocuments != null && !appointment.requiredDocuments.isEmpty()}">
+      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+        📄 Required Documents
+      </h3>
+      <ul class="space-y-2 pt-1">
+        <li class="flex items-center gap-2 text-xs font-semibold text-slate-700" 
+            th:each="doc : ${#strings.arraySplit(appointment.requiredDocuments, ',')}">
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+          <span th:text="${doc.trim()}">Aadhaar Card</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Important Notes Card -->
+    <div class="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-2"
+         th:if="${appointment.notes != null && !appointment.notes.isEmpty()}">
+      <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+        📝 Important Notes
+      </h3>
+      <p class="text-xs text-slate-600 leading-relaxed pt-1" th:text="${appointment.notes}">
+        Please arrive 15 minutes before the appointment.
+      </p>
+    </div>
+
+    <!-- Confirm Appointment Button -->
+    <div th:if="${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING')}" id="confirmSection" class="pt-2">
+      <button onclick="confirmAppt()"
+              class="w-full py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg hover:shadow-indigo-500/20 transition-all">
+        ✅ Confirm Appointment
+      </button>
+    </div>
+
+    <!-- Platform Branding Section -->
+    <div class="bg-slate-100 border border-slate-200/50 rounded-2xl p-4 text-center text-[11px] text-slate-500 leading-relaxed">
+      This appointment has been scheduled and managed using Numen.<br/>
+      For updates, reminders, and appointment notifications, please refer to messages sent through Numen.
+    </div>
+
+    <!-- Customer Action Buttons Grid -->
+    <div class="grid grid-cols-2 gap-3">
+      <a th:href="'tel:' + ${account != null ? (account.businessPhone != null && !account.businessPhone.isEmpty() ? account.businessPhone : account.mobile) : ''}"
+         class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition shadow-sm">
+        📞 Call Business
+      </a>
+      <a th:href="'https://wa.me/' + ${account != null ? #strings.replace(#strings.replace(account.businessPhone != null && !account.businessPhone.isEmpty() ? account.businessPhone : account.mobile, '+', ''), ' ', '') : ''}"
+         target="_blank"
+         class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition shadow-sm">
+        💬 WhatsApp Business
+      </a>
+      <a th:href="'https://www.google.com/maps/search/?api=1&query=' + ${#uris.escapeQueryParam(account != null ? (account.businessName != null && !account.businessName.isEmpty() ? account.businessName + ' ' + (account.address != null ? account.address : '') : account.name) : 'Business')}"
+         target="_blank"
+         class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition shadow-sm">
+        📍 Get Directions
+      </a>
+      <a id="addToCalBtn" href="#" target="_blank"
+         class="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition shadow-sm">
+        📅 Add To Calendar
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Reusable Powered By Numen Fragment -->
+  <div th:replace="~{remindmeui/fragments/public-powered-by-numen :: poweredBy}"></div>
+
+  <!-- Success Toast -->
+  <div id="successToast"
+    class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-3 px-5 py-3 bg-slate-900 text-white rounded-2xl shadow-2xl">
+    <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <p id="toastMsg" class="text-xs font-medium">Done!</p>
+  </div>
+
+  <script th:inline="javascript">
+    const token = /*[[${appointment != null ? appointment.publicToken : ''}]]*/ '';
+    
+    // Add to Calendar URL calculation
+    (function() {
+      const apptDateStr = /*[[${appointment != null ? appointment.appointmentDate : ''}]]*/ '';
+      const apptTimeStr = /*[[${appointment != null ? appointment.appointmentTime : ''}]]*/ '';
+      const serviceName = /*[[${appointment != null ? appointment.serviceName : ''}]]*/ '';
+      const businessName = /*[[${account != null ? (account.businessName != null ? account.businessName : account.name) : ''}]]*/ '';
+      const address = /*[[${account != null && account.address != null ? account.address : ''}]]*/ '';
+      const duration = parseInt(/*[[${appointment != null ? appointment.durationMinutes : '30'}]]*/ '30') || 30;
+      
+      if (apptDateStr && apptTimeStr) {
+        const dateParts = apptDateStr.split('-');
+        const timeParts = apptTimeStr.split(':');
+        
+        if (dateParts.length === 3 && timeParts.length >= 2) {
+          const year = dateParts[0];
+          const month = dateParts[1];
+          const day = dateParts[2];
+          const hour = timeParts[0];
+          const minute = timeParts[1];
+          
+          // Format start date: YYYYMMDDTHHmmSS (in local time)
+          const startDate = `${year}${month}${day}T${hour}${minute}00`;
+          
+          // Calculate end date based on duration
+          const startObj = new Date(year, month - 1, day, hour, minute);
+          const endObj = new Date(startObj.getTime() + duration * 60 * 1000);
+          
+          const endYear = endObj.getFullYear();
+          const endMonth = String(endObj.getMonth() + 1).padStart(2, '0');
+          const endDay = String(endObj.getDate()).padStart(2, '0');
+          const endHour = String(endObj.getHours()).padStart(2, '0');
+          const endMinute = String(endObj.getMinutes()).padStart(2, '0');
+          const endDate = `${endYear}${endMonth}${endDay}T${endHour}${endMinute}00`;
+          
+          const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(serviceName + ' at ' + businessName)}&dates=${startDate}/${endDate}&details=${encodeURIComponent('Appointment managed securely by Numen.')}&location=${encodeURIComponent(address)}`;
+          document.getElementById('addToCalBtn').href = calUrl;
+        }
+      }
+    })();
+
+    async function confirmAppt() {
+      try {
+        const res = await fetch(`/public/appointment/${token}/confirm`, {
+          method: 'PUT'
+        });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || 'Confirmation failed');
+        }
+        
+        // Update UI
+        const badge = document.getElementById('publicStatusBadge');
+        badge.textContent = 'Confirmed';
+        badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border bg-blue-50 text-blue-700 border-blue-100';
+        
+        const confirmSec = document.getElementById('confirmSection');
+        if (confirmSec) {
+          confirmSec.style.display = 'none';
+        }
+        
+        showToast('Appointment confirmed successfully! ✅');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('successToast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3000);
+    }
+  </script>
+</body>
+</html>

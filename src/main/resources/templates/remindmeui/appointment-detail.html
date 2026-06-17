@@ -55,7 +55,7 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="openModal('rescheduleModal')"
+        <button th:if="${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING')}" onclick="openModal('rescheduleModal')"
           class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -97,13 +97,19 @@
                 </div>
 
                 <div>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md" th:text="${appointment.appointmentNumber != null ? appointment.appointmentNumber : 'N/A'}">APT-YYYYMM-XXXX</span>
+                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold border" 
+                          th:text="${appointment.priority != null ? appointment.priority : 'MEDIUM'}"
+                          th:classappend="${#strings.equalsIgnoreCase(appointment.priority, 'HIGH')} ? 'bg-red-50 text-red-700 border-red-100' : (${#strings.equalsIgnoreCase(appointment.priority, 'LOW')} ? 'bg-gray-50 text-gray-600 border-gray-200' : 'bg-amber-50 text-amber-700 border-amber-100')">MEDIUM</span>
+                  </div>
                   <!-- SERVICE NAME -->
-                  <h2 id="apptService" class="text-base font-bold text-gray-900" th:text="${appointment.serviceName}">
+                  <h2 id="apptService" class="text-base font-bold text-gray-900 mt-1" th:text="${appointment.serviceName}">
                     Service Name
                   </h2>
 
                   <!-- TYPE -->
-                  <p id="apptTypeBadge" class="text-xs text-gray-500 mt-0.5"
+                  <p id="apptTypeBadge" class="text-[11px] text-gray-400 font-medium"
                     th:text="${#strings.capitalize(appointment.serviceType)}">
                     Type
                   </p>
@@ -113,8 +119,9 @@
 
               <!-- STATUS -->
               <span id="statusBadge" class="px-3 py-1 rounded-full text-sm font-semibold"
-                th:text="${appointment.status}" th:classappend="${appointment.status == 'Upcoming'} ? 'bg-blue-100 text-blue-700' :
-                          (${appointment.status == 'Completed'} ? 'bg-emerald-100 text-emerald-700' :
+                th:text="${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING') ? 'Upcoming' : (#strings.equalsIgnoreCase(appointment.status, 'COMPLETED') ? 'Completed' : (#strings.equalsIgnoreCase(appointment.status, 'CANCELLED') ? 'Cancelled' : appointment.status))}" 
+                th:classappend="${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING') || #strings.equalsIgnoreCase(appointment.status, 'Upcoming')} ? 'bg-blue-100 text-blue-700' :
+                          (${#strings.equalsIgnoreCase(appointment.status, 'COMPLETED') || #strings.equalsIgnoreCase(appointment.status, 'Completed')} ? 'bg-emerald-100 text-emerald-700' :
                           'bg-red-100 text-red-700')">
                 Status
               </span>
@@ -174,6 +181,34 @@
                   <p id="apptReminder" class="text-sm font-semibold text-gray-800"
                     th:text="${appointment.reminderType}">
                     Reminder
+                  </p>
+                </div>
+              </div>
+
+              <!-- REQUIRED DOCUMENTS -->
+              <div class="flex items-center gap-2.5" th:if="${!#strings.isEmpty(appointment.requiredDocuments)}">
+                <div class="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center">
+                  📄
+                </div>
+                <div>
+                  <p class="text-[10px] text-gray-400">Required Documents</p>
+                  <p id="apptReqDocs" class="text-sm font-semibold text-gray-800"
+                    th:text="${appointment.requiredDocuments}">
+                    None
+                  </p>
+                </div>
+              </div>
+
+              <!-- CANCELLATION REASON -->
+              <div class="flex items-center gap-2.5" th:if="${#strings.equalsIgnoreCase(appointment.status, 'CANCELLED') && !#strings.isEmpty(appointment.cancelReason)}">
+                <div class="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center">
+                  ⚠️
+                </div>
+                <div>
+                  <p class="text-[10px] text-red-500 font-semibold">Cancellation Reason</p>
+                  <p id="apptCancelReason" class="text-sm font-bold text-red-700"
+                    th:text="${appointment.cancelReason}">
+                    N/A
                   </p>
                 </div>
               </div>
@@ -252,18 +287,18 @@
           <!-- Notes -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div class="flex items-center justify-between mb-3">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Notes</p>
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Instructions / Notes</p>
               <button onclick="editNotes()" class="text-xs text-indigo-600 font-medium hover:underline">Edit</button>
             </div>
-            <p id="apptNotes" class="text-sm text-gray-700 leading-relaxed">Follow-up on blood pressure medication.
+            <p id="apptNotes" class="text-sm text-gray-700 leading-relaxed" th:text="${appointment.notes}">Follow-up on blood pressure medication.
               Bring previous prescription.</p>
           </div>
 
           <!-- Update Status -->
-          <div id="statusActions" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div id="statusActions" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5" th:style="${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING') ? '' : 'display: none;'}">
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Update Status</p>
             <div class="grid grid-cols-3 gap-3">
-              <button onclick="updateStatus('Completed')"
+              <button onclick="openModal('completeConfirmModal')"
                 class="py-3 rounded-2xl bg-emerald-50 text-emerald-700 text-sm font-semibold hover:bg-emerald-100 transition flex flex-col items-center gap-1">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -279,7 +314,7 @@
                 </svg>
                 Reschedule
               </button>
-              <button onclick="updateStatus('Cancelled')"
+              <button onclick="openModal('cancelConfirmModal')"
                 class="py-3 rounded-2xl bg-red-50 text-red-600 text-sm font-semibold hover:bg-red-100 transition flex flex-col items-center gap-1">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -348,6 +383,77 @@
               View full profile →
             </a>
 
+          </div>
+
+          <!-- Timeline Card -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Appointment Timeline</p>
+            <div class="relative pl-6 space-y-6 before:absolute before:bottom-2 before:top-2 before:left-2.5 before:w-0.5 before:bg-gray-100">
+              
+              <!-- Created -->
+              <div class="relative">
+                <div class="absolute -left-6 mt-1 w-5 h-5 rounded-full border-2 bg-emerald-500 border-emerald-500 flex items-center justify-center text-[10px] text-white font-bold">
+                  ✓
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-gray-900">Appointment Created</p>
+                  <p class="text-[10px] text-gray-400">Successfully booked</p>
+                </div>
+              </div>
+
+              <!-- Reminder Scheduled -->
+              <div class="relative" th:with="isUpcomingOrCompleted=${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING') || #strings.equalsIgnoreCase(appointment.status, 'COMPLETED')}">
+                <div class="absolute -left-6 mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"
+                     th:classappend="${isUpcomingOrCompleted} ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-gray-100 border-gray-200 text-gray-400'">
+                  <span th:text="${isUpcomingOrCompleted} ? '✓' : '•'">•</span>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-gray-900">Reminder Scheduled</p>
+                  <p class="text-[10px] text-gray-400" th:text="${appointment.reminderType != null ? appointment.reminderType + ' configured' : 'Notification configured'}">WhatsApp configured</p>
+                </div>
+              </div>
+
+              <!-- Reminder Sent -->
+              <div class="relative" th:with="isCompleted=${#strings.equalsIgnoreCase(appointment.status, 'COMPLETED')}">
+                <div class="absolute -left-6 mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center text-[10px] font-bold"
+                     th:classappend="${isCompleted} ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-gray-100 border-gray-200 text-gray-400'">
+                  <span th:text="${isCompleted} ? '✓' : '•'">•</span>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-gray-900">Reminder Sent</p>
+                  <p class="text-[10px] text-gray-400" th:text="${isCompleted} ? 'Reminder notifications sent' : 'Waiting to send reminder'">Waiting to send reminder</p>
+                </div>
+              </div>
+
+              <!-- Completed / Cancelled -->
+              <div class="relative">
+                <!-- If Completed -->
+                <div th:if="${#strings.equalsIgnoreCase(appointment.status, 'COMPLETED')}">
+                  <div class="absolute -left-6 mt-1 w-5 h-5 rounded-full border-2 bg-emerald-500 border-emerald-500 flex items-center justify-center text-[10px] text-white font-bold">✓</div>
+                  <div>
+                    <p class="text-xs font-bold text-emerald-700">Completed</p>
+                    <p class="text-[10px] text-gray-400">Appointment was successfully finished</p>
+                  </div>
+                </div>
+                <!-- If Cancelled -->
+                <div th:if="${#strings.equalsIgnoreCase(appointment.status, 'CANCELLED')}">
+                  <div class="absolute -left-6 mt-1 w-5 h-5 rounded-full border-2 bg-red-500 border-red-500 flex items-center justify-center text-[10px] text-white font-bold">✗</div>
+                  <div>
+                    <p class="text-xs font-bold text-red-700">Cancelled</p>
+                    <p class="text-[10px] text-gray-400" th:text="${appointment.cancelReason != null && !appointment.cancelReason.isEmpty() ? 'Reason: ' + appointment.cancelReason : 'Appointment was cancelled'}">Appointment was cancelled</p>
+                  </div>
+                </div>
+                <!-- If Upcoming -->
+                <div th:if="${#strings.equalsIgnoreCase(appointment.status, 'UPCOMING')}">
+                  <div class="absolute -left-6 mt-1 w-5 h-5 rounded-full border-2 bg-gray-100 border-gray-200 flex items-center justify-center text-[10px] text-gray-400 font-bold">•</div>
+                  <div>
+                    <p class="text-xs font-bold text-gray-500">Completed / Cancelled</p>
+                    <p class="text-[10px] text-gray-400">Pending appointment visit</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
 
           <!-- Notification Log -->
@@ -433,11 +539,56 @@
       <div class="flex gap-3">
         <button onclick="closeModal('rescheduleModal')"
           class="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition">Cancel</button>
-        <button onclick="reschedule()"
+        <button id="confirmRescheduleBtn" onclick="reschedule()"
           class="flex-1 py-3 rounded-2xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition">Confirm
           Reschedule</button>
       </div>
     </div>
+  </div>
+
+  <!-- Cancel Confirmation Modal -->
+  <div id="cancelConfirmModal" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center">
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('cancelConfirmModal')"></div>
+      <div class="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-md shadow-2xl p-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-2">Cancel Appointment?</h2>
+          <div class="text-sm text-gray-600 mb-4 space-y-1">
+              <p><strong>Customer:</strong> <span th:text="${customer != null ? customer.name : 'Unknown'}">Unknown</span></p>
+              <p><strong>Service:</strong> <span th:text="${appointment.serviceName}">Service</span></p>
+              <p><strong>Date/Time:</strong> <span th:text="${appointment.appointmentDate + ' @ ' + appointment.appointmentTime}">Date/Time</span></p>
+          </div>
+          <div class="mb-5">
+              <label class="text-sm font-medium text-gray-700 mb-1.5 block">Cancellation Reason</label>
+              <select id="cancelReasonSelect" class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="Customer Requested">Customer Requested</option>
+                  <option value="No Show">No Show</option>
+                  <option value="Rescheduled">Rescheduled</option>
+                  <option value="Staff Unavailable">Staff Unavailable</option>
+                  <option value="Other">Other</option>
+              </select>
+              <input type="text" id="cancelReasonOther" placeholder="Specify other reason..." class="hidden w-full mt-2 px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div class="flex gap-3">
+              <button onclick="closeModal('cancelConfirmModal')" class="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition">Keep Appointment</button>
+              <button id="confirmCancelBtn" onclick="executeCancel()" class="flex-1 py-3 rounded-2xl bg-red-600 text-white font-semibold hover:bg-red-700 transition">Cancel Appointment</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- Complete Confirmation Modal -->
+  <div id="completeConfirmModal" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center">
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('completeConfirmModal')"></div>
+      <div class="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-md shadow-2xl p-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-2">Mark Appointment as Completed?</h2>
+          <div class="text-sm text-gray-600 mb-5 space-y-1">
+              <p><strong>Customer:</strong> <span th:text="${customer != null ? customer.name : 'Unknown'}">Unknown</span></p>
+              <p><strong>Service:</strong> <span th:text="${appointment.serviceName}">Service</span></p>
+              <p><strong>Date/Time:</strong> <span th:text="${appointment.appointmentDate + ' @ ' + appointment.appointmentTime}">Date/Time</span></p>
+          </div>
+          <div class="flex gap-3">
+              <button onclick="closeModal('completeConfirmModal')" class="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition font-medium">Cancel</button>
+              <button id="confirmCompleteBtn" onclick="executeComplete()" class="flex-1 py-3 rounded-2xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition font-medium">Mark Completed</button>
+          </div>
+      </div>
   </div>
 
   <!-- Toast -->
@@ -450,28 +601,82 @@
     <p id="toastMsg" class="text-sm font-medium">Done!</p>
   </div>
 
-  <script>
+  <script th:inline="javascript">
+    const currentAppointment = /*[[${appointment}]]*/ {};
+    let isRescheduling = false;
+    let isCancelling = false;
+    let isCompleting = false;
+
     const statusColors = {
       Upcoming: 'bg-blue-100 text-blue-700',
       Completed: 'bg-emerald-100 text-emerald-700',
-      Cancelled: 'bg-red-100 text-red-700'
+      Cancelled: 'bg-red-100 text-red-700',
+      UPCOMING: 'bg-blue-100 text-blue-700',
+      COMPLETED: 'bg-emerald-100 text-emerald-700',
+      CANCELLED: 'bg-red-100 text-red-700'
     };
 
-    function updateStatus(status) {
-      const badge = document.getElementById('statusBadge');
+    async function executeCancel() {
+        if (isCancelling) return;
+        isCancelling = true;
 
-      badge.className =
-        'px-3 py-1 rounded-full text-sm font-semibold ' +
-        (statusColors[status] || statusColors.Upcoming);
+        const selectVal = document.getElementById('cancelReasonSelect').value;
+        const otherVal = document.getElementById('cancelReasonOther').value;
+        const reason = selectVal === 'Other' ? (otherVal.trim() || 'Other') : selectVal;
 
-      badge.textContent = status;
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        const origHtml = cancelBtn.innerHTML;
+        cancelBtn.disabled = true;
+        cancelBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Cancelling...`;
 
-      if (status !== 'Upcoming') {
-        document.getElementById('statusActions').style.display = 'none';
-      }
-
-      showToast('Appointment marked as ' + status);
+        try {
+            const res = await fetch(`/appointments/${currentAppointment.id}/status?status=CANCELLED&reason=${encodeURIComponent(reason)}`, {
+                method: "POST"
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || "Status update failed");
+            }
+            closeModal('cancelConfirmModal');
+            showToast("Appointment Cancelled ❌");
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+        } catch (err) {
+            alert("Error cancelling appointment: " + err.message);
+        } finally {
+            isCancelling = false;
+            cancelBtn.disabled = false;
+            cancelBtn.innerHTML = origHtml;
+        }
     }
+
+    async function executeComplete() {
+        try {
+            const res = await fetch(`/appointments/${currentAppointment.id}/status?status=COMPLETED`, {
+                method: "POST"
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(text || "Status update failed");
+            }
+            closeModal('completeConfirmModal');
+            showToast("Appointment Marked Completed ✅");
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+        } catch (err) {
+            alert("Error completing appointment: " + err.message);
+        }
+    }
+
+    document.getElementById('cancelReasonSelect').addEventListener('change', function(e) {
+        if (e.target.value === 'Other') {
+            document.getElementById('cancelReasonOther').classList.remove('hidden');
+        } else {
+            document.getElementById('cancelReasonOther').classList.add('hidden');
+        }
+    });
 
     function sendReminder() {
       const logEl = document.getElementById('notifLog');
@@ -507,19 +712,42 @@
       showToast('Reminder sent');
     }
 
-    function editNotes() {
+    async function editNotes() {
       const el = document.getElementById('apptNotes');
-      const current = el.textContent;
+      const current = el.textContent.trim();
 
-      const val = prompt('Edit notes:', current);
+      const val = prompt('Edit Instructions / Notes:', current);
 
       if (val !== null) {
-        el.textContent = val;
-        showToast('Notes updated');
+        const updatedAppt = {
+          ...currentAppointment,
+          notes: val
+        };
+
+        try {
+          const res = await fetch(`/appointments/${currentAppointment.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedAppt)
+          });
+
+          if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || 'Update failed');
+          }
+
+          el.textContent = val;
+          currentAppointment.notes = val;
+          showToast('Notes updated successfully');
+        } catch (err) {
+          alert('Error updating notes: ' + err.message);
+        }
       }
     }
 
-    function reschedule() {
+    async function reschedule() {
       const nd = document.getElementById('newDate').value;
       const nt = document.getElementById('newTime').value;
 
@@ -528,24 +756,46 @@
         return;
       }
 
-      const fDate = new Date(nd).toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      });
+      if (isRescheduling) return;
+      isRescheduling = true;
 
-      const [h, m] = nt.split(':');
-      const hr = parseInt(h);
+      const confirmBtn = document.getElementById('confirmRescheduleBtn');
+      const origHtml = confirmBtn.innerHTML;
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white inline-block mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...`;
 
-      const fTime =
-        `${hr > 12 ? hr - 12 : hr || 12}:${m} ` +
-        `${hr >= 12 ? 'PM' : 'AM'}`;
+      const updatedAppt = {
+        ...currentAppointment,
+        appointmentDate: nd,
+        appointmentTime: nt
+      };
 
-      document.getElementById('apptDate').textContent = fDate;
-      document.getElementById('apptTime').textContent = fTime;
+      try {
+        const res = await fetch(`/appointments/${currentAppointment.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updatedAppt)
+        });
 
-      closeModal('rescheduleModal');
-      showToast('Rescheduled successfully');
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || 'Rescheduling failed');
+        }
+
+        closeModal('rescheduleModal');
+        showToast('Rescheduled successfully');
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
+      } catch (err) {
+        alert('Error rescheduling appointment: ' + err.message);
+      } finally {
+        isRescheduling = false;
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = origHtml;
+      }
     }
 
     function openModal(id) {

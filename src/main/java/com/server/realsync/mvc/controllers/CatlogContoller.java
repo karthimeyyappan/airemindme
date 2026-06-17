@@ -330,16 +330,34 @@ public ResponseEntity<CatalogProduct> updateProduct(
     // =====================================================================
 
     @GetMapping("/templates")
-    public org.springframework.data.domain.Page<CatalogTemplate> getTemplates(
+    public Object getTemplates(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "8") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String templateType,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String channel) {
+            @RequestParam(required = false) String channel,
+            @RequestParam(required = false) String module,
+            @RequestParam(required = false) String category) {
         Account account = SecurityUtil.getCurrentAccountId();
+        Integer accountId = account.getId();
+
+        if (templateService.countByAccountId(accountId) == 0) {
+            templateService.createDefaultTemplates(accountId);
+        }
+
+        if (module != null && !module.trim().isEmpty()) {
+            List<CatalogTemplate> templatesList;
+            if (category != null && !category.trim().isEmpty()) {
+                templatesList = templateService.getByModuleCodeAndCategoryAndAccountId(module, category, accountId);
+            } else {
+                templatesList = templateService.getByModuleCodeAndAccountId(module, accountId);
+            }
+            return Map.of("success", true, "templates", templatesList);
+        }
+
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        return templateService.getTemplatesPaginated(account.getId(), search, templateType, status, channel, pageable);
+        return templateService.getTemplatesPaginated(accountId, search, templateType, status, channel, pageable);
     }
 
     @PostMapping("/templates")

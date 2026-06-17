@@ -49,11 +49,28 @@ public class AppointmentController {
         return "Deleted";
     }
 
-    @PutMapping("/{id}/status")
+    @PostMapping("/{id}/status")
     public Appointment updateStatus(@PathVariable Long id,
-            @RequestParam String status) {
+            @RequestParam String status,
+            @RequestParam(required = false) String reason) {
 
         Integer accountId = SecurityUtil.getCurrentAccountId().getId();
-        return service.updateStatus(id, accountId, status);
+        return service.updateStatus(id, accountId, status, reason);
+    }
+
+    @GetMapping("/booked-slots")
+    public List<java.util.Map<String, Object>> getBookedSlots(@RequestParam String date) {
+        Integer accountId = SecurityUtil.getCurrentAccountId().getId();
+        java.time.LocalDate localDate = java.time.LocalDate.parse(date);
+        List<Appointment> appts = service.getByDate(accountId, localDate);
+        return appts.stream()
+            .filter(a -> !"CANCELLED".equalsIgnoreCase(a.getStatus()))
+            .map(a -> {
+                java.util.Map<String, Object> map = new java.util.HashMap<>();
+                map.put("time", a.getAppointmentTime() != null ? a.getAppointmentTime().toString() : "");
+                map.put("duration", a.getDurationMinutes());
+                map.put("customerName", a.getCustomer() != null ? a.getCustomer().getName() : "Unknown");
+                return map;
+            }).toList();
     }
 }

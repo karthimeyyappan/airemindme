@@ -1,5 +1,18 @@
 package com.server.realsync.mvc.controllers;
 
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.server.realsync.dto.PasswordResetDto;
 import com.server.realsync.dto.SettingsUpdateDto;
 import com.server.realsync.entity.Account;
@@ -7,14 +20,6 @@ import com.server.realsync.entity.User;
 import com.server.realsync.services.AccountService;
 import com.server.realsync.services.UserService;
 import com.server.realsync.util.SecurityUtil;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping
@@ -95,7 +100,27 @@ public class SettingsController {
 
         return "Password Updated Successfully";
     }
+@GetMapping("/api/settings/localization")
+public ResponseEntity<?> getLocalizationSettings() {
 
+    Account loggedIn = SecurityUtil.getCurrentAccountId();
+
+    if (loggedIn == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of(
+                        "success", false,
+                        "message", "Session expired"));
+    }
+
+    Account account = accountService.getById(loggedIn.getId());
+
+    return ResponseEntity.ok(Map.of(
+            "country", account.getCountry() != null ? account.getCountry() : "India",
+            "timezone", account.getTimezone() != null ? account.getTimezone() : "Asia/Kolkata",
+            "language", account.getLanguage() != null ? account.getLanguage() : "en",
+            "currency", account.getCurrency() != null ? account.getCurrency() : "INR"));
+}
+    
     // ==========================================
     // UNIFIED SETTINGS UPDATE (PROFILE + BUSINESS + REGION)
     // ==========================================

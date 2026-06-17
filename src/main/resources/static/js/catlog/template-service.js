@@ -119,6 +119,10 @@ function openAiAssistant(options, event) {
     dd.querySelector('#dd-use-tmpl').onclick = () => {
         dd.classList.add('hidden');
         openTemplatePicker(options.moduleCode, (template) => {
+            const titleField = document.getElementById('remTitle');
+            if (titleField && (template.name || template.title)) {
+                titleField.value = template.name || template.title;
+            }
             const field = document.getElementById(options.targetField);
             if (field) {
                 field.value = template.content;
@@ -191,7 +195,28 @@ function openTemplatePicker(moduleCode, callback, category = '') {
     modal.classList.remove('hidden');
 
     TemplateService.getTemplatesByModule(moduleCode, category)
-        .then(templates => {
+        .then(response => {
+            console.log("Template API Response:", response);
+
+            let templates = response;
+            if (response && typeof response === 'object' && !Array.isArray(response)) {
+                if (response.templates) {
+                    templates = response.templates;
+                } else if (response.content) {
+                    templates = response.content;
+                }
+            }
+
+            if (!Array.isArray(templates)) {
+                console.error("Expected templates to be an array", templates);
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400 text-sm font-medium">
+                      No templates available.
+                    </div>
+                `;
+                return;
+            }
+
             if (templates.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-12 text-gray-400 text-sm font-medium">

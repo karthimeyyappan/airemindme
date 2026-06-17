@@ -35,6 +35,9 @@ public class ScheduleEntry {
 	@Column(name = "reminder_id", nullable = true)
 	private Long reminderId;
 
+	@Column(name = "account_id")
+	private Integer accountId;
+
 	@Column(name = "occurrence_date", nullable = false)
 	private LocalDateTime occurrenceDate;
 
@@ -221,5 +224,13 @@ public class ScheduleEntry {
 
 	public void setMessageContent(String messageContent) {
 		this.messageContent = messageContent;
+	}
+
+	public Integer getAccountId() {
+		return accountId;
+	}
+
+	public void setAccountId(Integer accountId) {
+		this.accountId = accountId;
 	}
 }

@@ -62,4 +62,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("startDate") java.time.LocalDate startDate,
             @Param("endDate") java.time.LocalDate endDate
         );
+
+        @Query("SELECT MAX(a.appointmentNumber) FROM Appointment a WHERE a.appointmentNumber LIKE CONCAT('APT-', :yearMonth, '-%')")
+        String findMaxAppointmentNumberForMonth(@Param("yearMonth") String yearMonth);
+
+        Optional<Appointment> findByPublicToken(String publicToken);
 }

@@ -766,6 +766,10 @@
             const template = JSON.parse(selectedTemplateStr);
             const field = document.getElementById(returnField);
             if (field && template.content) {
+              const titleField = document.getElementById('remTitle');
+              if (titleField && (template.name || template.title)) {
+                titleField.value = template.name || template.title;
+              }
               field.value = template.content;
               if (typeof updateCharCount === 'function') {
                 updateCharCount(field);

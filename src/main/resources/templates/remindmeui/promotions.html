@@ -318,10 +318,16 @@
           </svg></button>
       </div>
       <div class="px-6 py-5">
+        <!-- Tabs for Channel Preview -->
+        <div class="flex border-b border-gray-200 mb-4">
+          <button type="button" onclick="switchTmplPreviewTab('wa')" id="tpt-wa" class="flex-1 pb-2 text-xs font-bold border-b-2 border-indigo-600 text-indigo-600">WhatsApp</button>
+          <button type="button" onclick="switchTmplPreviewTab('email')" id="tpt-email" class="flex-1 pb-2 text-xs font-semibold text-gray-400">Email</button>
+          <button type="button" onclick="switchTmplPreviewTab('landing')" id="tpt-landing" class="flex-1 pb-2 text-xs font-semibold text-gray-400">Promotion Page</button>
+        </div>
         <!-- Channel Tags -->
-        <div class="flex items-center gap-2 flex-wrap mb-4" id="previewChannels"></div>
+        <div class="flex items-center gap-2 flex-wrap mb-4 hidden" id="previewChannels"></div>
         <!-- Tone Tag -->
-        <div class="mb-4" id="previewToneWrap"></div>
+        <div class="mb-4 hidden" id="previewToneWrap"></div>
         <!-- Message Preview -->
         <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-5">
           <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Message Preview</p>
@@ -411,19 +417,80 @@
         <div>
           <div class="flex items-center justify-between mb-1.5">
             <label class="text-sm font-medium text-gray-700">Description <span class="text-red-500">*</span></label>
-            <button onclick="genPromoMsg()"
-              class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 text-violet-600 text-xs font-medium hover:bg-violet-100 transition">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Generate Message
-            </button>
+            <div class="flex items-center gap-2">
+              <button id="promoGenBtn" onclick="genPromoMsg()"
+                class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 text-violet-600 text-xs font-medium hover:bg-violet-100 transition">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Generate Message
+              </button>
+            </div>
           </div>
-          <textarea id="promoDesc" rows="5" oninput="document.getElementById('descCount').textContent=this.value.length"
+          <textarea id="promoDesc" rows="4" oninput="document.getElementById('descCount').textContent=this.value.length"
             class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-            placeholder="Describe your promotion..."></textarea>
+            placeholder="Describe your promotion here..."></textarea>
           <p class="text-xs text-gray-400 mt-1"><span id="descCount">0</span> characters</p>
         </div>
+
+        <!-- Skeleton Loading State for AI Generation -->
+        <div id="aiGenLoadingState" class="hidden border border-indigo-100 bg-white rounded-2xl p-4 mt-3 mb-2 space-y-3">
+          <div class="flex items-center gap-2 text-xs font-semibold text-violet-700 animate-pulse mb-2">
+            <svg class="animate-spin h-4 w-4 text-violet-600" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            AI is drafting your promotion content...
+          </div>
+          <div class="h-4 bg-gray-200 rounded animate-pulse w-3/4"></div>
+          <div class="h-10 bg-gray-100 rounded-xl animate-pulse"></div>
+          <div class="h-4 bg-gray-200 rounded animate-pulse w-1/2"></div>
+        </div>
+
+        <!-- Generated Content Section -->
+        <div id="generatedContentArea" class="hidden border border-indigo-100 bg-indigo-50/20 rounded-2xl p-4 mt-3 mb-2 space-y-3">
+          <p class="text-xs font-bold text-indigo-800 uppercase tracking-wide">Generated Promotion Copies</p>
+          
+          <div>
+            <label class="text-xs font-semibold text-gray-600 mb-1 block">Promotion Title</label>
+            <input type="text" id="promoTitle" 
+              class="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+
+          <!-- Tabs for previewing/editing generated channel copies -->
+          <div>
+            <div class="flex border-b border-gray-200 mb-2">
+              <button type="button" onclick="switchGeneratedTab('wa')" id="gt-wa" class="flex-1 pb-2 text-xs font-bold border-b-2 border-indigo-600 text-indigo-600">WhatsApp</button>
+              <button type="button" onclick="switchGeneratedTab('email')" id="gt-email" class="flex-1 pb-2 text-xs font-semibold text-gray-400">Email</button>
+              <button type="button" onclick="switchGeneratedTab('landing')" id="gt-landing" class="flex-1 pb-2 text-xs font-semibold text-gray-400">Landing Page</button>
+            </div>
+            
+            <!-- WhatsApp box -->
+            <div id="gtab-wa" class="space-y-1">
+              <textarea id="promoWaMsg" rows="3" oninput="updateWordCount('promoWaMsg', 'waWordCount')"
+                class="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+              <p class="text-[10px] text-gray-400 flex justify-between">
+                <span>Must include <code>{PROMOTION_URL}</code></span>
+                <span><span id="waWordCount">0</span> words (Max 20)</span>
+              </p>
+            </div>
+
+            <!-- Email box -->
+            <div id="gtab-email" class="hidden space-y-1">
+              <textarea id="promoEmailMsg" rows="5" oninput="document.getElementById('emailCharCount').textContent=this.value.length"
+                class="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+              <p class="text-[10px] text-gray-400 text-right"><span id="emailCharCount">0</span> characters</p>
+            </div>
+
+            <!-- Landing Page box -->
+            <div id="gtab-landing" class="hidden space-y-1">
+              <textarea id="promoLandingContent" rows="5" oninput="document.getElementById('landingCharCount').textContent=this.value.length"
+                class="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+              <p class="text-[10px] text-gray-400 text-right"><span id="landingCharCount">0</span> characters</p>
+            </div>
+          </div>
+        </div>
+
         <button onclick="goModalStep(2)"
           class="w-full py-4 rounded-2xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition mt-4">Next:
           Target &amp; Send →</button>
@@ -580,8 +647,16 @@
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 class="text-lg font-bold text-gray-900 mb-1">Promotion Link Ready!</h3>
+        <h3 class="text-lg font-bold text-gray-900 mb-1" id="successModalTitle">Promotion Link Ready!</h3>
         <p class="text-sm text-gray-500 mb-5" id="sentToLabel">Sent to All Customers (17 recipients)</p>
+        <!-- Delivery Warning Banner -->
+        <div id="deliveryWarningBanner" class="hidden flex items-start gap-2.5 bg-rose-50 border border-rose-100 rounded-2xl p-3.5 mb-4 text-left">
+          <div class="text-rose-500 text-sm mt-0.5">⚠️</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-rose-800" id="warningTitle">Some dispatches failed</p>
+            <p class="text-[11px] text-rose-600 leading-relaxed mt-0.5" id="warningDesc">Failed to send message to some recipients. Please check customer phone numbers or logs.</p>
+          </div>
+        </div>
         <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-4 text-left">
           <p class="text-xs font-semibold text-gray-500 mb-2">Shareable URL</p>
           <div class="flex items-center gap-2">
@@ -595,7 +670,7 @@
             </button>
           </div>
         </div>
-        <button onclick="window.location.href='promo-landing.html'"
+        <button id="promoPreviewCustomerBtn" onclick="previewGeneratedCustomerPage()"
           class="w-full py-3.5 rounded-2xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 transition flex items-center justify-center gap-2 mb-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -605,6 +680,98 @@
         </button>
         <button onclick="closeCreateLinkModal()"
           class="w-full py-3 rounded-2xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SELECT PROMOTION TEMPLATE MODAL -->
+  <div id="promoTemplateSelectorModal" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closePromoTemplateSelector()"></div>
+    <div class="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col bg-white">
+      <div class="flex justify-center pt-3 pb-1 md:hidden">
+        <div class="w-10 h-1 rounded-full bg-gray-200"></div>
+      </div>
+      <div class="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center text-lg">📋</div>
+          <div>
+            <h2 class="text-base font-bold text-gray-900">Select Promotion Template</h2>
+            <p class="text-xs text-gray-400">Choose a professional promotion template</p>
+          </div>
+        </div>
+        <button onclick="closePromoTemplateSelector()"
+          class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">✕</button>
+      </div>
+      <!-- Cards list container -->
+      <div id="promoSelectorTemplatesContainer" class="p-6 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[60vh]">
+        <!-- Cards will be populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- PROMOTION TEMPLATE PREVIEW MODAL -->
+  <div id="promoTemplatePreviewModal" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closePromoTemplatePreview()"></div>
+    <div class="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden max-h-[92vh] flex flex-col bg-white">
+      <div class="flex justify-center pt-3 pb-1 md:hidden">
+        <div class="w-10 h-1 rounded-full bg-gray-200"></div>
+      </div>
+      <div class="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center text-lg">👁️</div>
+          <div>
+            <h2 class="text-base font-bold text-gray-900" id="ptpName">Diwali Offer</h2>
+            <p class="text-xs text-gray-400" id="ptpCat">Category</p>
+          </div>
+        </div>
+        <button onclick="closePromoTemplatePreview()"
+          class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">✕</button>
+      </div>
+      <div class="p-6 overflow-y-auto space-y-4">
+        <!-- Variant Selector Dropdown -->
+        <div>
+          <label class="text-xs font-semibold text-gray-500 mb-1.5 block">Select Variant Tone</label>
+          <div class="relative">
+            <select id="ptpVariantSelect" onchange="changePtpVariant(this.value)"
+              class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none font-semibold text-gray-700">
+            </select>
+            <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+        
+        <!-- Channels tabs -->
+        <div>
+          <label class="text-xs font-semibold text-gray-500 mb-1.5 block">Channel Preview</label>
+          <div class="flex border-b border-gray-200 mb-3">
+            <button type="button" onclick="switchPtpChannel('wa')" id="ptpc-wa" class="flex-1 pb-2 text-xs font-bold border-b-2 border-indigo-600 text-indigo-600">WhatsApp</button>
+            <button type="button" onclick="switchPtpChannel('sms')" id="ptpc-sms" class="flex-1 pb-2 text-xs font-semibold text-gray-400">SMS</button>
+            <button type="button" onclick="switchPtpChannel('email')" id="ptpc-email" class="flex-1 pb-2 text-xs font-semibold text-gray-400">Email</button>
+          </div>
+        </div>
+
+        <!-- Tone Badge -->
+        <div id="ptpToneBadgeWrap">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">Tone: Warm & Friendly</span>
+        </div>
+
+        <!-- Preview box -->
+        <div class="bg-gray-50 border border-gray-100 rounded-2xl p-4">
+          <p class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">Message Preview</p>
+          <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line font-mono" id="ptpPreviewContent"></p>
+        </div>
+
+        <!-- CTA Action Buttons -->
+        <div class="flex gap-3 pt-2">
+          <button onclick="goBackToSelector()"
+            class="flex-1 py-3.5 rounded-2xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition">← Back</button>
+          <button onclick="applyPtpTemplate()"
+            class="flex-1 py-3.5 rounded-2xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2">
+            Use Template
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -866,8 +1033,8 @@
           views: p.views || 0,
           likes: p.likes || 0,
           enquiries: p.enquiries || 0,
-          created: p.createdAt ? p.createdAt.split("T")[0] : 'Recently',
-          scheduled: p.scheduledAt ? p.scheduledAt.replace("T", " ").substring(0, 16) : 'Send Now',
+          created: (p.createdAt && typeof p.createdAt === 'string') ? p.createdAt.split("T")[0] : 'Recently',
+          scheduled: (p.scheduledAt && typeof p.scheduledAt === 'string') ? p.scheduledAt.replace("T", " ").substring(0, 16) : 'Send Now',
           previewEntryId: p.previewEntryId
         }));
 
@@ -896,6 +1063,7 @@
       renderSelectedItems(); // 🔥 IMPORTANT
     }
     async function createAndSendLink() {
+      console.log("STEP 1 - Button Clicked: createAndSendLink triggered");
       const selectedIds = Array.from(selected);
 
       // JS Validations (Rule 10)
@@ -930,16 +1098,50 @@
         scheduledAt = schedInput;
       }
 
+      let title = document.getElementById("promoTitle") ? document.getElementById("promoTitle").value.trim() : "";
+      let waMsg = document.getElementById("promoWaMsg") ? document.getElementById("promoWaMsg").value.trim() : "";
+      let emailMsg = document.getElementById("promoEmailMsg") ? document.getElementById("promoEmailMsg").value.trim() : "";
+      let landingContent = document.getElementById("promoLandingContent") ? document.getElementById("promoLandingContent").value.trim() : "";
+
+      // Validate WhatsApp content if generated content area is visible
+      const contentArea = document.getElementById('generatedContentArea');
+      if (contentArea && !contentArea.classList.contains('hidden')) {
+        if (!waMsg.includes("{PROMOTION_URL}")) {
+          alert("Validation Error: WhatsApp message must contain {PROMOTION_URL}");
+          return;
+        }
+      }
+
+      if (!title) title = description.length > 30 ? description.substring(0, 30) + "..." : description;
+      if (!waMsg) waMsg = description;
+      if (!emailMsg) emailMsg = description;
+      if (!landingContent) landingContent = description;
+
       const payload = {
         groupId: groupId,
         customerId: customerId,
-        description: description,
+        description: landingContent,
         itemIds: selectedIds,
         sendVia: state.sendVia || 'wa',
-        scheduledAt: scheduledAt
+        scheduledAt: scheduledAt,
+        templateName: state.templateName || null,
+        templateVariant: state.templateVariant || null,
+        aiGeneratedTitle: title,
+        aiWhatsappContent: waMsg,
+        aiBlogContent: emailMsg
       };
 
+      console.log("STEP 2 - Payload Built");
+      console.log("  Payload:", payload);
+      console.log("  Selected Item IDs (selected):", selectedIds);
+      console.log("  Selected Group ID:", groupId);
+      console.log("  Selected Customer ID:", customerId);
+      console.log("  Schedule (selectedScheduleType):", selectedScheduleType);
+      console.log("  Scheduled At Date/Time:", scheduledAt);
+      console.log("  Send Via (state.sendVia):", state.sendVia || 'wa');
+
       try {
+        console.log("STEP 3 - POST Request Started to /api/promotions");
         const res = await fetch('/api/promotions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -947,24 +1149,79 @@
         });
 
         if (res.ok) {
-          const contentType = res.headers.get("content-type");
-          let data;
-          if (contentType && contentType.includes("application/json")) {
-            data = await res.json();
-          } else {
-            data = { link: await res.text() };
+          let data = {};
+          try {
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+              data = await res.json();
+            } else {
+              const text = await res.text();
+              try {
+                data = JSON.parse(text);
+              } catch (parseErr) {
+                data = { link: text };
+              }
+            }
+          } catch (readErr) {
+            console.error("Error parsing response:", readErr);
           }
 
+          console.log("STEP 10 - Frontend Success Handler: Received OK response", data);
+
           // Update UI
-          document.getElementById('generatedUrl').textContent = data.link || "Link generated successfully";
-          document.getElementById('sentToLabel').textContent = "Promotion saved to database";
+          const genUrlEl = document.getElementById('generatedUrl');
+          if (genUrlEl) {
+            genUrlEl.textContent = data.promotionUrl || "Link generated successfully";
+          }
+          
+          const sentToLabelEl = document.getElementById('sentToLabel');
+          const warningEl = document.getElementById('deliveryWarningBanner');
+          const warningTitleEl = document.getElementById('warningTitle');
+          const warningDescEl = document.getElementById('warningDesc');
+          const successTitleEl = document.getElementById('successModalTitle');
 
-          goModalStep(3); // Move to success screen (Rule 8 success flow)
+          // Reset warning banner
+          if (warningEl) warningEl.classList.add('hidden');
 
-          selected.clear();
-          updateSelectionUI();
-          renderCards();
-          loadPromotions(); // Reload to refresh list card data
+          if (payload.scheduledAt) {
+            if (successTitleEl) successTitleEl.textContent = "Promotion Scheduled!";
+            if (sentToLabelEl) sentToLabelEl.textContent = `Scheduled to reach ${data.totalCount || 0} customers`;
+          } else {
+            if (successTitleEl) successTitleEl.textContent = "Promotion Sent Successfully!";
+            if (sentToLabelEl) sentToLabelEl.textContent = `Reached ${data.sentCount || 0} customers successfully (Failed: ${data.failedCount || 0})`;
+            
+            // Show alert banner at UI if any sending failed
+            if (data.failedCount > 0 && warningEl) {
+              warningEl.classList.remove('hidden');
+              if (data.sentCount === 0) {
+                if (warningTitleEl) warningTitleEl.textContent = "All dispatches failed";
+                if (warningDescEl) warningDescEl.textContent = "Failed to send message to any recipients. Please verify phone numbers or check integration logs.";
+              } else {
+                if (warningTitleEl) warningTitleEl.textContent = "Some dispatches failed";
+                if (warningDescEl) warningDescEl.textContent = `Successfully sent to ${data.sentCount} recipients, but failed for ${data.failedCount}. Please check numbers.`;
+              }
+            }
+          }
+
+          try {
+            goModalStep(3); // Move to success screen (Rule 8 success flow)
+          } catch (err) {
+            console.error("Error in goModalStep:", err);
+          }
+
+          try {
+            selected.clear();
+            updateSelectionUI();
+            renderCards();
+          } catch (err) {
+            console.error("Error in clearing selection / rendering cards:", err);
+          }
+
+          try {
+            await loadPromotions(); // Reload to refresh list card data
+          } catch (err) {
+            console.error("Error in loadPromotions:", err);
+          }
 
         } else {
           // Parse JSON error response or fallback to plain text
@@ -977,8 +1234,8 @@
           }
         }
       } catch (e) {
-        console.error("Request worked but JS failed:", e);
-        alert("Promotion added to DB, but UI failed to update. Refresh the page.");
+        console.error("Error processing promotion save/send flow:", e);
+        alert("Error processing flow: " + e.message);
       }
     }
 
@@ -1382,6 +1639,25 @@
     }
 
     function goModalStep(s) {
+      if (s === 2) {
+        // Validate description first
+        const desc = document.getElementById("promoDesc").value.trim();
+        if (!desc) {
+          alert("Validation Error: Description cannot be empty.");
+          return;
+        }
+
+        // Validate WhatsApp content if generated content area is visible
+        const contentArea = document.getElementById('generatedContentArea');
+        if (contentArea && !contentArea.classList.contains('hidden')) {
+          const waMsg = document.getElementById("promoWaMsg").value.trim();
+          if (!waMsg.includes("{PROMOTION_URL}")) {
+            alert("Validation Error: WhatsApp message must contain {PROMOTION_URL}");
+            return;
+          }
+        }
+      }
+
       modalStep = s;
       [1, 2, 3].forEach(x => document.getElementById('modal-step' + x).classList.add('hidden'));
       document.getElementById('modal-step' + s).classList.remove('hidden');
@@ -1398,13 +1674,60 @@
       if (s === 1) populateSelectedItems();
     }
 
-    function genPromoMsg() {
+    async function genPromoMsg() {
+      const desc = document.getElementById('promoDesc').value.trim();
+      if (!desc) {
+        alert("Please enter a description or instructions first!");
+        return;
+      }
+
       const allItems = [...plans, ...products];
-      const names = [...selected].map(id => allItems.find(i => i.id === id)?.name || '').filter(Boolean);
-      const nameStr = names.join(', ') || 'our exclusive offerings';
-      const msg = `Explore our exclusive offerings: ${nameStr}. These products have been specially curated for you by Acme Financial Services. Our expert advisors are available to guide you through the best options tailored to your financial goals. Click to learn more and express your interest today.`;
-      document.getElementById('promoDesc').value = msg;
-      document.getElementById('descCount').textContent = msg.length;
+      const selectedItemIds = [...selected];
+
+      const loadingArea = document.getElementById('aiGenLoadingState');
+      const contentArea = document.getElementById('generatedContentArea');
+      const genBtn = document.getElementById('promoGenBtn');
+
+      loadingArea.classList.remove('hidden');
+      contentArea.classList.add('hidden');
+      genBtn.disabled = true;
+
+      try {
+        const response = await fetch('/api/promotions/generate-content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            description: desc,
+            itemIds: selectedItemIds
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate content: " + response.statusText);
+        }
+
+        const data = await response.json();
+        
+        // Populate inputs
+        document.getElementById('promoTitle').value = data.title || '';
+        document.getElementById('promoWaMsg').value = data.aiWhatsappContent || '';
+        document.getElementById('promoEmailMsg').value = data.aiBlogContent || '';
+        document.getElementById('promoLandingContent').value = data.description || '';
+
+        // Update word/char counts
+        updateWordCount('promoWaMsg', 'waWordCount');
+        document.getElementById('emailCharCount').textContent = (data.aiBlogContent || '').length;
+        document.getElementById('landingCharCount').textContent = (data.description || '').length;
+
+        contentArea.classList.remove('hidden');
+        switchGeneratedTab('wa');
+
+      } catch (err) {
+        alert("Error generating promotional copy: " + err.message);
+      } finally {
+        loadingArea.classList.add('hidden');
+        genBtn.disabled = false;
+      }
     }
 
     function copyLink() {
@@ -1689,44 +2012,499 @@
       });
     }
 
-    function openTmplPreview(id) {
-      const t = promoTemplates.find(x => x.id === id);
-      if (!t) return;
-      const chIconsMap = {
-        'WhatsApp': `<span class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 border border-green-100 text-green-700 text-xs font-semibold"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>WhatsApp</span>`,
-        'SMS': `<span class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>SMS</span>`,
-        'Email': `<span class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-50 border border-violet-100 text-violet-700 text-xs font-semibold"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>Email</span>`
+    let promoTemplatesList = [];
+    let selectedPromoTemplate = null;
+    let selectedPromoVariantIndex = 0;
+    let selectedPromoChannel = 'wa';
+
+    function openPromoAiAssistant(event) {
+      if (event) event.stopPropagation();
+      let dd = document.getElementById('aiAssistantDropdown');
+      if (!dd) {
+        dd = document.createElement('div');
+        dd.id = 'aiAssistantDropdown';
+        dd.className = 'fixed mt-1 w-48 rounded-2xl bg-white border border-gray-200 shadow-xl z-[9999] py-1.5 hidden fade-in text-left';
+        document.body.appendChild(dd);
+      }
+      dd.innerHTML = `
+        <button type="button" class="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 font-semibold transition flex items-center gap-1.5" id="dd-create-tmpl">
+          ✨ Create New Template
+        </button>
+        <button type="button" class="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 font-semibold transition flex items-center gap-1.5" id="dd-use-tmpl">
+          📋 Use Existing Template
+        </button>
+      `;
+
+      dd.querySelector('#dd-create-tmpl').onclick = () => {
+        dd.classList.add('hidden');
+        showFullLoader('Opening AI Template Studio...', 'Preparing your AI workspace.');
+        sessionStorage.setItem("returnPage", window.location.href);
+        sessionStorage.setItem("returnField", "promoDesc");
+        window.location.href = `/ai-templates.html?source=promotion`;
       };
-      document.getElementById('previewTmplName').textContent = t.name;
-      document.getElementById('previewTmplCatLabel').textContent = t.categoryLabel;
-      document.getElementById('previewTmplMsg').textContent = t.msg;
-      document.getElementById('previewChannels').innerHTML = t.channels.map(c => chIconsMap[c] || '').join('');
-      document.getElementById('previewToneWrap').innerHTML = `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${t.toneColor}">Tone: ${t.tone}</span>`;
+
+      dd.querySelector('#dd-use-tmpl').onclick = () => {
+        dd.classList.add('hidden');
+        openPromoTemplateSelector();
+      };
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      dd.style.top = (rect.bottom + window.scrollY) + 'px';
+      dd.style.left = (rect.right + window.scrollX - 192) + 'px';
+      
+      dd.classList.toggle('hidden');
+
+      const closeDD = (e) => {
+        if (!event.currentTarget.contains(e.target) && !dd.contains(e.target)) {
+          dd.classList.add('hidden');
+          document.removeEventListener('click', closeDD);
+        }
+      };
+      document.addEventListener('click', closeDD);
+    }
+
+    async function openPromoTemplateSelector() {
+      const container = document.getElementById('promoSelectorTemplatesContainer');
+      container.innerHTML = `
+        <div class="col-span-2 text-center py-8 text-gray-400 text-sm">
+          <svg class="animate-spin h-5 w-5 text-indigo-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Loading templates...
+        </div>
+      `;
+      document.getElementById('promoTemplateSelectorModal').classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/catalog/templates?module=PROMOTION');
+        const data = await res.json();
+        let templates = data;
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+            if (data.templates) templates = data.templates;
+            else if (data.content) templates = data.content;
+        }
+
+        if (!Array.isArray(templates) || templates.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-2 text-center py-12 text-gray-400 text-sm font-medium">
+              No templates available.
+            </div>
+          `;
+          return;
+        }
+
+        promoTemplatesList = templates;
+
+        container.innerHTML = templates.map((t, idx) => {
+          const preview = t.content || '';
+          const shortPreview = preview.length > 80 ? preview.substring(0, 80) + '...' : preview;
+          const variantsCount = t.variantCount || 1;
+          const categoryBadgeColor = getCategoryColor(t.category);
+          
+          return `
+            <div onclick="selectPromoTemplate(${idx})" class="group border border-gray-200 rounded-2xl p-4 hover:border-indigo-300 hover:bg-indigo-50/20 cursor-pointer transition flex flex-col justify-between gap-3 bg-white shadow-sm hover:shadow-md">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${categoryBadgeColor}">${t.category ? t.category.toUpperCase() : 'PROMOTION'}</span>
+                  <span class="text-[10px] font-semibold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">${variantsCount} Variant${variantsCount > 1 ? 's' : ''}</span>
+                </div>
+                <h3 class="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition truncate">${t.name || t.title}</h3>
+                <p class="text-xs text-gray-500 mt-1 line-clamp-2">${shortPreview}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        container.innerHTML = `
+          <div class="col-span-2 text-center py-8 text-red-500 text-xs font-semibold">
+            Failed to load templates: ${err.message}
+          </div>
+        `;
+      }
+    }
+
+    function closePromoTemplateSelector() {
+      document.getElementById('promoTemplateSelectorModal').classList.add('hidden');
+    }
+
+    function selectPromoTemplate(idx) {
+      selectedPromoTemplate = promoTemplatesList[idx];
+      selectedPromoVariantIndex = 0;
+      selectedPromoChannel = 'wa';
+      
+      document.getElementById('promoTemplateSelectorModal').classList.add('hidden');
+      document.getElementById('promoTemplatePreviewModal').classList.remove('hidden');
+
+      // Populate preview modal fields
+      document.getElementById('ptpName').textContent = selectedPromoTemplate.name || selectedPromoTemplate.title;
+      document.getElementById('ptpCat').textContent = selectedPromoTemplate.category ? selectedPromoTemplate.category.toUpperCase() : 'PROMOTION';
+
+      // Populate variants dropdown
+      const variantSelect = document.getElementById('ptpVariantSelect');
+      variantSelect.innerHTML = '';
+      
+      let variants = [];
+      if (selectedPromoTemplate.variantsJson) {
+        try {
+          variants = JSON.parse(selectedPromoTemplate.variantsJson);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (!Array.isArray(variants) || variants.length === 0) {
+        variants = [selectedPromoTemplate.content || ''];
+      }
+
+      // Map tones to options
+      const toneMap = getTonesForTemplate(selectedPromoTemplate.name || selectedPromoTemplate.title, variants.length);
+      variants.forEach((v, i) => {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = toneMap[i] || `Variant #${i + 1}`;
+        variantSelect.appendChild(option);
+      });
+
+      // Reset active preview channel tab
+      switchPtpChannel('wa');
+    }
+
+    function closePromoTemplatePreview() {
+      document.getElementById('promoTemplatePreviewModal').classList.add('hidden');
+    }
+
+    function goBackToSelector() {
+      document.getElementById('promoTemplatePreviewModal').classList.add('hidden');
+      document.getElementById('promoTemplateSelectorModal').classList.remove('hidden');
+    }
+
+    function applyPtpTemplate() {
+      let variants = [];
+      if (selectedPromoTemplate.variantsJson) {
+        try {
+          variants = JSON.parse(selectedPromoTemplate.variantsJson);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (!Array.isArray(variants) || variants.length === 0) {
+        variants = [selectedPromoTemplate.content || ''];
+      }
+
+      const content = variants[selectedPromoVariantIndex] || '';
+      const title = selectedPromoTemplate.name || selectedPromoTemplate.title || 'Special Offer';
+      
+      // Copy variant content to Description textarea
+      document.getElementById('promoDesc').value = content;
+      document.getElementById('descCount').textContent = content.length;
+
+      // Track selected template and variant name
+      const toneMap = getTonesForTemplate(title, variants.length);
+      state.templateName = title;
+      state.templateVariant = toneMap[selectedPromoVariantIndex] || 'Standard';
+
+      // Populate Create Promotion Step 1 fields
+      let waContent = content;
+      if (!waContent.includes('{PROMOTION_URL}')) {
+        waContent += '\n\nExplore details at: {PROMOTION_URL}';
+      }
+
+      const emailContent = `Subject: ${title}\n\nDear Customer,\n\n${content}\n\nExplore all benefit details at: {PROMOTION_URL}\n\nWarm regards,\nManagement`;
+      const landingContent = content;
+
+      document.getElementById('promoTitle').value = title;
+      document.getElementById('promoWaMsg').value = waContent;
+      document.getElementById('promoEmailMsg').value = emailContent;
+      document.getElementById('promoLandingContent').value = landingContent;
+
+      // Update counters
+      if (document.getElementById('waWordCount')) {
+        const words = waContent.trim() ? waContent.trim().split(/\s+/).length : 0;
+        document.getElementById('waWordCount').textContent = words;
+      }
+      if (document.getElementById('emailCharCount')) {
+        document.getElementById('emailCharCount').textContent = emailContent.length;
+      }
+      if (document.getElementById('landingCharCount')) {
+        document.getElementById('landingCharCount').textContent = landingContent.length;
+      }
+
+      // Show the generated content area
+      const contentArea = document.getElementById('generatedContentArea');
+      if (contentArea) {
+        contentArea.classList.remove('hidden');
+      }
+
+      closePromoTemplatePreview();
+      openCreateLinkModal();
+    }
+
+    function changePtpVariant(val) {
+      selectedPromoVariantIndex = parseInt(val, 10);
+      updatePtpPreview();
+    }
+
+    function switchPtpChannel(channel) {
+      selectedPromoChannel = channel;
+      const chs = ['wa', 'sms', 'email'];
+      chs.forEach(c => {
+        const btn = document.getElementById('ptpc-' + c);
+        if (!btn) return;
+        if (c === channel) {
+          btn.className = 'flex-1 pb-2 text-xs font-bold border-b-2 border-indigo-600 text-indigo-600';
+        } else {
+          btn.className = 'flex-1 pb-2 text-xs font-semibold text-gray-400 border-b-0';
+        }
+      });
+      updatePtpPreview();
+    }
+
+    function updatePtpPreview() {
+      if (!selectedPromoTemplate) return;
+      
+      let variants = [];
+      if (selectedPromoTemplate.variantsJson) {
+        try {
+          variants = JSON.parse(selectedPromoTemplate.variantsJson);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (!Array.isArray(variants) || variants.length === 0) {
+        variants = [selectedPromoTemplate.content || ''];
+      }
+
+      const content = variants[selectedPromoVariantIndex] || '';
+      
+      // Tone badge
+      const toneMap = getTonesForTemplate(selectedPromoTemplate.name || selectedPromoTemplate.title, variants.length);
+      const toneName = toneMap[selectedPromoVariantIndex] || 'Standard';
+      document.getElementById('ptpToneBadgeWrap').innerHTML = `
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-100">Tone: ${toneName}</span>
+      `;
+
+      let previewText = content;
+      if (selectedPromoChannel === 'wa') {
+        previewText = content;
+      } else if (selectedPromoChannel === 'sms') {
+        previewText = content;
+      } else if (selectedPromoChannel === 'email') {
+        previewText = `Subject: ${selectedPromoTemplate.name || 'Special Offer'}\n\nDear Customer,\n\n${content}\n\nExplore all benefit details at: {PROMOTION_URL}\n\nWarm regards,\nManagement`;
+      }
+
+      document.getElementById('ptpPreviewContent').textContent = previewText;
+    }
+
+    function getTonesForTemplate(templateName, count) {
+      const name = templateName.toLowerCase();
+      if (name.includes('diwali')) {
+        return ["Warm & Friendly", "Professional", "Premium", "Urgent CTA"];
+      } else if (name.includes('festival') || name.includes('season')) {
+        return ["Family Tone", "Corporate Tone", "Youth Tone"];
+      }
+      
+      const standard = ["Warm & Friendly", "Professional", "Premium", "Urgent"];
+      const tones = [];
+      for (let i = 0; i < count; i++) {
+        tones.push(standard[i % standard.length]);
+      }
+      return tones;
+    }
+
+    function getCategoryColor(cat) {
+      const c = cat ? cat.toLowerCase() : '';
+      if (c === 'seasonal') return 'bg-orange-100 text-orange-700';
+      if (c === 'vip') return 'bg-amber-100 text-amber-700';
+      if (c === 'product') return 'bg-blue-100 text-blue-700';
+      if (c === 'financial') return 'bg-green-100 text-green-700';
+      if (c === 'festival') return 'bg-yellow-100 text-yellow-700';
+      return 'bg-purple-100 text-purple-700';
+    }
+
+    // =============================================================================
+    // TEMPLATE PREVIEW MODAL LOGIC (STATIC CATALOG)
+    // =============================================================================
+    let selectedStaticTmpl = null;
+    let selectedStaticTmplTab = 'wa';
+    let selectedStaticTmplEditedMsg = '';
+
+    function openTmplPreview(templateId) {
+      console.log("openTmplPreview called for ID:", templateId);
+      const t = promoTemplates.find(x => x.id === templateId);
+      if (!t) {
+        console.error("Template not found for ID:", templateId);
+        return;
+      }
+
+      selectedStaticTmpl = t;
+      selectedStaticTmplEditedMsg = t.msg;
+      
+      const nameEl = document.getElementById('previewTmplName');
+      if (nameEl) nameEl.textContent = t.name;
+
+      const catEl = document.getElementById('previewTmplCatLabel');
+      if (catEl) catEl.textContent = t.categoryLabel || t.category || 'PROMOTION';
+
+      // Reset tab to WhatsApp
+      switchTmplPreviewTab('wa');
+
+      // Populate description editor with the base message
       const editArea = document.getElementById('previewTmplEdit');
-      editArea.value = t.msg;
-      document.getElementById('previewCharCount').textContent = t.msg.length;
-      document.getElementById('templatePreviewModal').dataset.currentId = id;
-      document.getElementById('templatePreviewModal').classList.remove('hidden');
+      if (editArea) {
+        editArea.value = selectedStaticTmplEditedMsg;
+        const charCountEl = document.getElementById('previewCharCount');
+        if (charCountEl) charCountEl.textContent = selectedStaticTmplEditedMsg.length;
+        
+        // Listen to changes to keep edited message updated
+        editArea.oninput = function() {
+          selectedStaticTmplEditedMsg = this.value;
+          const ccEl = document.getElementById('previewCharCount');
+          if (ccEl) ccEl.textContent = this.value.length;
+          updateTmplPreviewDisplay();
+        };
+      }
+
+      const modal = document.getElementById('templatePreviewModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+      } else {
+        console.error("templatePreviewModal not found in DOM");
+      }
     }
 
     function closeTmplPreview() {
-      document.getElementById('templatePreviewModal').classList.add('hidden');
+      const modal = document.getElementById('templatePreviewModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function switchTmplPreviewTab(tab) {
+      selectedStaticTmplTab = tab;
+      
+      // Update tab button styles
+      ['wa', 'email', 'landing'].forEach(t => {
+        const btn = document.getElementById('tpt-' + t);
+        if (!btn) return;
+        if (t === tab) {
+          btn.className = 'flex-1 pb-2 text-xs font-bold border-b-2 border-indigo-600 text-indigo-600';
+        } else {
+          btn.className = 'flex-1 pb-2 text-xs font-semibold text-gray-400 border-b-0';
+        }
+      });
+
+      updateTmplPreviewDisplay();
+    }
+
+    function updateTmplPreviewDisplay() {
+      if (!selectedStaticTmpl) return;
+
+      let previewText = selectedStaticTmplEditedMsg;
+      if (selectedStaticTmplTab === 'wa') {
+        if (!previewText.includes('{PROMOTION_URL}')) {
+          previewText += '\n\nExplore at: {PROMOTION_URL}';
+        }
+      } else if (selectedStaticTmplTab === 'email') {
+        previewText = `Subject: ${selectedStaticTmpl.name || 'Special Offer'}\n\nDear Customer,\n\n${selectedStaticTmplEditedMsg}\n\nExplore all benefit details at: {PROMOTION_URL}\n\nWarm regards,\nManagement`;
+      } else if (selectedStaticTmplTab === 'landing') {
+        previewText = selectedStaticTmplEditedMsg;
+      }
+
+      const msgEl = document.getElementById('previewTmplMsg');
+      if (msgEl) msgEl.textContent = previewText;
     }
 
     function applyTemplateAndCreate() {
-      const msg = document.getElementById('previewTmplEdit').value;
+      if (!selectedStaticTmpl) return;
+
+      // Read selected template & variant text
+      const content = selectedStaticTmplEditedMsg;
+      const title = selectedStaticTmpl.name || 'Special Offer';
+
+      // Formulate WhatsApp, Email and Landing content
+      let waContent = content;
+      if (!waContent.includes('{PROMOTION_URL}')) {
+        waContent += '\n\nExplore details at: {PROMOTION_URL}';
+      }
+
+      const emailContent = `Subject: ${title}\n\nDear Customer,\n\n${content}\n\nExplore all benefit details at: {PROMOTION_URL}\n\nWarm regards,\nManagement`;
+      const landingContent = content;
+
+      // Populate Create Promotion Step 1 fields
+      document.getElementById('promoTitle').value = title;
+      document.getElementById('promoWaMsg').value = waContent;
+      document.getElementById('promoEmailMsg').value = emailContent;
+      document.getElementById('promoLandingContent').value = landingContent;
+      document.getElementById('promoDesc').value = content;
+
+      // Update counters
+      if (document.getElementById('descCount')) {
+        document.getElementById('descCount').textContent = content.length;
+      }
+      if (document.getElementById('waWordCount')) {
+        const words = waContent.trim() ? waContent.trim().split(/\s+/).length : 0;
+        document.getElementById('waWordCount').textContent = words;
+      }
+      if (document.getElementById('emailCharCount')) {
+        document.getElementById('emailCharCount').textContent = emailContent.length;
+      }
+      if (document.getElementById('landingCharCount')) {
+        document.getElementById('landingCharCount').textContent = landingContent.length;
+      }
+
+      // Show the generated content area
+      const contentArea = document.getElementById('generatedContentArea');
+      if (contentArea) {
+        contentArea.classList.remove('hidden');
+      }
+
+      // Close preview modal
       closeTmplPreview();
-      document.getElementById('promoDesc').value = msg;
-      document.getElementById('descCount').textContent = msg.length;
+
+      // Open / Return to Create Promotion dialog
       openCreateLinkModal();
     }
 
-    function useTemplate(id) {
-      const t = promoTemplates.find(x => x.id === id);
-      if (!t) return;
-      document.getElementById('promoDesc').value = t.msg;
-      document.getElementById('descCount').textContent = t.msg.length;
-      openCreateLinkModal();
+    function useTemplate(templateId) {
+      console.log("useTemplate called for ID:", templateId);
+      const t = promoTemplates.find(x => x.id === templateId);
+      if (!t) {
+        console.error("Template not found for ID:", templateId);
+        return;
+      }
+
+      // Directly apply this template
+      selectedStaticTmpl = t;
+      selectedStaticTmplEditedMsg = t.msg;
+      applyTemplateAndCreate();
+    }
+
+    function previewGeneratedCustomerPage() {
+      const url = document.getElementById('generatedUrl').textContent;
+      if (url) {
+        window.open(url, '_blank');
+      }
+    }
+
+    function switchGeneratedTab(tab) {
+      const tabs = ['wa', 'email', 'landing'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('gt-' + t);
+        const box = document.getElementById('gtab-' + t);
+        if (!btn || !box) return;
+        if (t === tab) {
+          btn.className = 'flex-1 pb-2 text-xs font-bold border-b-2 border-indigo-600 text-indigo-600';
+          box.classList.remove('hidden');
+        } else {
+          btn.className = 'flex-1 pb-2 text-xs font-semibold text-gray-400 border-b-0';
+          box.classList.add('hidden');
+        }
+      });
+    }
+
+    function updateWordCount(id, labelId) {
+      const val = document.getElementById(id).value.trim();
+      const words = val ? val.split(/\s+/).length : 0;
+      document.getElementById(labelId).textContent = words;
     }
 
 

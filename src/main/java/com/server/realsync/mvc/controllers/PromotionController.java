@@ -7,6 +7,7 @@ import com.server.realsync.repo.PromotionExecutionLogRepository;
 import com.server.realsync.dto.PromotionResponseDTO;
 import com.server.realsync.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +18,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/promotions")
 public class PromotionController {
+
+    private static final Logger logger = LoggerFactory.getLogger(PromotionController.class);
+
+    @Value("${gemini.api.key}")
+    private String apiKey;
+
+    @Value("${app.public.base-url:https://numen.uno}")
+    private String publicBaseUrl;
 
     @Autowired
     private PromotionService promotionService;
@@ -38,6 +56,9 @@ public class PromotionController {
     private PromotionExecutionLogRepository promotionExecutionLogRepository;
 
     @Autowired
+    private RealSyncWhatsappService realSyncWhatsappService;
+
+    @Autowired
     private AccountService accountService;
 
     @Autowired
@@ -52,119 +73,410 @@ public class PromotionController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> create(@RequestBody PromotionRequest request) {
-        Account account = SecurityUtil.getCurrentAccountId();
-        if (account == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        // Validation Rules (10)
-        if (request.description() == null || request.description().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Description cannot be empty."));
-        }
-        if (request.itemIds() == null || request.itemIds().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "At least one item must be selected."));
-        }
-        if (request.groupId() == null && request.customerId() == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "No recipient selected."));
-        }
-
-        LocalDateTime sched = null;
-        if (request.scheduledAt() != null && !request.scheduledAt().trim().isEmpty()) {
-            try {
-                sched = LocalDateTime.parse(request.scheduledAt());
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Invalid schedule date."));
+        try {
+            logger.info("STEP 4 - Backend Request Received: request={}", request);
+            Account accountStub = SecurityUtil.getCurrentAccountId();
+            if (accountStub == null || accountStub.getId() == 0) {
+                logger.warn("STEP 4 - Backend Request Received: Unauthorized user access attempt");
+                return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
             }
-            if (sched.isBefore(LocalDateTime.now())) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Scheduled date cannot be in the past."));
+            Account account = accountService.getById(accountStub.getId());
+            if (account == null) {
+                logger.warn("STEP 4 - Backend Request Received: Account not found");
+                return ResponseEntity.status(404).body(Map.of("message", "Account not found"));
             }
-        }
 
-        // Step 1: Create Promotion
-        Promotion p = new Promotion();
-        p.setAccountId(account.getId());
-        p.setCustomerGroupId(request.groupId());
-        p.setDescription(request.description());
-        p.setImageUrl("");
-        p.setType("MANUAL");
-        p.setStatus(sched != null ? "SCHEDULED" : "ACTIVE");
-        p.setScheduledAt(sched);
-        p.setCreatedAt(LocalDateTime.now());
+            // Defensive validations for business details
+            String busName = account.getBusinessName() != null ? account.getBusinessName().trim() : "";
+            String busPhone = account.getBusinessPhone() != null ? account.getBusinessPhone().trim() : "";
 
-        Promotion saved = promotionService.save(p);
+            if (busName.isEmpty()) {
+                logger.warn("STEP 4 - Backend Request Received: Validation failed, Business Name is empty");
+                return ResponseEntity.badRequest().body(Map.of("message", "Business Name is not configured in your profile. Please configure it before sending promotions."));
+            }
+            if (busPhone.isEmpty()) {
+                logger.warn("STEP 4 - Backend Request Received: Validation failed, Business Phone is empty");
+                return ResponseEntity.badRequest().body(Map.of("message", "Business Phone is not configured in your profile. Please configure it before sending promotions."));
+            }
 
-        // Step 2: Save Promotion Items
-        if (request.itemIds() != null) {
-            System.out.println("[DEBUG] Incoming itemIds count: " + request.itemIds().size());
-            for (String compositeId : request.itemIds()) {
-                System.out.println("[DEBUG] Processing compositeId: " + compositeId);
-                String[] parts = compositeId.split("-");
-                if (parts.length >= 2) {
-                    String type = parts[0];
-                    try {
-                        Integer itemId = Integer.parseInt(parts[1]);
-                        PromotionItem pi = new PromotionItem(saved.getId(), itemId, type);
-                        System.out.println("[DEBUG] Saving PromotionItem: promotionId=" + saved.getId() + ", itemId=" + itemId + ", type=" + type);
-                        promotionItemRepository.save(pi);
-                    } catch (NumberFormatException e) {
-                        System.err.println("[DEBUG] Failed to parse itemId from: " + parts[1] + ". Error: " + e.getMessage());
-                    }
-                } else {
-                    System.err.println("[DEBUG] Invalid compositeId format: " + compositeId + " (Must contain '-')");
+            // Validation Rules (10)
+            if (request.description() == null || request.description().trim().isEmpty()) {
+                logger.warn("STEP 4 - Backend Request Received: Validation failed, Description is empty");
+                return ResponseEntity.badRequest().body(Map.of("message", "Description cannot be empty."));
+            }
+            if (request.itemIds() == null || request.itemIds().isEmpty()) {
+                logger.warn("STEP 4 - Backend Request Received: Validation failed, Item IDs list is empty");
+                return ResponseEntity.badRequest().body(Map.of("message", "At least one item must be selected."));
+            }
+            if (request.groupId() == null && request.customerId() == null) {
+                logger.warn("STEP 4 - Backend Request Received: Validation failed, Recipient not selected");
+                return ResponseEntity.badRequest().body(Map.of("message", "No recipient selected."));
+            }
+
+            LocalDateTime sched = null;
+            if (request.scheduledAt() != null && !request.scheduledAt().trim().isEmpty()) {
+                try {
+                    sched = LocalDateTime.parse(request.scheduledAt());
+                } catch (Exception e) {
+                    logger.warn("STEP 4 - Backend Request Received: Validation failed, invalid schedule date {}", request.scheduledAt());
+                    return ResponseEntity.badRequest().body(Map.of("message", "Invalid schedule date."));
+                }
+                if (sched.isBefore(LocalDateTime.now())) {
+                    logger.warn("STEP 4 - Backend Request Received: Validation failed, schedule date in the past");
+                    return ResponseEntity.badRequest().body(Map.of("message", "Scheduled date cannot be in the past."));
                 }
             }
-        } else {
-            System.out.println("[DEBUG] Incoming itemIds array is NULL");
-        }
 
-        // Determine recipients and Step 3: Generate Promotion Entries
-        List<Customer> customers = new ArrayList<>();
-        if (request.customerId() != null) {
-            Customer customer = customerService
-                    .getById(account.getId(), request.customerId())
-                    .orElse(null);
-            if (customer != null) {
-                customers.add(customer);
+            // Step 1: Create Promotion
+            logger.info("STEP 5 - Promotion Entity Created: Preparing entity fields");
+            Promotion p = new Promotion();
+            p.setAccountId(account.getId());
+            p.setCustomerGroupId(request.groupId());
+            p.setDescription(request.description());
+            p.setImageUrl("");
+            p.setType("MANUAL");
+            p.setStatus(sched != null ? "SCHEDULED" : "ACTIVE");
+            p.setScheduledAt(sched);
+            p.setCreatedAt(LocalDateTime.now());
+            p.setTemplateName(request.templateName());
+            p.setTemplateVariant(request.templateVariant());
+            p.setAiGeneratedTitle(request.aiGeneratedTitle());
+            p.setAiWhatsappContent(request.aiWhatsappContent());
+            p.setAiBlogContent(request.aiBlogContent());
+
+            logger.info("STEP 6 - Saving Promotion (before save): description length={}", p.getDescription().length());
+            Promotion saved = promotionService.save(p);
+            logger.info("STEP 6 - Promotion Saved (after save): promotionId={}", saved.getId());
+
+            // Step 2: Save Promotion Items
+            if (request.itemIds() != null) {
+                logger.info("STEP 7 - Saving Promotion Items: Incoming count={}", request.itemIds().size());
+                for (String compositeId : request.itemIds()) {
+                    String[] parts = compositeId.split("-");
+                    if (parts.length >= 2) {
+                        String type = parts[0];
+                        try {
+                            Integer itemId = Integer.parseInt(parts[1]);
+                            logger.info("STEP 7 - Saving Promotion Item (before save): itemId={}, type={}", itemId, type);
+                            PromotionItem pi = new PromotionItem(saved.getId(), itemId, type);
+                            promotionItemRepository.save(pi);
+                            logger.info("STEP 7 - Promotion Item Saved: piId={}", pi.getId());
+                        } catch (NumberFormatException e) {
+                            logger.error("STEP 7 - Saving Promotion Items: Failed to parse itemId from parts[1]: {}", parts[1], e);
+                        }
+                    } else {
+                        logger.error("STEP 7 - Saving Promotion Items: Invalid compositeId format: {}", compositeId);
+                    }
+                }
+            } else {
+                logger.warn("STEP 7 - Saving Promotion Items: Incoming list is NULL");
             }
-        } else if (request.groupId() != null) {
-            customers = customerService
-                    .getByAccountAndGroup(account.getId(), request.groupId(), Pageable.unpaged())
-                    .getContent();
-        }
 
-        if (customers.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "No active customers found for the selection."));
-        }
+            // Determine recipients and Step 3: Generate Promotion Entries
+            List<Customer> customers = new ArrayList<>();
+            if (request.customerId() != null) {
+                Customer customer = customerService
+                        .getById(account.getId(), request.customerId())
+                        .orElse(null);
+                if (customer != null) {
+                    customers.add(customer);
+                }
+            } else if (request.groupId() != null) {
+                customers = customerService
+                        .getByAccountAndGroup(account.getId(), request.groupId(), Pageable.unpaged())
+                        .getContent();
+            }
 
-        // Save entries and logs
-        for (Customer c : customers) {
-            PromotionEntry entry = new PromotionEntry();
-            entry.setPromotionId(saved.getId());
-            entry.setCustomerId(c.getId());
-            entry.setTriggeredDate(LocalDateTime.now());
-            PromotionEntry savedEntry = entryService.save(entry);
+            if (customers.isEmpty()) {
+                logger.warn("STEP 8 - Saving Promotion Entries: No customers found for recipient selection");
+                return ResponseEntity.badRequest().body(Map.of("message", "No active customers found for the selection."));
+            }
 
-            // Step 4: Generate Execution Logs
-            PromotionExecutionLog log = new PromotionExecutionLog();
-            log.setPromotionEntryId(savedEntry.getId());
+            // Generate actual URL and replace placeholder
+            String link = publicBaseUrl + "/promo/" + saved.getId();
             
-            Channel ch = Channel.WHATSAPP;
-            if (request.sendVia() != null) {
-                if ("sms".equalsIgnoreCase(request.sendVia())) ch = Channel.SMS;
-                else if ("email".equalsIgnoreCase(request.sendVia()) || "em".equalsIgnoreCase(request.sendVia())) ch = Channel.EMAIL;
+            if (link.contains("localhost")) {
+                logger.error("STEP 4 - Backend Request Received: Validation failed, public URL contains localhost: link={}", link);
+                return ResponseEntity.status(500).body(Map.of("message", "Internal server configuration error: public base URL cannot be localhost."));
             }
-            log.setChannel(ch);
-            log.setStatus(ExecutionResult.PENDING);
-            log.setResponse("Pending execution");
-            promotionExecutionLogRepository.save(log);
+
+            saved.setPromotionUrl(link);
+
+            if (saved.getAiWhatsappContent() != null) {
+                saved.setAiWhatsappContent(saved.getAiWhatsappContent().replace("{PROMOTION_URL}", link));
+            }
+            if (saved.getAiBlogContent() != null) {
+                saved.setAiBlogContent(saved.getAiBlogContent().replace("{PROMOTION_URL}", link));
+            }
+            if (saved.getDescription() != null) {
+                saved.setDescription(saved.getDescription().replace("{PROMOTION_URL}", link));
+            }
+
+            // Re-save to persist the actual URL and replaced content
+            logger.info("STEP 6 - Re-saving Promotion with URL (before save): id={}, URL={}", saved.getId(), link);
+            saved = promotionService.save(saved);
+            logger.info("STEP 6 - Re-saving Promotion with URL (after save): id={}", saved.getId());
+
+            logger.info("STEP 8 - Saving Promotion Entries: Target count={}", customers.size());
+            boolean isSendNow = (sched == null);
+            int sentCount = 0;
+            int failedCount = 0;
+
+            // Save entries and logs
+            for (Customer c : customers) {
+                logger.info("STEP 8 - Saving Promotion Entry (before save): customerId={}", c.getId());
+                PromotionEntry entry = new PromotionEntry();
+                entry.setPromotionId(saved.getId());
+                entry.setCustomerId(c.getId());
+                entry.setTriggeredDate(LocalDateTime.now());
+                entry.setStatus("PENDING");
+                
+                PromotionEntry savedEntry = entryService.save(entry);
+                logger.info("STEP 8 - Promotion Entry Saved: entryId={}", savedEntry.getId());
+
+                // Step 4: Generate Execution Logs
+                logger.info("STEP 8 - Saving Promotion Execution Log (before save): entryId={}", savedEntry.getId());
+                PromotionExecutionLog log = new PromotionExecutionLog();
+                log.setPromotionEntryId(savedEntry.getId());
+                
+                Channel ch = Channel.WHATSAPP;
+                if (request.sendVia() != null) {
+                    if ("sms".equalsIgnoreCase(request.sendVia())) ch = Channel.SMS;
+                    else if ("email".equalsIgnoreCase(request.sendVia()) || "em".equalsIgnoreCase(request.sendVia())) ch = Channel.EMAIL;
+                }
+                log.setChannel(ch);
+
+                if (isSendNow && ch == Channel.WHATSAPP) {
+                    // Send Now Flow using existing Invoice WhatsApp sender
+                    String mobile = c.getMobile();
+                    if (mobile == null || mobile.isBlank()) {
+                        log.setStatus(ExecutionResult.FAILED);
+                        String errMsg = "Customer mobile number is missing";
+                        log.setResponse(errMsg);
+                        
+                        savedEntry.setStatus("FAILED");
+                        savedEntry.setFailureReason(errMsg);
+                        entryService.save(savedEntry);
+                        failedCount++;
+                    } else {
+                        try {
+                            String custName = c.getName() != null ? c.getName() : "Customer";
+                            String content = saved.getAiWhatsappContent() != null ? saved.getAiWhatsappContent() : "Hi {NAME}, check out our new promotion: {PROMOTION_URL}".replace("{NAME}", custName).replace("{PROMOTION_URL}", link);
+                            logger.info("CONTROLLER - SENDING WHATSAPP NOW: mobile={}, customerName={}, businessName={}, businessMobile={}, content={}", 
+                                    mobile, custName, busName, busPhone, content);
+                            kong.unirest.HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
+                                    mobile,
+                                    custName,
+                                    content,
+                                    busName,
+                                    busPhone
+                            );
+
+                            if (response.getStatus() == 200) {
+                                log.setStatus(ExecutionResult.SENT);
+                                log.setResponse("WhatsApp message sent successfully: " + response.getBody());
+                                savedEntry.setSentWhatsapp(true);
+                                savedEntry.setStatus("SENT");
+                                savedEntry.setSentAt(LocalDateTime.now());
+                                savedEntry.setFailureReason(null);
+                                entryService.save(savedEntry);
+                                sentCount++;
+                            } else {
+                                log.setStatus(ExecutionResult.FAILED);
+                                String errMsg = "Failed to send: HTTP " + response.getStatus() + " - " + response.getBody();
+                                log.setResponse(errMsg);
+                                savedEntry.setStatus("FAILED");
+                                savedEntry.setFailureReason(errMsg);
+                                entryService.save(savedEntry);
+                                failedCount++;
+                            }
+                        } catch (Exception ex) {
+                            logger.error("Failed to send WhatsApp message to {}", mobile, ex);
+                            log.setStatus(ExecutionResult.FAILED);
+                            String errMsg = "Failed to send: " + ex.getMessage();
+                            log.setResponse(errMsg);
+                            savedEntry.setStatus("FAILED");
+                            savedEntry.setFailureReason(errMsg);
+                            entryService.save(savedEntry);
+                            failedCount++;
+                        }
+                    }
+                } else {
+                    log.setStatus(ExecutionResult.PENDING);
+                    log.setResponse("Pending execution");
+                    savedEntry.setStatus("PENDING");
+                    entryService.save(savedEntry);
+                }
+
+                promotionExecutionLogRepository.save(log);
+                logger.info("STEP 8 - Promotion Execution Log Saved: logId={}", log.getId());
+            }
+
+            // Return expected success response structure
+            logger.info("STEP 9 - Response Returned: success=true, promotionId={}, url={}, sentCount={}, failedCount={}", 
+                    saved.getId(), link, sentCount, failedCount);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "promotionId", saved.getId(),
+                    "promotionUrl", link,
+                    "sentCount", sentCount,
+                    "failedCount", failedCount,
+                    "totalCount", customers.size()
+            ));
+        } catch (Exception e) {
+            logger.error("API FAILED - Exception in Promotion creation: request={}", request, e);
+            return ResponseEntity.status(500).body(Map.of(
+                    "success", false,
+                    "message", "Failed to create promotion: " + e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/generate-content")
+    public ResponseEntity<?> generateContent(@RequestBody Map<String, Object> request) {
+        Account accountStub = SecurityUtil.getCurrentAccountId();
+        if (accountStub == null || accountStub.getId() == 0) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        Account account = accountService.getById(accountStub.getId());
+        if (account == null) {
+            return ResponseEntity.status(404).body("Account not found");
         }
 
-        // Return Promotion URL (Promotion ID)
-        String link = "http://localhost:8081/promo/" + saved.getId();
-        return ResponseEntity.ok(Map.of(
-                "id", saved.getId(),
-                "link", link
-        ));
+        String description = (String) request.get("description");
+        List<String> itemIds = (List<String>) request.get("itemIds");
+
+        String itemsStr = "None selected";
+        if (itemIds != null && !itemIds.isEmpty()) {
+            List<String> names = new ArrayList<>();
+            for (String compositeId : itemIds) {
+                String[] parts = compositeId.split("-");
+                if (parts.length >= 2) {
+                    try {
+                        Integer itemId = Integer.parseInt(parts[1]);
+                        if ("plan".equalsIgnoreCase(parts[0])) {
+                            settingsPlanService.getById(itemId).ifPresent(p -> names.add("Plan: " + p.getName()));
+                        } else {
+                            catalogProductService.getById(itemId, account.getId()).ifPresent(p -> names.add("Product: " + p.getName()));
+                        }
+                    } catch (Exception e) {}
+                }
+            }
+            if (!names.isEmpty()) {
+                itemsStr = String.join(", ", names);
+            }
+        }
+
+        try {
+            if (apiKey == null || apiKey.isBlank() || apiKey.equals("YOUR_GEMINI_API_KEY")) {
+                return ResponseEntity.status(500).body("Gemini API key is not configured.");
+            }
+
+            String prompt = String.format(
+                    """
+                    You are an AI assistant generating promotional campaign content for a business.
+                    
+                    Business Context:
+                    Business Name: %s
+                    Business Category: %s
+                    Business Subcategory: %s
+                    
+                    Selected Catalog Items:
+                    %s
+                    
+                    Instructions/Description:
+                    %s
+                    
+                    Rules for generation:
+                    1. Generate exactly four distinct fields:
+                       - title: A catchy promotion title (3-6 words).
+                       - aiWhatsappContent: A very short WhatsApp message (16-20 words). It MUST include the exact placeholder {PROMOTION_URL} to represent the link. Do not include signatures, greetings, or customer names in this WhatsApp message.
+                       - description: Complete landing page description content (100-500 words) detailing the offer, benefits, catalog items, and a call-to-action.
+                       - aiBlogContent: Email marketing copy (100-300 words) with a professional subject line and structured body layout.
+                    2. Keep the WhatsApp message under 20 words.
+                    3. Return ONLY a raw JSON object containing these exact keys. Do not wrap it in markdown or code blocks.
+                    
+                    Format:
+                    {
+                      "title": "...",
+                      "aiWhatsappContent": "...",
+                      "description": "...",
+                      "aiBlogContent": "..."
+                    }
+                    """,
+                    account.getBusinessName() != null ? account.getBusinessName() : "",
+                    account.getCategory() != null ? account.getCategory() : "",
+                    account.getSubcategory() != null ? account.getSubcategory() : "",
+                    itemsStr,
+                    description != null ? description : ""
+            );
+
+            // Construct JSON request for Gemini
+            JSONObject textPart = new JSONObject();
+            textPart.put("text", prompt);
+
+            JSONArray partsArray = new JSONArray();
+            partsArray.put(textPart);
+
+            JSONObject contentObj = new JSONObject();
+            contentObj.put("parts", partsArray);
+
+            JSONArray contentsArray = new JSONArray();
+            contentsArray.put(contentObj);
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("contents", contentsArray);
+
+            HttpClient client = HttpClient.newHttpClient();
+            String[] models = {
+                "gemini-2.0-flash",
+                "gemini-2.5-flash",
+                "gemini-1.5-flash"
+            };
+
+            String generatedContent = null;
+            HttpResponse<String> lastHttpResponse = null;
+
+            for (String model : models) {
+                try {
+                    HttpRequest httpRequest = HttpRequest.newBuilder()
+                            .uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey))
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString(), StandardCharsets.UTF_8))
+                            .build();
+
+                    lastHttpResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+                    if (lastHttpResponse.statusCode() == 200) {
+                        JSONObject responseJson = new JSONObject(lastHttpResponse.body());
+                        generatedContent = responseJson.getJSONArray("candidates")
+                                .getJSONObject(0)
+                                .getJSONObject("content")
+                                .getJSONArray("parts")
+                                .getJSONObject(0)
+                                .getString("text");
+                        break;
+                    }
+                } catch (Exception e) {}
+            }
+
+            if (generatedContent == null) {
+                String errorBody = lastHttpResponse != null ? lastHttpResponse.body() : "No response from Gemini API";
+                return ResponseEntity.status(502).body("Error from Gemini API: " + errorBody);
+            }
+
+            generatedContent = generatedContent.trim();
+            if (generatedContent.startsWith("```")) {
+                generatedContent = generatedContent.replaceAll("^```[a-zA-Z]*\\n", "");
+                generatedContent = generatedContent.replaceAll("\\n```$", "");
+                generatedContent = generatedContent.trim();
+            }
+
+            JSONObject resultJson = new JSONObject(generatedContent);
+            return ResponseEntity.ok(resultJson.toMap());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error generating content: " + e.getMessage());
+        }
     }
 
     @GetMapping
@@ -420,5 +732,16 @@ public class PromotionController {
 /**
  * Data Transfer Object (DTO) to handle the incoming JSON payload safely.
  */
-record PromotionRequest(Integer groupId, Integer customerId, String description, List<String> itemIds, String sendVia, String scheduledAt) {
-}
+record PromotionRequest(
+    Integer groupId,
+    Integer customerId,
+    String description,
+    List<String> itemIds,
+    String sendVia,
+    String scheduledAt,
+    String templateName,
+    String templateVariant,
+    String aiGeneratedTitle,
+    String aiWhatsappContent,
+    String aiBlogContent
+) {}

@@ -10,6 +10,9 @@ import com.server.realsync.entity.*;
 import kong.unirest.HttpResponse;
 import org.json.JSONObject;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 @Component
 public class QueueWorker {
 
@@ -19,6 +22,12 @@ public class QueueWorker {
     private final AccountService accountService;
     private final RealSyncWhatsappService realSyncWhatsappService;
     private final ScheduleExecutionLogService logService;
+
+    @Autowired
+    private AppointmentService appointmentService;
+
+    @Value("${app.public.base-url:https://numen.uno}")
+    private String publicBaseUrl;
 
     public QueueWorker(
             MessageQueueService queueService,
@@ -87,61 +96,144 @@ public class QueueWorker {
                     String businessName = account.getBusinessName() != null ? account.getBusinessName() : account.getName();
                     String businessMobile = account.getBusinessPhone() != null ? account.getBusinessPhone() : account.getMobile();
 
-                    // Create log: SENDING
-                    createExecutionLog(entry.getId(), ExecutionResult.SENDING, "WhatsApp delivery started");
-                    System.out.println(String.format(
-                            "WA_SENDING | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=%s | retryCount=%d | queueStatus=%s",
-                            entry.getId(), custIdStr, mobile, job.getMessageId() != null ? job.getMessageId() : "N/A", job.getRetryCount(), job.getStatus()
-                    ));
-
-                    // Call MSG91 outbound API via RealSyncWhatsappService
-                    HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
-                            mobile,
-                            customerName,
-                            content,
-                            businessName,
-                            businessMobile
-                    );
-
-                    String responseBody = response.getBody();
-                    String messageId = null;
-
-                    if (response.getStatus() == 200 && responseBody != null) {
-                        try {
-                            JSONObject respJson = new JSONObject(responseBody);
-                            if (respJson.has("request_id")) {
-                                messageId = respJson.getString("request_id");
-                            } else if (respJson.has("data")) {
-                                JSONObject dataObj = respJson.getJSONObject("data");
-                                if (dataObj.has("request_id")) {
-                                    messageId = dataObj.getString("request_id");
-                                }
-                            }
-                        } catch (Exception e) {
-                            // Suppress JSON parsing errors, we still succeeded
+                    if ("APPOINTMENT".equalsIgnoreCase(entry.getSourceType())) {
+                        Appointment appt = appointmentService.getById(entry.getSourceId(), customer.getAccountId()).orElse(null);
+                        if (appt == null) {
+                            throw new RuntimeException("Appointment not found for ID: " + entry.getSourceId());
                         }
 
-                        // Update MessageQueue details
-                        job.setStatus(QueueStatus.SENT);
-                        job.setMessageId(messageId);
-                        job.setSentAt(LocalDateTime.now());
-                        queueService.save(job);
+                        String status = appt.getStatus();
+                        if ("CANCELLED".equalsIgnoreCase(status) || "COMPLETED".equalsIgnoreCase(status)) {
+                            entry.setStatus(ScheduleEntryStatus.CANCELLED);
+                            entry.setExecutionStatus(ExecutionStatus.FAILED);
+                            scheduleEntryService.save(entry);
 
-                        // Update ScheduleEntry details
-                        entry.setSentWhatsapp(true);
-                        entry.setExecutionStatus(ExecutionStatus.SUCCESS);
-                        entry.setStatus(ScheduleEntryStatus.COMPLETED);
-                        scheduleEntryService.save(entry);
+                            job.setStatus(QueueStatus.FAILED);
+                            job.setFailedReason("Appointment is " + status);
+                            queueService.save(job);
 
-                        // Create log: SENT
-                        createExecutionLog(entry.getId(), ExecutionResult.SENT, "WhatsApp accepted by MSG91");
+                            createExecutionLog(entry.getId(), ExecutionResult.FAILED, "APPOINTMENT_REMINDER_CANCELLED");
+                            System.out.println("APPOINTMENT_REMINDER_CANCELLED | scheduleEntryId=" + entry.getId() + " | reason=Appointment is " + status);
+                            continue;
+                        }
 
-                        System.out.println(String.format(
-                                "WA_SENT | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=%s | retryCount=%d | queueStatus=%s",
-                                entry.getId(), custIdStr, mobile, messageId != null ? messageId : "N/A", job.getRetryCount(), "SENT"
-                        ));
+                        String rawName = (account != null && account.getBusinessName() != null)
+                                ? account.getBusinessName() : (account != null ? account.getName() : "business");
+                        String slug = toSlug(rawName);
+                        String publicUrl = publicBaseUrl + "/" + slug + "/appointment/" + appt.getPublicToken();
+
+                        String dateStr = appt.getAppointmentDate() != null ? appt.getAppointmentDate().toString() : "";
+                        String timeStr = appt.getAppointmentTime() != null ? appt.getAppointmentTime().toString() : "";
+
+                        String dynamicContent = String.format(
+                            "Reminder for your upcoming appointment.\n\nService: %s\nDate: %s\nTime: %s\n\nPlease confirm your appointment using:\n%s",
+                            appt.getServiceName() != null ? appt.getServiceName() : "Appointment",
+                            dateStr,
+                            timeStr,
+                            publicUrl
+                        );
+
+                        createExecutionLog(entry.getId(), ExecutionResult.SENDING, "APPOINTMENT_REMINDER_QUEUED");
+                        System.out.println("APPOINTMENT_REMINDER_QUEUED | scheduleEntryId=" + entry.getId());
+
+                        HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
+                                mobile,
+                                customerName,
+                                dynamicContent,
+                                businessName,
+                                businessMobile
+                        );
+
+                        String responseBody = response.getBody();
+                        String messageId = null;
+
+                        if (response.getStatus() == 200 && responseBody != null) {
+                            try {
+                                JSONObject respJson = new JSONObject(responseBody);
+                                if (respJson.has("request_id")) {
+                                    messageId = respJson.getString("request_id");
+                                } else if (respJson.has("data")) {
+                                    JSONObject dataObj = respJson.getJSONObject("data");
+                                    if (dataObj.has("request_id")) {
+                                        messageId = dataObj.getString("request_id");
+                                    }
+                                }
+                            } catch (Exception e) {
+                                // Suppress JSON parsing
+                            }
+
+                            job.setStatus(QueueStatus.SENT);
+                            job.setMessageId(messageId);
+                            job.setSentAt(LocalDateTime.now());
+                            queueService.save(job);
+
+                            entry.setSentWhatsapp(true);
+                            entry.setExecutionStatus(ExecutionStatus.SUCCESS);
+                            entry.setStatus(ScheduleEntryStatus.COMPLETED);
+                            scheduleEntryService.save(entry);
+
+                            createExecutionLog(entry.getId(), ExecutionResult.SENT, "APPOINTMENT_REMINDER_SENT");
+                            System.out.println("APPOINTMENT_REMINDER_SENT | scheduleEntryId=" + entry.getId());
+                        } else {
+                            throw new RuntimeException("MSG91 API error status " + response.getStatus() + ": " + responseBody);
+                        }
                     } else {
-                        throw new RuntimeException("MSG91 API error status " + response.getStatus() + ": " + responseBody);
+                        // Create log: SENDING
+                        createExecutionLog(entry.getId(), ExecutionResult.SENDING, "WhatsApp delivery started");
+                        System.out.println(String.format(
+                                "WA_SENDING | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=%s | retryCount=%d | queueStatus=%s",
+                                entry.getId(), custIdStr, mobile, job.getMessageId() != null ? job.getMessageId() : "N/A", job.getRetryCount(), job.getStatus()
+                        ));
+
+                        // Call MSG91 outbound API via RealSyncWhatsappService
+                        HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
+                                mobile,
+                                customerName,
+                                content,
+                                businessName,
+                                businessMobile
+                        );
+
+                        String responseBody = response.getBody();
+                        String messageId = null;
+
+                        if (response.getStatus() == 200 && responseBody != null) {
+                            try {
+                                JSONObject respJson = new JSONObject(responseBody);
+                                if (respJson.has("request_id")) {
+                                    messageId = respJson.getString("request_id");
+                                } else if (respJson.has("data")) {
+                                    JSONObject dataObj = respJson.getJSONObject("data");
+                                    if (dataObj.has("request_id")) {
+                                        messageId = dataObj.getString("request_id");
+                                    }
+                                }
+                            } catch (Exception e) {
+                                // Suppress JSON parsing errors, we still succeeded
+                            }
+
+                            // Update MessageQueue details
+                            job.setStatus(QueueStatus.SENT);
+                            job.setMessageId(messageId);
+                            job.setSentAt(LocalDateTime.now());
+                            queueService.save(job);
+
+                            // Update ScheduleEntry details
+                            entry.setSentWhatsapp(true);
+                            entry.setExecutionStatus(ExecutionStatus.SUCCESS);
+                            entry.setStatus(ScheduleEntryStatus.COMPLETED);
+                            scheduleEntryService.save(entry);
+
+                            // Create log: SENT
+                            createExecutionLog(entry.getId(), ExecutionResult.SENT, "WhatsApp accepted by MSG91");
+
+                            System.out.println(String.format(
+                                    "WA_SENT | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=%s | retryCount=%d | queueStatus=%s",
+                                    entry.getId(), custIdStr, mobile, messageId != null ? messageId : "N/A", job.getRetryCount(), "SENT"
+                            ));
+                        } else {
+                            throw new RuntimeException("MSG91 API error status " + response.getStatus() + ": " + responseBody);
+                        }
                     }
                 } else {
                     // Mark other non-WhatsApp channels as done since we only enable WhatsApp delivery
@@ -198,5 +290,13 @@ public class QueueWorker {
         } catch (Exception e) {
             System.err.println("Failed to create execution log: " + e.getMessage());
         }
+    }
+
+    private static String toSlug(String name) {
+        if (name == null) return "shop";
+        return name.trim()
+                .toLowerCase()
+                .replaceAll("[^a-z0-9]+", "-")
+                .replaceAll("^-+|-+$", "");
     }
 }

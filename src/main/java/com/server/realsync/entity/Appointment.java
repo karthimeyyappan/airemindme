@@ -37,7 +37,19 @@ public class Appointment {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    
+    @Column(name = "appointment_number")
+    private String appointmentNumber;
+
+    @Column(name = "required_documents")
+    private String requiredDocuments;
+
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
+    private String priority = "MEDIUM";
+
+    @Column(name = "public_token", unique = true)
+    private String publicToken;
 
 
 
@@ -161,5 +173,45 @@ public class Appointment {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getAppointmentNumber() {
+        return appointmentNumber;
+    }
+
+    public void setAppointmentNumber(String appointmentNumber) {
+        this.appointmentNumber = appointmentNumber;
+    }
+
+    public String getRequiredDocuments() {
+        return requiredDocuments;
+    }
+
+    public void setRequiredDocuments(String requiredDocuments) {
+        this.requiredDocuments = requiredDocuments;
+    }
+
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
+    }
+
+    public String getPriority() {
+        return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
+    }
+
+    public String getPublicToken() {
+        return publicToken;
+    }
+
+    public void setPublicToken(String publicToken) {
+        this.publicToken = publicToken;
     }
 }

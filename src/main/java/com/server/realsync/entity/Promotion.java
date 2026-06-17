@@ -34,7 +34,7 @@ public class Promotion {
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    @Column(nullable = false, length = 500)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "ai_generated_title")
@@ -59,6 +59,15 @@ public class Promotion {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "template_name")
+    private String templateName;
+
+    @Column(name = "template_variant")
+    private String templateVariant;
+
+    @Column(name = "promotion_url", length = 1000)
+    private String promotionUrl;
 
     @PrePersist
     protected void onCreate() {
@@ -169,5 +178,29 @@ public class Promotion {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
+    }
+
+    public String getTemplateVariant() {
+        return templateVariant;
+    }
+
+    public void setTemplateVariant(String templateVariant) {
+        this.templateVariant = templateVariant;
+    }
+
+    public String getPromotionUrl() {
+        return promotionUrl;
+    }
+
+    public void setPromotionUrl(String promotionUrl) {
+        this.promotionUrl = promotionUrl;
     }
 }

@@ -118,9 +118,14 @@ public class CustomerController {
 
         Account account = SecurityUtil.getCurrentAccountId();
 
+        String cleanQuery = query.trim();
+        if (cleanQuery.toUpperCase().startsWith("CUS-")) {
+            cleanQuery = cleanQuery.substring(4).trim();
+        }
+
         Page<Customer> page = customerService.searchByAccount(
                 account.getId(),
-                query,
+                cleanQuery,
                 Pageable.ofSize(20));
 
         return ResponseEntity.ok(page.getContent());

@@ -74,6 +74,15 @@ public class PromotionEntry {
     @Column(name = "email_clicked_at")
     private LocalDateTime emailClickedAt;
 
+    @Column(name = "status", length = 50)
+    private String status;
+
+    @Column(name = "failure_reason", columnDefinition = "TEXT")
+    private String failureReason;
+
+    @Column(name = "sent_at")
+    private LocalDateTime sentAt;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -82,6 +91,15 @@ public class PromotionEntry {
     public PromotionEntry() {}
 
     // Getters & Setters
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getFailureReason() { return failureReason; }
+    public void setFailureReason(String failureReason) { this.failureReason = failureReason; }
+
+    public LocalDateTime getSentAt() { return sentAt; }
+    public void setSentAt(LocalDateTime sentAt) { this.sentAt = sentAt; }
 
     public Long getId() { return id; }
 
