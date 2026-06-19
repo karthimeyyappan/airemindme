@@ -20,6 +20,17 @@ public class Report {
     @Column(columnDefinition = "TEXT")
     private String fields;
 
+    private String reportNumber;
+    private String templateName;
+    private String templateCategory;
+    private Double templatePrice;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String templateSnapshot;
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String reportData;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -106,5 +117,59 @@ public class Report {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    // REPORT NUMBER
+    public String getReportNumber() {
+        return reportNumber;
+    }
+
+    public void setReportNumber(String reportNumber) {
+        this.reportNumber = reportNumber;
+    }
+
+    // TEMPLATE NAME
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
+    }
+
+    // TEMPLATE CATEGORY
+    public String getTemplateCategory() {
+        return templateCategory;
+    }
+
+    public void setTemplateCategory(String templateCategory) {
+        this.templateCategory = templateCategory;
+    }
+
+    // TEMPLATE PRICE
+    public Double getTemplatePrice() {
+        return templatePrice;
+    }
+
+    public void setTemplatePrice(Double templatePrice) {
+        this.templatePrice = templatePrice;
+    }
+
+    // TEMPLATE SNAPSHOT
+    public String getTemplateSnapshot() {
+        return templateSnapshot;
+    }
+
+    public void setTemplateSnapshot(String templateSnapshot) {
+        this.templateSnapshot = templateSnapshot;
+    }
+
+    // REPORT DATA
+    public String getReportData() {
+        return reportData;
+    }
+
+    public void setReportData(String reportData) {
+        this.reportData = reportData;
     }
 }

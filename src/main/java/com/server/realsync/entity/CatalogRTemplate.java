@@ -142,15 +142,71 @@ public class CatalogRTemplate {
         this.createdAt = d;
     }
 
-    
-
     public List<Map<String, String>> getParsedColumns() {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(this.columns, new TypeReference<>() {
-            });
-        } catch (Exception e) {
+        if (this.columns == null || this.columns.trim().isEmpty()) {
             return List.of();
         }
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            System.out.println("RAW COLUMNS = " + columns);
+
+            List<Map<String, String>> rawList = mapper.readValue(
+                    this.columns,
+                    new TypeReference<List<Map<String, String>>>() {
+                    });
+
+            return rawList.stream().map(rawMap -> {
+                Map<String, String> normalized = new java.util.HashMap<>();
+                
+                // fieldName fallback logic
+                String fieldName = rawMap.get("fieldName");
+                if (fieldName == null) {
+                    fieldName = rawMap.get("test");
+                }
+                if (fieldName == null) {
+                    fieldName = rawMap.get("name");
+                }
+                normalized.put("fieldName", fieldName != null ? fieldName : "");
+
+                // fieldType fallback logic
+                String fieldType = rawMap.get("fieldType");
+                normalized.put("fieldType", fieldType != null ? fieldType : "Text");
+
+                // description / hint fallback logic
+                String description = rawMap.get("description");
+                if (description == null) {
+                    description = rawMap.get("hint");
+                }
+                if (description == null) {
+                    description = rawMap.get("range");
+                }
+                normalized.put("description", description != null ? description : "");
+                normalized.put("hint", description != null ? description : "");
+
+                return normalized;
+            }).collect(Collectors.toList());
+
+        } catch (Exception e) {
+            try {
+                System.out.println("Fallback parsing comma-separated columns: " + this.columns);
+                return Arrays.stream(this.columns.split(","))
+                        .map(String::trim)
+                        .filter(c -> !c.isEmpty())
+                        .map(c -> {
+                            Map<String, String> m = new java.util.HashMap<>();
+                            m.put("fieldName", c);
+                            m.put("fieldType", "Text");
+                            m.put("description", "");
+                            m.put("hint", "");
+                            return m;
+                        })
+                        .collect(Collectors.toList());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return List.of();
+            }
+        }
     }
+
+
 }

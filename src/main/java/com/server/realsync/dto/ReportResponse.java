@@ -33,4 +33,32 @@ public class ReportResponse {
     public void setPatientId(Integer patientId) {
         this.patientId = patientId;
     }
+
+    public String reportNumber;
+    public String templateSnapshot;
+    public String reportData;
+
+    public String getReportNumber() {
+        return reportNumber;
+    }
+
+    public void setReportNumber(String reportNumber) {
+        this.reportNumber = reportNumber;
+    }
+
+    public String getTemplateSnapshot() {
+        return templateSnapshot;
+    }
+
+    public void setTemplateSnapshot(String templateSnapshot) {
+        this.templateSnapshot = templateSnapshot;
+    }
+
+    public String getReportData() {
+        return reportData;
+    }
+
+    public void setReportData(String reportData) {
+        this.reportData = reportData;
+    }
 }

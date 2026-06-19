@@ -102,7 +102,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>History</a>
-          <button onclick="openModal('createReportModal')"
+          <button onclick="window.location.href='/reports/create'"
             class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition shadow-sm"><svg
               class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -138,9 +138,10 @@
 
     <!-- ════ DASHBOARD TAB ════ -->
     <div id="tab-dashboard" class="px-4 md:px-6 py-6 max-w-6xl mx-auto">
+      <div id="dashboardError" class="hidden mb-4 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"></div>
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
         <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p class="text-2xl font-bold text-gray-900" id="d-total">12</p>
+          <p class="text-2xl font-bold text-gray-900" id="d-total"></p>
           <p class="text-xs text-gray-500 mt-0.5">Total Reports</p>
           <div class="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center mt-2"><svg
               class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +150,7 @@
             </svg></div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p class="text-2xl font-bold text-emerald-600" id="d-paid">8</p>
+          <p class="text-2xl font-bold text-emerald-600" id="d-paid"></p>
           <p class="text-xs text-gray-500 mt-0.5">Paid</p>
           <div class="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center mt-2"><svg
               class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +159,7 @@
             </svg></div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p class="text-2xl font-bold text-orange-500" id="d-unpaid">4</p>
+          <p class="text-2xl font-bold text-orange-500" id="d-unpaid"></p>
           <p class="text-xs text-gray-500 mt-0.5">Unpaid</p>
           <div class="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center mt-2"><svg
               class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +168,7 @@
             </svg></div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p class="text-2xl font-bold text-blue-500" id="d-sent">3</p>
+          <p class="text-2xl font-bold text-blue-500" id="d-sent"></p>
           <p class="text-xs text-gray-500 mt-0.5">Sent</p>
           <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center mt-2"><svg
               class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,7 +177,7 @@
             </svg></div>
         </div>
         <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-          <p class="text-2xl font-bold text-amber-500" id="d-progress">5</p>
+          <p class="text-2xl font-bold text-amber-500" id="d-progress"></p>
           <p class="text-xs text-gray-500 mt-0.5">In Progress</p>
           <div class="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center mt-2"><svg
               class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,44 +195,19 @@
           <div class="grid grid-cols-3 gap-3 mb-5">
             <div class="text-center p-3 bg-gray-50 rounded-2xl">
               <p class="text-[10px] text-gray-400 mb-1">Total Billed</p>
-              <p id="rev-total" class="text-lg font-bold text-gray-900">₹0</p>
+              <p id="rev-total" class="text-lg font-bold text-gray-900"></p>
             </div>
             <div class="text-center p-3 bg-emerald-50 rounded-2xl">
               <p class="text-[10px] text-gray-400 mb-1">Collected</p>
-              <p id="rev-collected" class="text-lg font-bold text-emerald-600">₹0</p>
+              <p id="rev-collected" class="text-lg font-bold text-emerald-600"></p>
             </div>
             <div class="text-center p-3 bg-orange-50 rounded-2xl">
               <p class="text-[10px] text-gray-400 mb-1">Outstanding</p>
-              <p id="rev-outstanding" class="text-lg font-bold text-orange-500">₹0</p>
+              <p id="rev-outstanding" class="text-lg font-bold text-orange-500"></p>
             </div>
           </div>
           <p class="text-xs font-semibold text-gray-500 mb-3">Monthly Volume</p>
-          <div class="flex items-end gap-2 h-20">
-            <div class="flex-1 flex flex-col items-center gap-1">
-              <div class="w-full bg-indigo-100 rounded-t-lg" style="height:35%"></div><span
-                class="text-[9px] text-gray-400">Oct</span>
-            </div>
-            <div class="flex-1 flex flex-col items-center gap-1">
-              <div class="w-full bg-indigo-200 rounded-t-lg" style="height:50%"></div><span
-                class="text-[9px] text-gray-400">Nov</span>
-            </div>
-            <div class="flex-1 flex flex-col items-center gap-1">
-              <div class="w-full bg-indigo-300 rounded-t-lg" style="height:65%"></div><span
-                class="text-[9px] text-gray-400">Dec</span>
-            </div>
-            <div class="flex-1 flex flex-col items-center gap-1">
-              <div class="w-full bg-indigo-400 rounded-t-lg" style="height:45%"></div><span
-                class="text-[9px] text-gray-400">Jan</span>
-            </div>
-            <div class="flex-1 flex flex-col items-center gap-1">
-              <div class="w-full bg-indigo-500 rounded-t-lg" style="height:78%"></div><span
-                class="text-[9px] text-gray-400">Feb</span>
-            </div>
-            <div class="flex-1 flex flex-col items-center gap-1">
-              <div class="w-full bg-indigo-600 rounded-t-lg" style="height:100%"></div><span
-                class="text-[9px] text-indigo-600 font-bold">Mar</span>
-            </div>
-          </div>
+          <div id="monthlyVolume" class="flex items-end gap-2 h-20"></div>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <p class="text-sm font-bold text-gray-900 mb-4">Channel Distribution</p>
@@ -239,25 +215,25 @@
             <div>
               <div class="flex justify-between mb-1"><span class="text-xs text-gray-600 flex items-center gap-1.5"><span
                     class="w-2 h-2 rounded-full bg-green-500"></span>WhatsApp</span><span
-                  class="text-xs font-bold">5</span></div>
+                  id="channel-whatsapp" class="text-xs font-bold"></span></div>
               <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div class="bar-fill h-full bg-green-500 rounded-full" style="width:72%"></div>
+                <div id="channel-whatsapp-bar" class="bar-fill h-full bg-green-500 rounded-full" style="width:0%"></div>
               </div>
             </div>
             <div>
               <div class="flex justify-between mb-1"><span class="text-xs text-gray-600 flex items-center gap-1.5"><span
                     class="w-2 h-2 rounded-full bg-violet-500"></span>Email</span><span
-                  class="text-xs font-bold">2</span></div>
+                  id="channel-email" class="text-xs font-bold"></span></div>
               <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div class="bar-fill h-full bg-violet-500 rounded-full" style="width:28%"></div>
+                <div id="channel-email-bar" class="bar-fill h-full bg-violet-500 rounded-full" style="width:0%"></div>
               </div>
             </div>
             <div>
               <div class="flex justify-between mb-1"><span class="text-xs text-gray-600 flex items-center gap-1.5"><span
-                    class="w-2 h-2 rounded-full bg-blue-500"></span>SMS</span><span class="text-xs font-bold">0</span>
+                    class="w-2 h-2 rounded-full bg-blue-500"></span>SMS</span><span id="channel-sms" class="text-xs font-bold"></span>
               </div>
               <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div class="bar-fill h-full bg-blue-500 rounded-full" style="width:0%"></div>
+                <div id="channel-sms-bar" class="bar-fill h-full bg-blue-500 rounded-full" style="width:0%"></div>
               </div>
             </div>
           </div>
@@ -266,15 +242,15 @@
             <div class="flex items-center justify-between"><span
                 class="text-xs text-gray-600 flex items-center gap-2"><span
                   class="w-2 h-2 rounded-full bg-blue-500"></span>Shared/Sent</span><span id="d2-shared"
-                class="text-xs font-bold">3</span></div>
+                class="text-xs font-bold"></span></div>
             <div class="flex items-center justify-between"><span
                 class="text-xs text-gray-600 flex items-center gap-2"><span
                   class="w-2 h-2 rounded-full bg-emerald-500"></span>Completed</span><span id="d2-completed"
-                class="text-xs font-bold">5</span></div>
+                class="text-xs font-bold"></span></div>
             <div class="flex items-center justify-between"><span
                 class="text-xs text-gray-600 flex items-center gap-2"><span
                   class="w-2 h-2 rounded-full bg-orange-400"></span>Draft</span><span id="d2-draft"
-                class="text-xs font-bold">4</span></div>
+                class="text-xs font-bold"></span></div>
           </div>
         </div>
       </div>
@@ -432,7 +408,7 @@
           d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
       </svg><span class="text-[10px] font-medium">Patients</span></a>
     <div class="relative flex flex-col items-center" style="margin-bottom:8px"><button
-        onclick="openModal('createReportModal')"
+        onclick="window.location.href='/reports/create'"
         class="w-14 h-14 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-300 -mt-5"><svg
           class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -452,99 +428,6 @@
           d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.11-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg><span class="text-[10px] font-medium">Settings</span></a>
-  </div>
-
-  <!-- ════ CREATE REPORT MODAL ════ -->
-  <div id="createReportModal" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center no-print">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeModal('createReportModal')"></div>
-    <div class="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-md max-h-[95vh] overflow-y-auto shadow-2xl">
-      <div class="flex justify-center pt-3 pb-1 md:hidden">
-        <div class="w-10 h-1 rounded-full bg-gray-200"></div>
-      </div>
-      <div class="flex items-center justify-between px-5 pt-4 pb-3">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center"><svg
-              class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg></div>
-          <h2 class="text-base font-bold text-gray-900">New Report</h2>
-        </div><button onclick="closeModal('createReportModal')"
-          class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><svg class="w-4 h-4" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg></button>
-      </div>
-      <div class="px-5 pb-6 space-y-4">
-
-        <!-- Patient -->
-        <div>
-          <label class="text-sm font-medium text-gray-700 mb-1.5 block">
-            Patient <span class="text-red-400">*</span>
-          </label>
-
-          <!-- Hidden field stores selected patient ID -->
-          <input type="hidden" id="rCustomer" />
-
-          <div class="relative">
-            <!-- Search input -->
-            <div class="relative">
-              <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none"
-                stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input type="text" id="patientSearchInput" placeholder="Search patient name..." autocomplete="off" class="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200
-                    text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-            </div>
-
-            <!-- Results dropdown -->
-            <div id="patientResults" class="absolute z-50 w-full bg-white border border-gray-200
-                rounded-2xl shadow-lg mt-1 overflow-hidden" style="display:none;">
-            </div>
-          </div>
-
-          <!-- Selected patient label -->
-          <p id="patientSelectedLabel" class="text-xs text-indigo-600 font-medium mt-1.5" style="display:none;">
-          </p>
-        </div>
-
-        <!-- Template -->
-        <div>
-          <label class="text-sm font-medium text-gray-700 mb-1.5 block">
-            Report Template <span class="text-red-400">*</span>
-          </label>
-
-          <div class="relative">
-            <select id="rTemplate"
-              class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500">
-              <option value="">Select report...</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Paid -->
-        <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl">
-          <input type="checkbox" id="rPaid" class="rounded w-4 h-4">
-          <label for="rPaid" class="text-sm font-medium text-gray-700 cursor-pointer">
-            Invoice Paid
-          </label>
-        </div>
-
-        <!-- Buttons -->
-        <div class="flex gap-3">
-          <button onclick="goToReportPage('Draft')"
-            class="flex-1 py-3.5 rounded-2xl border-2 border-indigo-200 text-indigo-600 font-semibold text-sm hover:bg-indigo-50">
-            Save Draft
-          </button>
-
-          <button onclick="goToReportPage('Completed')"
-            class="flex-1 py-3.5 rounded-2xl bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700">
-            Continue
-          </button>
-        </div>
-
-      </div>
-    </div>
   </div>
 
   <!-- ════ SEND REPORTS MODAL ════ -->
@@ -663,6 +546,7 @@
     let searchFilter = '';
     let phoneFilter = '';
     let currentPage = 1;
+    let dashboardData = null;
 
     const PER_PAGE = 5;
 
@@ -690,9 +574,11 @@
        ============================================================= */
     async function init() {
       try {
-        await loadReports();
-        await loadCustomers();
-        await loadTemplates();
+        showDashboardLoading();
+        await Promise.all([
+          loadDashboard(),
+          loadReports()
+        ]);
       } catch (e) {
         console.error('Init failed:', e);
       }
@@ -753,16 +639,10 @@
         console.log('MAPPED REPORTS:', reports);
 
         renderReports();
-        renderDashboard();
 
       } catch (err) {
         console.error('loadReports error:', err);
       }
-    }
-
-    async function loadCustomers() {
-      // No longer pre-loading dropdown — search handles it
-      setupPatientSearch();
     }
 
     function clearSelectionAndHideWarning() {
@@ -772,107 +652,6 @@
       document.getElementById('selectionBar').classList.add('hidden');
       renderReports();
     }
-
-    function setupPatientSearch() {
-      const input = document.getElementById('patientSearchInput');
-      const results = document.getElementById('patientResults');
-      const hidden = document.getElementById('rCustomer');
-      const label = document.getElementById('patientSelectedLabel');
-
-      if (!input) return;
-
-      input.addEventListener('input', async function () {
-        const query = this.value.trim();
-
-        // Clear hidden value when user types again
-        hidden.value = '';
-        label.style.display = 'none';
-
-        if (query.length < 1) {
-          results.style.display = 'none';
-          results.innerHTML = '';
-          return;
-        }
-
-        try {
-          const data = await api(
-            `/api/reports/customers/search?query=${encodeURIComponent(query)}`
-          );
-
-          results.innerHTML = '';
-
-          // No patient found
-          if (!data || data.length === 0) {
-            results.innerHTML = `
-          <div class="px-4 py-3 text-sm text-red-500 font-medium
-                      flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                 viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728
-                       12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-            </svg>
-            No patient found
-          </div>`;
-            results.style.display = 'block';
-            return;
-          }
-
-          // Show results
-          data.forEach(patient => {
-            const item = document.createElement('div');
-            item.className =
-              'px-4 py-3 text-sm text-gray-700 cursor-pointer ' +
-              'hover:bg-indigo-50 hover:text-indigo-700 ' +
-              'flex items-center gap-3 border-b border-gray-50 last:border-0';
-
-            item.innerHTML = `
-          <div class="w-7 h-7 rounded-full bg-indigo-100 flex items-center
-                      justify-center text-indigo-600 font-bold text-xs
-                      flex-shrink-0">
-            ${patient.name.charAt(0).toUpperCase()}
-          </div>
-          <span>${patient.name}</span>`;
-
-            item.addEventListener('click', () => {
-              hidden.value = patient.id;
-              input.value = patient.name;
-              label.textContent = '✓ ' + patient.name + ' selected';
-              label.style.display = 'block';
-              results.style.display = 'none';
-            });
-
-            results.appendChild(item);
-          });
-
-          results.style.display = 'block';
-
-        } catch (err) {
-          console.error('Patient search error:', err);
-        }
-      });
-
-      // Close results when clicking outside
-      document.addEventListener('click', function (e) {
-        if (!input.contains(e.target) && !results.contains(e.target)) {
-          results.style.display = 'none';
-        }
-      });
-    }
-
-    /* ── Templates dropdown ── */
-    async function loadTemplates() {
-      const templates = await api('/api/catalog/rtemplates');
-      const select = document.getElementById('rTemplate');
-      if (!select) return;
-
-      select.innerHTML = '<option value="">Select report...</option>';
-      templates.forEach(t => {
-        select.innerHTML += `<option value="${t.id}">${t.title}</option>`;
-      });
-    }
-
 
     /* =============================================================
        FILTERS & PAGINATION
@@ -1236,15 +1015,194 @@
     /* =============================================================
        RENDER — Dashboard
        ============================================================= */
+    async function loadDashboard() {
+      const errorEl = document.getElementById('dashboardError');
+      try {
+        if (errorEl) errorEl.classList.add('hidden');
+        dashboardData = await api('/api/reports/dashboard');
+        renderDashboard();
+      } catch (err) {
+        console.error('loadDashboard error:', err);
+        hideDashboardLoading();
+        if (errorEl) {
+          errorEl.textContent = 'We could not load report dashboard data right now. Please try again in a moment.';
+          errorEl.classList.remove('hidden');
+        }
+      }
+    }
+
+    function showDashboardLoading() {
+      ['d-total', 'd-paid', 'd-unpaid', 'd-sent', 'd-progress', 'rev-total',
+        'rev-collected', 'rev-outstanding', 'channel-whatsapp', 'channel-email',
+        'channel-sms', 'd2-shared', 'd2-completed', 'd2-draft'
+      ].forEach(setSkeleton);
+
+      const monthly = document.getElementById('monthlyVolume');
+      if (monthly) {
+        monthly.innerHTML = Array.from({ length: 6 }).map(() => `
+          <div class="flex-1 flex flex-col items-center gap-1">
+            <div class="w-full bg-gray-100 rounded-t-lg animate-pulse" style="height:55%"></div>
+            <span class="h-2 w-6 rounded bg-gray-100 animate-pulse"></span>
+          </div>`).join('');
+      }
+
+      const topTests = document.getElementById('topTests');
+      if (topTests) topTests.innerHTML = skeletonRows(4);
+
+      const recentReports = document.getElementById('recentReports');
+      if (recentReports) recentReports.innerHTML = skeletonRows(4);
+    }
+
+    function hideDashboardLoading() {
+      document.querySelectorAll('[data-dashboard-skeleton="true"]').forEach(el => {
+        el.classList.remove('inline-block', 'h-7', 'w-16', 'rounded', 'bg-gray-100', 'animate-pulse');
+        el.removeAttribute('data-dashboard-skeleton');
+      });
+    }
+
+    function setSkeleton(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = '';
+      el.setAttribute('data-dashboard-skeleton', 'true');
+      el.classList.add('inline-block', 'h-7', 'w-16', 'rounded', 'bg-gray-100', 'animate-pulse');
+    }
+
+    function skeletonRows(count) {
+      return Array.from({ length: count }).map(() => `
+        <div class="flex items-center justify-between">
+          <div class="h-4 w-32 rounded bg-gray-100 animate-pulse"></div>
+          <div class="h-4 w-10 rounded bg-gray-100 animate-pulse"></div>
+        </div>`).join('');
+    }
+
     function renderDashboard() {
-      const total = reports.length;
-      const paid = reports.filter(r => r.paid).length;
+      if (!dashboardData) return;
+      hideDashboardLoading();
 
-      const totalEl = document.getElementById('d-total');
-      const paidEl = document.getElementById('d-paid');
+      setText('d-total', dashboardData.totalReports);
+      setText('d-paid', dashboardData.paidReports);
+      setText('d-unpaid', dashboardData.unpaidReports);
+      setText('d-sent', dashboardData.sentReports);
+      setText('d-progress', dashboardData.inProgressReports);
 
-      if (totalEl) totalEl.textContent = total;
-      if (paidEl) paidEl.textContent = paid;
+      setText('rev-total', money(dashboardData.totalBilled));
+      setText('rev-collected', money(dashboardData.collectedAmount));
+      setText('rev-outstanding', money(dashboardData.outstandingAmount));
+
+      setText('channel-whatsapp', dashboardData.whatsappCount);
+      setText('channel-email', dashboardData.emailCount);
+      setText('channel-sms', dashboardData.smsCount);
+      setChannelBars(dashboardData);
+
+      setText('d2-shared', dashboardData.sentReports);
+      setText('d2-completed', dashboardData.paidReports);
+      setText('d2-draft', dashboardData.inProgressReports);
+
+      renderMonthlyVolume(dashboardData.monthlyVolume || []);
+      renderTopTests(dashboardData.topTests || []);
+      renderRecentReports(dashboardData.recentReports || []);
+    }
+
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value ?? '';
+    }
+
+    function money(value) {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }).format(Number(value || 0));
+    }
+
+    function setChannelBars(data) {
+      const counts = [data.whatsappCount || 0, data.emailCount || 0, data.smsCount || 0];
+      const max = Math.max(...counts, 1);
+      setWidth('channel-whatsapp-bar', counts[0], max);
+      setWidth('channel-email-bar', counts[1], max);
+      setWidth('channel-sms-bar', counts[2], max);
+    }
+
+    function setWidth(id, value, max) {
+      const el = document.getElementById(id);
+      if (el) el.style.width = `${Math.round((value / max) * 100)}%`;
+    }
+
+    function renderMonthlyVolume(items) {
+      const el = document.getElementById('monthlyVolume');
+      if (!el) return;
+      const max = Math.max(...items.map(i => i.count || 0), 1);
+      const colors = ['bg-indigo-100', 'bg-indigo-200', 'bg-indigo-300', 'bg-indigo-400', 'bg-indigo-500', 'bg-indigo-600'];
+
+      el.innerHTML = items.map((item, index) => {
+        const height = Math.max(8, Math.round(((item.count || 0) / max) * 100));
+        const labelClass = index === items.length - 1 ? 'text-indigo-600 font-bold' : 'text-gray-400';
+        return `
+          <div class="flex-1 flex flex-col items-center gap-1">
+            <div class="w-full ${colors[index] || 'bg-indigo-200'} rounded-t-lg" style="height:${height}%"></div>
+            <span class="text-[9px] ${labelClass}">${escapeHtml(item.label || '')}</span>
+          </div>`;
+      }).join('');
+    }
+
+    function renderTopTests(items) {
+      const el = document.getElementById('topTests');
+      if (!el) return;
+      if (!items.length) {
+        el.innerHTML = '<p class="text-sm text-gray-400">No report tests found yet.</p>';
+        return;
+      }
+
+      const max = Math.max(...items.map(i => i.count || 0), 1);
+      el.innerHTML = items.map(item => `
+        <div>
+          <div class="flex justify-between mb-1">
+            <span class="text-xs font-medium text-gray-700">${escapeHtml(item.name || 'No Template')}</span>
+            <span class="text-xs font-bold text-gray-900">${item.count || 0}</span>
+          </div>
+          <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+            <div class="bar-fill h-full bg-indigo-500 rounded-full" style="width:${Math.round(((item.count || 0) / max) * 100)}%"></div>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderRecentReports(items) {
+      const el = document.getElementById('recentReports');
+      if (!el) return;
+      if (!items.length) {
+        el.innerHTML = '<p class="text-sm text-gray-400">No recent reports found.</p>';
+        return;
+      }
+
+      el.innerHTML = items.map(item => `
+        <button onclick="viewReport(${item.id})" class="w-full flex items-center justify-between p-3 rounded-2xl border border-gray-100 hover:bg-gray-50 transition text-left">
+          <div>
+            <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.testName || 'No Template')}</p>
+            <p class="text-xs text-gray-400">${escapeHtml(item.customerName || 'Unknown')} • ${formatDate(item.date)}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs font-bold text-gray-700">${money(item.amount)}</p>
+            <p class="text-[10px] text-gray-400">${escapeHtml(item.status || '')}</p>
+          </div>
+        </button>`).join('');
+    }
+
+    function formatDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '';
+      return date.toLocaleDateString('en-IN');
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
     }
 
 
@@ -1308,25 +1266,6 @@
       console.log('Delete:', id);
       // TODO: call backend delete API
     }
-
-    function goToReportPage(status) {
-      const patientId = document.getElementById('rCustomer').value;
-      const templateId = document.getElementById('rTemplate').value;
-      const paid = document.getElementById('rPaid').checked;
-
-      if (!patientId || !templateId) {
-        alert('Select patient & template');
-        return;
-      }
-
-      localStorage.setItem('reportDraft', JSON.stringify({
-        patientId, templateId, status, paid
-      }));
-
-      window.location.href =
-        `/create-report.html?patientId=${patientId}&templateId=${templateId}&status=${status}`;
-    }
-
 
     /* =============================================================
        SELECTION

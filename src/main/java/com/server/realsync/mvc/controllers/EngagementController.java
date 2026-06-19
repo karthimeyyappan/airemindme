@@ -7,6 +7,10 @@ import java.util.Map;
 
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import java.io.InputStream;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +21,7 @@ import jakarta.transaction.Transactional;
 import com.server.realsync.entity.Account;
 import com.server.realsync.entity.ExecutionStatus;
 import com.server.realsync.entity.Reminder;
+
 import com.server.realsync.repo.ScheduleEntryRepository;
 import com.server.realsync.entity.Customer;
 import com.server.realsync.services.CustomerService;
@@ -26,6 +31,8 @@ import com.server.realsync.services.GreetingService;
 import com.server.realsync.entity.ScheduleEntry;
 import com.server.realsync.entity.ScheduleEntryStatus;
 
+import com.server.realsync.services.FileStorageService;
+
 @RestController
 @RequestMapping("/api/engagements")
 @CrossOrigin(origins = "*")
@@ -33,6 +40,10 @@ public class EngagementController {
 
     @Autowired
     private ReminderService reminderService;
+
+    
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @Autowired
     private GreetingService greetingService;
@@ -257,6 +268,37 @@ public class EngagementController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/public/greeting/{greetingId}")
+public ResponseEntity<InputStreamResource> getPublicGreetingImage(
+        @PathVariable Integer greetingId) {
+
+    try {
+
+        Greeting greeting = greetingService
+                .getById(greetingId, null)
+                .orElseThrow(() -> new RuntimeException("Greeting not found"));
+
+        String imagePath = greeting.getImageUrl();
+
+        int lastSlash = imagePath.lastIndexOf('/');
+
+        String dir = imagePath.substring(0, lastSlash + 1);
+        String fileName = imagePath.substring(lastSlash + 1);
+
+        InputStream inputStream =
+                fileStorageService.downloadFile(dir, fileName);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+                .header(HttpHeaders.CACHE_CONTROL, "public,max-age=86400")
+                .body(new InputStreamResource(inputStream));
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.notFound().build();
+    }
+}
 
     @GetMapping("/greetings/{id}")
     public ResponseEntity<?> getGreetingById(

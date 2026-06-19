@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.server.realsync.entity.Account;
 import com.server.realsync.entity.Report;
+import com.server.realsync.dto.ReportDashboardResponse;
 import com.server.realsync.services.ReportService;
 import com.server.realsync.util.SecurityUtil;
 
@@ -41,6 +42,11 @@ public class ReportController {
         return reportService.getByAccountId(account.getId());
     }
 
+    @GetMapping("/dashboard")
+    public ResponseEntity<ReportDashboardResponse> getDashboard() {
+        return ResponseEntity.ok(reportService.getDashboard());
+    }
+
     // GET SINGLE REPORT
     @GetMapping("/{id}")
     public ResponseEntity<?> getReport(@PathVariable Integer id) {
@@ -68,5 +74,12 @@ public class ReportController {
                         .stream()
                         .map(c -> java.util.Map.of("id", c.getId(), "name", c.getName()))
                         .collect(java.util.stream.Collectors.toList()));
+    }
+
+    // DELETE REPORT
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteReport(@PathVariable Integer id) {
+        reportService.delete(id);
+        return ResponseEntity.ok().build();
     }
 }

@@ -160,7 +160,7 @@
             <!-- Initial -->
             <div
               class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <span th:text="${report.customerName != null ? report.customerName.substring(0,1) : 'U'}"
+              <span th:text="${report.customerName != null and report.customerName.length() > 0 ? report.customerName.substring(0,1) : 'U'}"
                 class="text-white text-sm font-bold">
               </span>
             </div>
@@ -390,115 +390,92 @@
   <script th:inline="javascript">
 
     const report = /*[[${report}]]*/ {};
+    const statusColors = {
+        Draft: 'bg-orange-100 text-orange-700',
+        Completed: 'bg-emerald-100 text-emerald-700',
+        Shared: 'bg-blue-100 text-blue-700'
+    };
+    let editingMode = false;
+
+    // Helper to calculate status of field value (Normal/Abnormal/etc)
+    function getNormalStatus(field, val) {
+      if (!val || val === '—' || val === '') return '—';
+      
+      const numFields = ['haemoglobin', 'wbc', 'platelets', 'glucose', 'cholesterol', 'heartRate', 'pr', 'qrs', 'ph'];
+      const fieldKey = (field.name || '').toLowerCase().replace(/\s+/g, '');
+      
+      if (numFields.includes(fieldKey)) {
+        const ranges = {
+            haemoglobin: [12, 17],
+            wbc: [4000, 11000],
+            platelets: [150000, 400000],
+            glucose: [70, 100],
+            cholesterol: [0, 200],
+            heartRate: [60, 100],
+            pr: [120, 200],
+            qrs: [80, 120],
+            ph: [4.5, 8]
+        };
+        const r = ranges[fieldKey];
+        if (r) {
+            const n = parseFloat(val);
+            if (isNaN(n)) return '—';
+            return (n >= r[0] && n <= r[1])
+                ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Normal</span>'
+                : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-semibold">Abnormal</span>';
+        }
+      }
+      return '—';
+    }
 
     function renderFields() {
       const tbody = document.getElementById("reportTableBody");
 
       if (!report.fields || report.fields.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='4'>No Data</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='4' class='px-5 py-3 text-gray-400'>No Data</td></tr>";
         return;
       }
 
       tbody.innerHTML = "";
+      document.getElementById('fieldCount').textContent = report.fields.length + ' fields';
 
       report.fields.forEach(f => {
+        // Compute status badge
+        const valStatus = getNormalStatus(f, f.value);
         tbody.innerHTML += `
-      <tr>
-        <td class="px-5 py-3 font-medium text-gray-700">${f.name}</td>
-        <td class="px-5 py-3">${f.value}</td>
-        <td class="px-5 py-3 text-gray-400">${f.range}</td>
-        <td class="px-5 py-3">${f.status}</td>
-      </tr>
-    `;
+          <tr>
+            <td class="px-5 py-3 font-medium text-gray-700">${f.name}</td>
+            <td class="px-5 py-3 font-semibold text-gray-900">${f.value || '—'}</td>
+            <td class="px-5 py-3 text-gray-400">${f.range || '—'}</td>
+            <td class="px-5 py-3">${f.status || valStatus}</td>
+          </tr>
+        `;
       });
-    }
-
-    renderFields();
-
-
-  </script>
-
-  <script>
-    const templates = {};
-
-
-    const statusColors = { Draft: 'bg-orange-100 text-orange-700', Completed: 'bg-emerald-100 text-emerald-700', Shared: 'bg-blue-100 text-blue-700' };
-
-    // Demo report (in production this would be fetched by URL id param)
-
-
-    const tmpl = templates[report.template] || templates.blood;
-    let editingMode = false;
-
-    // Render header
-    document.getElementById('pageTitle').textContent = tmpl.name;
-    document.getElementById('titleBreadcrumb').textContent = tmpl.name;
-    document.getElementById('reportName').textContent = tmpl.name;
-    document.getElementById('reportIcon').textContent = tmpl.icon;
-    document.getElementById('reportDate').textContent = report.date;
-    document.getElementById('custName').textContent = report.customer;
-    document.getElementById('custInitial').textContent = report.customer.charAt(0);
-    document.getElementById('tmplLabel').textContent = tmpl.name;
-    document.getElementById('fieldCount').textContent = tmpl.fields.length + ' fields';
-    // Set cost/specimen/TAT (use report data if available, else defaults)
-
-
-    const sb = document.getElementById('statusBadge');
-    sb.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold ' + statusColors[report.status];
-    sb.textContent = report.status;
-
-    function getNormalStatus(field, val) {
-      if (!val || val === '—') return '<span class="text-gray-400 text-xs">—</span>';
-      // Simple heuristic flagging for numeric fields
-      const numFields = ['haemoglobin', 'wbc', 'platelets', 'glucose', 'cholesterol', 'heartRate', 'pr', 'qrs', 'ph'];
-      if (numFields.includes(field.key)) {
-        const ranges = { haemoglobin: [12, 17], wbc: [4000, 11000], platelets: [150000, 400000], glucose: [70, 100], cholesterol: [0, 200], heartRate: [60, 100], pr: [120, 200], qrs: [80, 120], ph: [4.5, 8] };
-        const r = ranges[field.key];
-        if (r) { const n = parseFloat(val); if (isNaN(n)) return '<span class="text-gray-400 text-xs">—</span>'; return n >= r[0] && n <= r[1] ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Normal</span>' : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-semibold">Abnormal</span>'; }
-      }
-      if (['protein', 'glucose'].includes(field.key) && field.key !== 'glucose') return val.toLowerCase() === 'negative' ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Normal</span>' : '<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">Review</span>';
-      return '<span class="text-gray-400 text-xs">—</span>';
-    }
-
-    function renderViewTable() {
-      const tbody = document.getElementById('reportTableBody');
-      tbody.innerHTML = '';
-      tmpl.fields.forEach(f => {
-        const val = report.data[f.key] || '—';
-        tbody.innerHTML += `<tr><td class="px-5 py-3 text-gray-600 text-sm">${f.label}</td><td class="px-5 py-3 text-gray-900 font-semibold text-sm">${val}</td><td class="px-5 py-3 text-gray-400 text-xs">${f.ref}</td><td class="px-5 py-3">${getNormalStatus(f, val)}</td></tr>`;
-      });
-      const notesEl = document.getElementById('notesView');
-      if (report.notes) {
-        notesEl.innerHTML = `<p class="text-xs text-amber-800"><span class="font-semibold">Notes:</span> ${report.notes}</p>`;
-        notesEl.className = 'px-5 py-4 border-t border-gray-50 bg-amber-50';
-      } else { notesEl.innerHTML = ''; notesEl.className = ''; }
     }
 
     function renderEditTable() {
-    const tbody = document.getElementById('editTableBody');
-    tbody.innerHTML = '';
+      const tbody = document.getElementById('editTableBody');
+      tbody.innerHTML = '';
 
-    if (!report.fields || report.fields.length === 0) {
+      if (!report.fields || report.fields.length === 0) {
         tbody.innerHTML = '<tr><td colspan="3" class="px-5 py-3 text-gray-400">No fields available</td></tr>';
         return;
-    }
+      }
 
-    report.fields.forEach((f, i) => {
+      report.fields.forEach((f, i) => {
         tbody.innerHTML += `
-        <tr>
+          <tr>
             <td class="px-5 py-3 text-gray-700 font-medium text-sm">${f.name}</td>
             <td class="px-5 py-3">
-                <input type="text" id="ef-${i}"
-                    value="${f.value || ''}"
-                    placeholder="${f.range || ''}"
-                    class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <input type="text" id="ef-${i}"
+                value="${f.value || ''}"
+                placeholder="${f.range || ''}"
+                class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </td>
             <td class="px-5 py-3 text-gray-400 text-xs">${f.range || '-'}</td>
-        </tr>`;
-    });
-
-    // document.getElementById('editNotes').value = report.notes || '';
-}
+          </tr>`;
+      });
+    }
 
     function toggleEdit() {
       editingMode = !editingMode;
@@ -510,63 +487,169 @@
       if (editingMode) renderEditTable();
     }
 
-    function saveEdits() {
-    if (report.fields) {
+    async function saveEdits() {
+      if (report.fields) {
         report.fields.forEach((f, i) => {
-            const el = document.getElementById('ef-' + i);
-            if (el) f.value = el.value;
+          const el = document.getElementById('ef-' + i);
+          if (el) f.value = el.value;
         });
-    }
-    report.notes = document.getElementById('editNotes').value;
-    toggleEdit();
-    renderFields();
-    showToast('Report updated successfully');
-}
+      }
 
-    function saveAndSend() {
-      saveEdits();
+      const payload = {
+        id: report.id,
+        patientId: report.patientId,
+        templateId: report.templateId,
+        status: report.status,
+        fields: JSON.stringify(report.fields)
+      };
+
+      try {
+        const response = await fetch('/api/reports', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save changes');
+        }
+
+        toggleEdit();
+        renderFields();
+        showToast('Report updated successfully');
+      } catch (error) {
+        console.error(error);
+        showToast('Error saving changes');
+      }
+    }
+
+    async function saveAndSend() {
       report.status = 'Shared';
-      const sb = document.getElementById('statusBadge');
-      sb.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold ' + statusColors['Shared'];
-      sb.textContent = 'Shared';
-      const msg = encodeURIComponent(`Hello ${report.customer}, your updated report is ready. View: https://reminderme.app/reports/${report.id}`);
-      window.open(`https://wa.me/?text=${msg}`, '_blank');
-      showToast('Report saved & sent to customer via WhatsApp');
+      if (report.fields) {
+        report.fields.forEach((f, i) => {
+          const el = document.getElementById('ef-' + i);
+          if (el) f.value = el.value;
+        });
+      }
+
+      const payload = {
+        id: report.id,
+        patientId: report.patientId,
+        templateId: report.templateId,
+        status: report.status,
+        fields: JSON.stringify(report.fields)
+      };
+
+      try {
+        const response = await fetch('/api/reports', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save changes');
+        }
+
+        const sb = document.getElementById('statusBadge');
+        sb.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold ' + statusColors['Shared'];
+        sb.textContent = 'Shared';
+
+        const msg = encodeURIComponent(`Hello ${report.customerName}, your updated report is ready. View: ${window.location.origin}/view-report.html?id=${report.id}`);
+        window.open(`https://wa.me/?text=${msg}`, '_blank');
+
+        toggleEdit();
+        renderFields();
+        showToast('Report saved & sent to customer via WhatsApp');
+      } catch (error) {
+        console.error(error);
+        showToast('Error saving changes');
+      }
     }
 
-    function changeStatus(s) {
+    async function changeStatus(s) {
       report.status = s;
-      const sb = document.getElementById('statusBadge');
-      sb.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold ' + statusColors[s];
-      sb.textContent = s;
-      showToast('Status updated to ' + s);
+      const payload = {
+        id: report.id,
+        patientId: report.patientId,
+        templateId: report.templateId,
+        status: report.status,
+        fields: JSON.stringify(report.fields)
+      };
+
+      try {
+        const response = await fetch('/api/reports', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update status');
+        }
+
+        const sb = document.getElementById('statusBadge');
+        sb.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold ' + statusColors[s];
+        sb.textContent = s;
+        showToast('Status updated to ' + s);
+      } catch (error) {
+        console.error(error);
+        showToast('Error updating status');
+      }
     }
 
     function exportPDF() {
       showToast('Preparing PDF...');
       setTimeout(() => window.print(), 500);
     }
+
     function shareWhatsApp() {
-      const msg = encodeURIComponent(`Hello ${report.customer}, your ${tmpl.name} is ready. View: https://reminderme.app/reports/${report.id}`);
+      const msg = encodeURIComponent(`Hello ${report.customerName || 'Customer'}, your report is ready. View: ${window.location.origin}/view-report.html?id=${report.id}`);
       window.open(`https://wa.me/?text=${msg}`, '_blank');
       changeStatus('Shared');
-      showToast('Shared via WhatsApp');
     }
+
     function shareEmail() {
-      window.open(`mailto:?subject=Your ${tmpl.name} is Ready&body=Hello ${report.customer}, view your report: https://reminderme.app/reports/${report.id}`, '_blank');
+      window.open(`mailto:?subject=Your Report is Ready&body=Hello ${report.customerName || 'Customer'}, view your report: ${window.location.origin}/view-report.html?id=${report.id}`, '_blank');
       showToast('Email opened');
     }
+
     function copyLink() {
-      const link = `https://reminderme.app/reports/${report.id}`;
-      navigator.clipboard.writeText(link).catch(() => { const e = document.createElement('input'); e.value = link; document.body.appendChild(e); e.select(); document.execCommand('copy'); document.body.removeChild(e); });
+      const link = `${window.location.origin}/view-report.html?id=${report.id}`;
+      navigator.clipboard.writeText(link).catch(() => {
+        const e = document.createElement('input');
+        e.value = link;
+        document.body.appendChild(e);
+        e.select();
+        document.execCommand('copy');
+        document.body.removeChild(e);
+      });
       showToast('Secure link copied to clipboard!');
     }
 
     function confirmDelete() { openModal('deleteModal'); }
-    function deleteReport() {
+
+    async function deleteReport() {
       closeModal('deleteModal');
-      showToast('Report deleted');
-      setTimeout(() => window.location.href = 'reports.html', 1500);
+      try {
+        const response = await fetch(`/api/reports/${report.id}`, {
+          method: 'DELETE'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete report');
+        }
+        showToast('Report deleted');
+        setTimeout(() => window.location.href = 'reports.html', 1500);
+      } catch (error) {
+        console.error(error);
+        showToast('Error deleting report');
+      }
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -578,7 +661,7 @@
       setTimeout(() => t.classList.add('hidden'), 3000);
     }
 
-    renderViewTable();
+    renderFields();
   </script>
 </body>
 

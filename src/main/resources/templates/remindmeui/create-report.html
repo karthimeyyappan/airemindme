@@ -3,239 +3,417 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Create Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Report - Numen</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 4px
+        }
+    </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-gray-50 pb-28">
 
-    <div class="max-w-4xl mx-auto p-6">
+    <div class="max-w-4xl mx-auto px-4 md:px-6 pt-6">
 
+        <p class="text-xs text-gray-400 mb-1"><a href="/reports.html" class="hover:text-indigo-600">Reports</a> / <span
+                class="text-gray-700">Create Report</span></p>
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Create Report</h1>
-            <p class="text-sm text-gray-500">Enter values for selected report template</p>
+            <h1 class="text-xl font-bold text-gray-900">Create Report</h1>
+            <p class="text-sm text-gray-500 mt-0.5">Select a customer, optionally load a template, and fill in the
+                report</p>
         </div>
 
-        <div id="reportHeader" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-1">
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Patient Information</p>
-                    <h2 id="dispPatientName" class="text-lg font-bold text-indigo-900">Loading...</h2>
-                    <p id="dispPatientMeta" class="text-sm text-gray-600">—</p>
+        <!-- STEP 1: CUSTOMER -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+            <label class="text-sm font-semibold text-gray-700 mb-2 block">Customer <span
+                    class="text-red-400">*</span></label>
+            <div class="relative" id="customerSearchWrap">
+                <input id="customerSearchInput" type="text" oninput="onCustomerSearch(this.value)"
+                    placeholder="Search by name, mobile or customer ID..."
+                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div id="customerDropdown"
+                    class="hidden absolute z-20 mt-1 w-full bg-white border border-gray-100 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                 </div>
-                <div class="space-y-1 md:text-right">
-                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Report Details</p>
-                    <h2 id="dispTemplateTitle" class="text-lg font-bold text-gray-800">Loading...</h2>
-                    <div>
-                        <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                            Status: Draft
-                        </span>
-                    </div>
+            </div>
+
+            <div id="selectedCustomerCard"
+                class="hidden mt-3 flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-2xl px-4 py-3">
+                <div>
+                    <p id="selCustName" class="text-sm font-bold text-indigo-900">—</p>
+                    <p id="selCustMeta" class="text-xs text-indigo-600 mt-0.5">—</p>
                 </div>
+                <button onclick="clearCustomer()"
+                    class="text-xs text-indigo-500 hover:text-indigo-700 font-semibold">Change</button>
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100">
+        <!-- STEP 2: TEMPLATE -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+            <label class="text-sm font-semibold text-gray-700 mb-2 block">Report Template <span
+                    class="text-gray-400 text-xs font-normal">(optional)</span></label>
+            <div class="relative" id="templateSearchWrap">
+                <input id="templateSearchInput" type="text" oninput="onTemplateSearch(this.value)"
+                    placeholder="Search template by name..."
+                    class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div id="templateDropdown"
+                    class="hidden absolute z-20 mt-1 w-full bg-white border border-gray-100 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                </div>
+            </div>
 
-            <div class="overflow-hidden">
-                <table class="w-full text-sm">
+            <div class="flex flex-wrap gap-2 mt-3">
+                <button onclick="loadSelectedTemplate()"
+                    class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition">Load
+                    Template</button>
+                <button onclick="createEmptyReport()"
+                    class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition">Create
+                    Empty Report</button>
+            </div>
+
+            <div id="selectedTemplateBadge"
+                class="hidden mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold">
+                <span id="selTemplateName">—</span>
+                <button onclick="clearTemplate()" class="text-emerald-500 hover:text-emerald-800">✕</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: FIELDS -->
+        <div id="fieldsSection" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm mb-5">
+            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <div>
+                    <h2 id="reportModeTitle" class="text-sm font-bold text-gray-900">Manual Report</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Fill in the values below</p>
+                </div>
+                <button onclick="addField()"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 transition">
+                    + Add Field
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm min-w-[480px]">
                     <thead>
-                        <tr class="bg-gray-50 border-b border-gray-100 text-gray-600 text-xs uppercase">
-                            <th class="px-5 py-3 text-left">Test / Field</th>
-                            <th class="px-5 py-3 text-left">Value</th>
-                            <th class="px-5 py-3 text-left">Reference Range</th>
-                            <th class="px-5 py-3 text-left">Status</th>
+                        <tr id="fieldsTableHead"
+                            class="bg-gray-50 border-b border-gray-100 text-gray-500 text-xs uppercase tracking-wide">
                         </tr>
                     </thead>
-
-                    <tbody id="reportTableBody" class="divide-y divide-gray-100 bg-white">
-                    </tbody>
+                    <tbody id="fieldsTableBody" class="divide-y divide-gray-50"></tbody>
                 </table>
             </div>
 
-            <div class="p-5 flex gap-3">
-                <button onclick="saveReport('Draft')"
-                    class="flex-1 py-3 rounded-xl border border-indigo-200 text-indigo-600 font-semibold hover:bg-indigo-50">
-                    Save Draft
-                </button>
-
-                <button onclick="saveReport('Completed')"
-                    class="flex-1 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700">
-                    Save & Complete
-                </button>
+            <div id="fieldsEmptyState" class="hidden text-center py-10">
+                <p class="text-gray-400 text-sm">No fields yet. Click "Add Field" to start.</p>
             </div>
-
         </div>
 
     </div>
 
+    <!-- FIXED BOTTOM ACTION BAR -->
+    <div id="actionBar"
+        class="hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex flex-wrap gap-3 justify-end shadow-[0_-4px_12px_rgba(0,0,0,0.04)] z-30">
+        <button onclick="saveReport('DRAFT')"
+            class="px-5 py-3 rounded-xl border border-indigo-200 text-indigo-600 text-sm font-semibold hover:bg-indigo-50 transition">Save
+            Draft</button>
+        <button onclick="saveReport('SEND')"
+            class="px-5 py-3 rounded-xl border border-emerald-200 text-emerald-600 text-sm font-semibold hover:bg-emerald-50 transition">Save
+            & Send Customer</button>
+        <button onclick="saveReport('COMPLETED')"
+            class="px-5 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition shadow-sm">Save
+            & Complete</button>
+    </div>
+
+    <script>
+        // ============ STATE ============
+        let selectedCustomer = null;
+        let selectedTemplate = null;
+        let pendingTemplate = null;
+        let reportFields = [];
+        let hasRangeColumn = false;
+        let lastCustomerResults = [];
+        let lastTemplateResults = [];
+        let allTemplates = null;
+
+        // ============ HELPERS ============
+        async function api(url, method = 'GET', data = null) {
+            const options = { method, headers: { 'Content-Type': 'application/json' } };
+            if (data) options.body = JSON.stringify(data);
+            const res = await fetch(url, options);
+            if (!res.ok) throw new Error('API Error: ' + res.status);
+            return res.json();
+        }
+
+        function debounce(fn, delay) {
+            let t;
+            return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
+        }
+
+        function escAttr(s) {
+            return (s === undefined || s === null ? '' : String(s)).replace(/"/g, '&quot;');
+        }
+
+        function getParams() {
+            const url = new URL(window.location.href);
+            return { templateId: url.searchParams.get('templateId'), patientId: url.searchParams.get('patientId') };
+        }
+
+        // ============ CUSTOMER SEARCH ============
+        const onCustomerSearch = debounce(async function (query) {
+            const dd = document.getElementById('customerDropdown');
+            if (!query || query.trim().length < 2) { dd.classList.add('hidden'); dd.innerHTML = ''; return; }
+            try {
+                const results = await api(`/api/customers/search?query=${encodeURIComponent(query)}`);
+                renderCustomerDropdown(results);
+            } catch (e) { console.error('Customer search failed', e); }
+        }, 300);
+
+        function renderCustomerDropdown(list) {
+            lastCustomerResults = list || [];
+            const dd = document.getElementById('customerDropdown');
+            if (!lastCustomerResults.length) {
+                dd.innerHTML = `<div class="px-4 py-3 text-xs text-gray-400">No customers found</div>`;
+                dd.classList.remove('hidden');
+                return;
+            }
+            dd.innerHTML = lastCustomerResults.map((c, i) => `
+        <button type="button" onclick="selectCustomer(${i})" class="w-full text-left px-4 py-3 hover:bg-indigo-50 border-b border-gray-50 last:border-0">
+          <p class="text-sm font-semibold text-gray-800">${c.name || 'Unnamed'}</p>
+          <p class="text-xs text-gray-400">${c.mobile || ''}${c.customerId ? ' • ID: ' + c.customerId : ''}</p>
+        </button>
+      `).join('');
+            dd.classList.remove('hidden');
+        }
+
+        function selectCustomer(i) { applyCustomer(lastCustomerResults[i]); }
+
+        function applyCustomer(c) {
+            selectedCustomer = c;
+            document.getElementById('customerSearchInput').value = c.name || '';
+            document.getElementById('customerDropdown').classList.add('hidden');
+            document.getElementById('selCustName').innerText = c.name || 'Unnamed';
+            document.getElementById('selCustMeta').innerText = `${c.mobile || ''}${c.customerId ? ' • ID: ' + c.customerId : ''}`;
+            document.getElementById('selectedCustomerCard').classList.remove('hidden');
+        }
+
+        function clearCustomer() {
+            selectedCustomer = null;
+            document.getElementById('customerSearchInput').value = '';
+            document.getElementById('selectedCustomerCard').classList.add('hidden');
+        }
+
+        // ============ TEMPLATE SEARCH ============
+        async function ensureTemplatesLoaded() {
+            if (allTemplates) return allTemplates;
+            allTemplates = await api('/api/catalog/rtemplates');
+            return allTemplates;
+        }
+
+        const onTemplateSearch = debounce(async function (query) {
+            const dd = document.getElementById('templateDropdown');
+            if (!query || !query.trim()) { dd.classList.add('hidden'); dd.innerHTML = ''; return; }
+            try {
+                const all = await ensureTemplatesLoaded();
+                const filtered = all.filter(t => (t.title || '').toLowerCase().includes(query.toLowerCase()));
+                renderTemplateDropdown(filtered);
+            } catch (e) { console.error('Template search failed', e); }
+        }, 250);
+
+        function renderTemplateDropdown(list) {
+            lastTemplateResults = list;
+            const dd = document.getElementById('templateDropdown');
+            if (!list.length) {
+                dd.innerHTML = `<div class="px-4 py-3 text-xs text-gray-400">No templates found</div>`;
+                dd.classList.remove('hidden');
+                return;
+            }
+            dd.innerHTML = list.map((t, i) => `
+        <button type="button" onclick="pickTemplate(${i})" class="w-full text-left px-4 py-3 hover:bg-indigo-50 border-b border-gray-50 last:border-0">
+          <p class="text-sm font-semibold text-gray-800">${t.title}</p>
+          <p class="text-xs text-gray-400">${t.category || ''}</p>
+        </button>
+      `).join('');
+            dd.classList.remove('hidden');
+        }
+
+        function pickTemplate(i) {
+            pendingTemplate = lastTemplateResults[i];
+            document.getElementById('templateSearchInput').value = pendingTemplate.title;
+            document.getElementById('templateDropdown').classList.add('hidden');
+        }
+
+        async function loadSelectedTemplate() {
+            if (!pendingTemplate) { alert('Please search and select a template first'); return; }
+            try {
+                const full = await api(`/api/catalog/rtemplates/${pendingTemplate.id}`);
+                applyTemplate(full);
+            } catch (e) { alert('Failed to load template'); }
+        }
+
+        function applyTemplate(t) {
+            selectedTemplate = t;
+            const cols = t.columns || [];
+            hasRangeColumn = cols.some(c => c.referenceRange || c.range || c.description || c.hint);
+            reportFields = cols.map(c => ({
+                fieldName: c.fieldName || c.name || c.test || '',
+                value: '',
+                range: c.referenceRange || c.range || c.description || c.hint || '',
+                status: 'Normal'
+            }));
+            document.getElementById('selTemplateName').innerText = t.title;
+            document.getElementById('selectedTemplateBadge').classList.remove('hidden');
+            document.getElementById('reportModeTitle').innerText = t.title;
+            showFieldsSection();
+            renderFieldsTable();
+        }
+
+        function clearTemplate() {
+            selectedTemplate = null;
+            pendingTemplate = null;
+            document.getElementById('templateSearchInput').value = '';
+            document.getElementById('selectedTemplateBadge').classList.add('hidden');
+        }
+
+        function createEmptyReport() {
+            selectedTemplate = null;
+            pendingTemplate = null;
+            hasRangeColumn = false;
+            reportFields = [];
+            document.getElementById('templateSearchInput').value = '';
+            document.getElementById('selectedTemplateBadge').classList.add('hidden');
+            document.getElementById('reportModeTitle').innerText = 'Manual Report';
+            showFieldsSection();
+            renderFieldsTable();
+        }
+
+        function showFieldsSection() {
+            document.getElementById('fieldsSection').classList.remove('hidden');
+            document.getElementById('actionBar').classList.remove('hidden');
+        }
+
+        // ============ FIELDS TABLE ============
+        function renderFieldsTable() {
+            const thead = document.getElementById('fieldsTableHead');
+            const tbody = document.getElementById('fieldsTableBody');
+            const empty = document.getElementById('fieldsEmptyState');
+
+            thead.innerHTML = hasRangeColumn
+                ? `<th class="px-5 py-3 text-left">Field Name</th><th class="px-5 py-3 text-left">Value</th><th class="px-5 py-3 text-left">Range</th><th class="px-5 py-3 text-left">Status</th><th class="px-5 py-3 text-right w-28">Actions</th>`
+                : `<th class="px-5 py-3 text-left">Field Name</th><th class="px-5 py-3 text-left">Value</th><th class="px-5 py-3 text-right w-28">Actions</th>`;
+
+            if (!reportFields.length) {
+                tbody.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            tbody.innerHTML = reportFields.map((f, i) => `
+        <tr>
+          <td class="px-5 py-2.5">
+            <input type="text" value="${escAttr(f.fieldName)}" oninput="updateField(${i},'fieldName',this.value)"
+              placeholder="Field name" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </td>
+          <td class="px-5 py-2.5">
+            <input type="text" value="${escAttr(f.value)}" oninput="updateField(${i},'value',this.value)"
+              placeholder="Enter value" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </td>
+          ${hasRangeColumn ? `
+          <td class="px-5 py-2.5">
+            <input type="text" value="${escAttr(f.range)}" oninput="updateField(${i},'range',this.value)"
+              placeholder="-" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </td>
+          <td class="px-5 py-2.5">
+            <select onchange="updateField(${i},'status',this.value)" class="px-3 py-2 rounded-xl border border-gray-200 text-sm">
+              <option ${f.status === 'Normal' ? 'selected' : ''}>Normal</option>
+              <option ${f.status === 'High' ? 'selected' : ''}>High</option>
+              <option ${f.status === 'Low' ? 'selected' : ''}>Low</option>
+            </select>
+          </td>` : ''}
+          <td class="px-5 py-2.5 text-right whitespace-nowrap">
+            <button onclick="moveField(${i},-1)" title="Move up" class="text-gray-400 hover:text-indigo-600 px-1">↑</button>
+            <button onclick="moveField(${i},1)" title="Move down" class="text-gray-400 hover:text-indigo-600 px-1">↓</button>
+            <button onclick="deleteField(${i})" title="Delete" class="text-red-400 hover:text-red-600 px-1">✕</button>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        function updateField(i, key, val) { reportFields[i][key] = val; }
+
+        function addField() {
+            reportFields.push({ fieldName: '', value: '', range: '', status: 'Normal' });
+            renderFieldsTable();
+        }
+
+        function deleteField(i) {
+            reportFields.splice(i, 1);
+            renderFieldsTable();
+        }
+
+        function moveField(i, dir) {
+            const j = i + dir;
+            if (j < 0 || j >= reportFields.length) return;
+            [reportFields[i], reportFields[j]] = [reportFields[j], reportFields[i]];
+            renderFieldsTable();
+        }
+
+        // ============ SAVE ============
+        async function saveReport(action) {
+            if (!selectedCustomer) { alert('Please select a customer first'); return; }
+            if (!reportFields.length) { alert('Please add at least one field'); return; }
+
+            let status = 'Draft';
+            let notifyCustomer = false;
+            if (action === 'COMPLETED') status = 'Completed';
+            if (action === 'SEND') { status = 'Completed'; notifyCustomer = true; }
+
+            const payload = {
+                patientId: selectedCustomer.id,
+                templateId: selectedTemplate ? selectedTemplate.id : null,
+                status: status,
+                notifyCustomer: notifyCustomer,
+                fields: JSON.stringify(reportFields)
+            };
+
+            try {
+                await api('/api/reports', 'POST', payload);
+                alert('Report saved successfully');
+                window.location.href = '/reports.html';
+            } catch (e) {
+                alert('Failed to save report: ' + e.message);
+            }
+        }
+
+        // ============ INIT ============
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#customerSearchWrap')) document.getElementById('customerDropdown').classList.add('hidden');
+            if (!e.target.closest('#templateSearchWrap')) document.getElementById('templateDropdown').classList.add('hidden');
+        });
+
+        (async function init() {
+            const { templateId, patientId } = getParams();
+            if (patientId) {
+                try { applyCustomer(await api(`/api/customers/${patientId}`)); }
+                catch (e) { console.error('Failed to preload customer', e); }
+            }
+            if (templateId) {
+                try { applyTemplate(await api(`/api/catalog/rtemplates/${templateId}`)); }
+                catch (e) { console.error('Failed to preload template', e); }
+            }
+        })();
+    </script>
+
 </body>
 
-<script>
-
-    // GLOBAL STATE
-    let reportFields = [];
-    let templateId = null;
-    let patientId = null;
-
-    // Extracted Data
-    let patientData = null;
-    let templateTitle = "New Report";
-
-
-    // GET URL PARAMS
-    function getParams() {
-        const url = new URL(window.location.href);
-
-        templateId = url.searchParams.get('templateId');
-        patientId = url.searchParams.get('patientId');
-    }
-
-
-    // LOAD TEMPLATE
-    async function loadTemplate() {
-
-        const template = await api(`/api/catalog/rtemplates/${templateId}`);
-
-        // Store template title for header
-        templateTitle = template.title || 'Untitled Report';
-
-        reportFields = (template.columns || []).map(c => ({
-            name: c.name || c.test,
-            value: '',
-            range: c.range || '-',
-            status: 'Normal'
-        }));
-
-        renderHeader(); // Update Header UI
-        renderTable();
-    }
-
-    // NEW: LOAD PATIENT DATA
-    async function loadPatient() {
-        try {
-            patientData = await api(`/api/customers/${patientId}`);
-            renderHeader(); // Update Header UI
-        } catch (err) {
-            console.error("Failed to load patient", err);
-            document.getElementById('dispPatientName').innerText = "Error loading patient";
-        }
-    }
-
-    // NEW: RENDER HEADER
-    function renderHeader() {
-        // Update Patient Details
-        if (patientData) {
-            document.getElementById('dispPatientName').innerText = patientData.name || 'Unknown Patient';
-
-            let meta = `Phone: ${patientData.mobile || 'N/A'}`;
-            if (patientData.age) meta += ` • Age: ${patientData.age}`;
-            if (patientData.gender) meta += ` • ${patientData.gender}`;
-
-            document.getElementById('dispPatientMeta').innerText = meta;
-        }
-
-        // Update Template Title
-        document.getElementById('dispTemplateTitle').innerText = templateTitle;
-    }
-
-
-    // RENDER TABLE
-    function renderTable() {
-        const tbody = document.getElementById('reportTableBody');
-        tbody.innerHTML = '';
-
-        reportFields.forEach((f, i) => {
-            tbody.innerHTML += `
-        <tr>
-
-            <td class="px-5 py-3 font-medium text-gray-700">
-                ${f.name}
-            </td>
-
-            <td class="px-5 py-3">
-                <input 
-                    type="text"
-                    oninput="updateValue(${i}, this.value)"
-                    placeholder="Enter value"
-                    class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500">
-            </td>
-
-            <td class="px-5 py-3 text-gray-400">
-                ${f.range}
-            </td>
-
-            <td class="px-5 py-3">
-                <select onchange="updateStatus(${i}, this.value)"
-                    class="px-3 py-2 rounded-xl border border-gray-200 text-sm">
-                    <option>Normal</option>
-                    <option>High</option>
-                    <option>Low</option>
-                </select>
-            </td>
-
-        </tr>
-        `;
-        });
-    }
-
-
-    // UPDATE VALUE
-    function updateValue(index, val) {
-        reportFields[index].value = val;
-    }
-
-
-    // UPDATE STATUS
-    function updateStatus(index, val) {
-        reportFields[index].status = val;
-    }
-
-
-    // SAVE REPORT
-    async function saveReport(status) {
-
-        const payload = {
-            patientId: patientId,
-            templateId: templateId,
-            status: status,
-            fields: JSON.stringify(reportFields)
-        };
-
-        await api('/api/reports', 'POST', payload);
-
-        alert('Report saved successfully');
-
-        window.location.href = '/reports.html';
-    }
-
-
-    // SIMPLE API HELPER
-    async function api(url, method = 'GET', data = null) {
-
-        const options = {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
-
-        if (data) options.body = JSON.stringify(data);
-
-        const res = await fetch(url, options);
-
-        if (!res.ok) throw new Error('API Error');
-
-        return res.json();
-    }
-
-
-    // INIT
-    getParams();
-    loadTemplate();
-    loadPatient(); // Call new patient loader
-
-</script>
-
 </html>
+

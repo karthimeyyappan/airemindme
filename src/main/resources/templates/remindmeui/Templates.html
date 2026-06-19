@@ -426,119 +426,132 @@
 
   <!-- ═══ REPORT TEMPLATE MODAL ═══ -->
   <div id="rtModal" class="hidden fixed inset-0 z-50 flex items-end md:items-center justify-center">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeRTModal()"></div>
-    <div class="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-lg max-h-[95vh] overflow-y-auto shadow-2xl">
-      <div class="flex justify-center pt-3 pb-1 md:hidden">
-        <div class="w-10 h-1 rounded-full bg-gray-200"></div>
-      </div>
-      <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center"><svg
-              class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg></div>
-          <div>
-            <h2 id="rtModalTitle" class="text-base font-bold text-gray-900">Create Report Template</h2>
-            <p class="text-xs text-gray-400">Define columns that appear in each report</p>
-          </div>
-        </div>
-        <button onclick="closeRTModal()"
-          class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><svg
-            class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg></button>
-      </div>
-      <div class="px-5 py-5 flex flex-col gap-4">
-        <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Template Title <span
-              class="text-red-400">*</span></label><input type="text" id="rt_title"
-            placeholder="e.g. Complete Blood Count, MRI Brain"
-            class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400">
-        </div>
-        <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Category / Type</label>
-          <div class="relative"><select id="rt_category"
-              class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
-              <option>Blood Test</option>
-              <option>Radiology</option>
-              <option>Cardiology</option>
-              <option>Pathology</option>
-              <option>Urology</option>
-              <option>Prescription</option>
-              <option>General Checkup</option>
-              <option>Custom</option>
-            </select><svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg></div>
-        </div>
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeRTModal()"></div>
+  <div class="relative bg-white rounded-t-3xl md:rounded-3xl w-full max-w-lg max-h-[95vh] overflow-y-auto shadow-2xl">
+    <div class="flex justify-center pt-3 pb-1 md:hidden">
+      <div class="w-10 h-1 rounded-full bg-gray-200"></div>
+    </div>
+    <div class="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center"><svg
+            class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg></div>
         <div>
-          <div>
-            <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-sm font-medium text-gray-700">Report Columns <span
-                    class="text-red-400">*</span></label>
-                <button type="button" onclick="addRow()"
-                  class="flex items-center gap-1 text-xs text-indigo-600 font-semibold hover:text-indigo-800">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>Add Test Field
-                </button>
-              </div>
-
-              <div class="border border-gray-100 rounded-2xl overflow-hidden">
-                <table class="w-full text-sm text-left">
-                  <thead>
-                    <tr class="bg-gray-50 border-b border-gray-100">
-                      <th class="px-4 py-3 font-semibold text-gray-600 w-1/2">Test / Field Name</th>
-                      <th class="px-4 py-3 font-semibold text-gray-600 w-1/3">Ref. Range</th>
-                      <th class="px-4 py-3 font-semibold text-gray-600 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="reportRows" class="divide-y divide-gray-50 bg-white">
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div id="rtColumnsContainer" class="space-y-3">
-
-            </div>
-          </div>
-
-          <div class="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-100 flex items-start gap-2">
-            <svg class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p class="text-xs text-blue-700">Add a <strong>Price (₹)</strong> column to enable auto-calculated grand
-              total per report.</p>
-          </div>
+          <h2 id="rtModalTitle" class="text-base font-bold text-gray-900">Create Report Template</h2>
+          <p class="text-xs text-gray-400">Define the fields that should appear in each report</p>
         </div>
-        <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">MRP / Price (₹) <span
-              class="text-gray-400 text-xs font-normal">— shown on each report</span></label><input type="number"
-            id="rt_price" placeholder="e.g. 250" min="0"
-            class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        </div>
-        <div class="flex items-center gap-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
-          <input type="checkbox" id="rt_total" checked class="rounded w-4 h-4 accent-indigo-600">
-          <label for="rt_total" class="text-sm font-medium text-gray-700 cursor-pointer">Show Grand Total row at bottom
-            of report</label>
-        </div>
-        <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Description <span
-              class="text-gray-400 text-xs font-normal">(optional)</span></label><textarea id="rt_desc"
-            placeholder="Describe what this template is used for..." rows="2"
-            class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none placeholder-gray-400"></textarea>
-        </div>
-        <button onclick="saveRTTemplate()"
-          class="w-full py-4 rounded-2xl bg-indigo-600 text-white font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 transition shadow-sm">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-          </svg>
-          <span id="rtSaveLabel">Save Template</span>
-        </button>
       </div>
+      <button onclick="closeRTModal()"
+        class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><svg
+          class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg></button>
+    </div>
+
+    <div class="px-5 py-5 flex flex-col gap-4">
+
+      <!-- Quick template examples -->
+      <div>
+        <p class="text-xs font-semibold text-gray-500 mb-2">Start from an example:</p>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="loadRTExample('finance')" class="px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-semibold hover:bg-rose-100">📄 Finance Collection Report</button>
+          <button type="button" onclick="loadRTExample('insurance')" class="px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-100 text-amber-700 text-xs font-semibold hover:bg-amber-100">📄 Insurance Renewal Report</button>
+          <button type="button" onclick="loadRTExample('vehicle')" class="px-3 py-1.5 rounded-xl bg-cyan-50 border border-cyan-100 text-cyan-700 text-xs font-semibold hover:bg-cyan-100">📄 Vehicle Service Report</button>
+          <button type="button" onclick="loadRTExample('school')" class="px-3 py-1.5 rounded-xl bg-lime-50 border border-lime-100 text-lime-700 text-xs font-semibold hover:bg-lime-100">📄 School Fee Report</button>
+          <button type="button" onclick="loadRTExample('medical')" class="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold hover:bg-blue-100">📄 Medical Report</button>
+          <button type="button" onclick="loadRTExample('amc')" class="px-3 py-1.5 rounded-xl bg-violet-50 border border-violet-100 text-violet-700 text-xs font-semibold hover:bg-violet-100">📄 AMC Service Report</button>
+        </div>
+      </div>
+
+      <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Template Title <span
+            class="text-red-400">*</span></label><input type="text" id="rt_title"
+          placeholder="e.g. Loan Collection Report, Vehicle Service Report"
+          class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400">
+      </div>
+
+      <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Category / Type</label>
+        <div class="relative"><select id="rt_category"
+            class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
+            <option>Medical</option>
+            <option>Finance</option>
+            <option>Insurance</option>
+            <option>Vehicle Service</option>
+            <option>Education</option>
+            <option>AMC Service</option>
+            <option>Customer Service</option>
+            <option>Custom</option>
+          </select><svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg></div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-sm font-medium text-gray-700">Report Fields <span class="text-red-400">*</span></label>
+          <button type="button" onclick="addRow()"
+            class="flex items-center gap-1 text-xs text-indigo-600 font-semibold hover:text-indigo-800">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>Add Field
+          </button>
+        </div>
+
+        <div class="border border-gray-100 rounded-2xl overflow-x-auto">
+          <table class="w-full text-sm text-left min-w-[520px]">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="px-3 py-3 font-semibold text-gray-600 w-1/3">Field Name</th>
+                <th class="px-3 py-3 font-semibold text-gray-600 w-1/5">Field Type</th>
+                <th class="px-3 py-3 font-semibold text-gray-600 w-1/3">Description / Hint</th>
+                <th class="px-3 py-3 font-semibold text-gray-600 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="reportRows" class="divide-y divide-gray-50 bg-white"></tbody>
+          </table>
+        </div>
+
+        <div class="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-100 flex items-start gap-2">
+          <svg class="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-xs text-blue-700">Define the fields that should appear when creating a report. Examples: Customer Name, Policy Number, Vehicle Number, Loan Amount, Hemoglobin, Service Due Date.</p>
+        </div>
+      </div>
+
+      <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Template Price (Optional)</label><input type="number"
+          id="rt_price" placeholder="e.g. 250" min="0"
+          class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div class="flex items-center gap-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
+        <input type="checkbox" id="rt_total" checked class="rounded w-4 h-4 accent-indigo-600">
+        <label for="rt_total" class="text-sm font-medium text-gray-700 cursor-pointer">Show Grand Total row at bottom of report</label>
+      </div>
+      <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Description <span
+            class="text-gray-400 text-xs font-normal">(optional)</span></label><textarea id="rt_desc"
+          placeholder="Describe what this template is used for..." rows="2"
+          class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none placeholder-gray-400"></textarea>
+      </div>
+
+      <!-- Preview -->
+      <div>
+        <button type="button" onclick="previewRTTemplate()" class="text-xs text-indigo-600 font-semibold hover:underline mb-2">Show Preview</button>
+        <div id="rtPreviewPanel" class="hidden bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm space-y-1.5"></div>
+      </div>
+
+      <button onclick="saveRTTemplate()"
+        class="w-full py-4 rounded-2xl bg-indigo-600 text-white font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 transition shadow-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+        <span id="rtSaveLabel">Save Template</span>
+      </button>
     </div>
   </div>
+</div>
 
   <!-- ═══ BOTTOM NAV (mobile) ═══ -->
   <div
@@ -579,6 +592,7 @@
   
   <script src="/js/catlog/catalog-templates.js"></script>
   <script src="/js/catlog/catalog-init.js"></script>
+  <script src="/js/catlog/rtemplate.js"></script>
   <!-- Backup safety copy for rollback -->
   <!-- <script src="/js/catlog/catlog.js"></script> -->
 

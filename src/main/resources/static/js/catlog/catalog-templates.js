@@ -747,8 +747,16 @@ function saveRTTemplate() {
     if (!title) { showToast('Title required', 'error'); return; }
 
     // Filter out empty rows and convert to JSON string
-    const filteredRows = reportRowsData.filter(r => r.test.trim() !== '');
-    const columnsJson = JSON.stringify(filteredRows);
+    let columnsJson = "";
+    if (typeof collectColumns === 'function') {
+        const cols = collectColumns();
+        columnsJson = JSON.stringify(cols);
+    } else {
+        const filteredRows = reportRowsData.filter(r => (r.test || r.fieldName || '').trim() !== '');
+        columnsJson = JSON.stringify(filteredRows);
+    }
+
+    console.log("Template Save Payload Columns JSON:", columnsJson);
 
     const payload = {
         title: title,
@@ -761,9 +769,12 @@ function saveRTTemplate() {
         status: 'active'
     };
 
+    console.log("Template Save Payload:", payload);
+
     const isEdit = editRTId !== null;
     api(isEdit ? `${API.rtemplates}/${editRTId}` : API.rtemplates, isEdit ? 'PUT' : 'POST', payload)
-        .then(() => {
+        .then(saved => {
+            console.log("Saved Template Load Response / Stored Columns JSON:", saved);
             showToast('Template Saved!', 'success');
             closeRTModal();
             loadRTemplates();
@@ -772,27 +783,68 @@ function saveRTTemplate() {
 }
 
 // ── Updated Modal Opener (for Editing) ────────────────────────────────────
-// Use this logic inside your existing edit function to convert string back to rows
 function openRTModal(id = null) {
     editRTId = id;
+    document.getElementById('rtModalTitle').textContent = id ? 'Edit Report Template' : 'Create Report Template';
+    document.getElementById('rtSaveLabel').textContent = id ? 'Update Template' : 'Save Template';
+    document.getElementById('rtPreviewPanel').classList.add('hidden');
+    
+    // Clear fields
+    document.getElementById('rt_title').value = '';
+    document.getElementById('rt_category').value = 'Custom';
+    document.getElementById('rt_price').value = '';
+    document.getElementById('rt_total').checked = true;
+    document.getElementById('rt_desc').value = '';
+    document.getElementById('reportRows').innerHTML = '';
+
     if (!id) {
-        reportRowsData = [{ test: "", range: "" }];
-        // clear other fields...
+        if (typeof addRow === 'function') {
+            addRow({ fieldName: '', fieldType: 'Text', hint: '' });
+        } else {
+            reportRowsData = [{ test: "", range: "" }];
+            renderRows();
+        }
     } else {
         const t = rtemplates.find(x => x.id === id);
         if (t) {
-            // ... fill other fields ...
+            document.getElementById('rt_title').value = t.title || '';
+            document.getElementById('rt_category').value = t.category || 'Custom';
+            document.getElementById('rt_price').value = t.price || '';
+            document.getElementById('rt_total').checked = t.showTotal !== false;
+            document.getElementById('rt_desc').value = t.description || '';
+            
+            let cols = [];
             try {
-                // Parse the JSON string from the database
-                reportRowsData = JSON.parse(t.columns || "[]");
-                if (reportRowsData.length === 0) reportRowsData = [{ test: "", range: "" }];
+                if (t.columns && t.columns.startsWith('[')) {
+                    cols = JSON.parse(t.columns);
+                } else {
+                    cols = (t.columns || "").split(',').map(c => ({ fieldName: c.trim(), fieldType: 'Text', hint: '' }));
+                }
             } catch (e) {
-                // Fallback for old comma-separated data
-                reportRowsData = (t.columns || "").split(',').map(c => ({ test: c, range: '' }));
+                cols = (t.columns || "").split(',').map(c => ({ fieldName: c.trim(), fieldType: 'Text', hint: '' }));
+            }
+            
+            if (cols.length === 0) {
+                cols = [{ fieldName: '', fieldType: 'Text', hint: '' }];
+            }
+            
+            if (typeof addRow === 'function') {
+                cols.forEach(c => {
+                    addRow({
+                        fieldName: c.fieldName || c.test || '',
+                        fieldType: c.fieldType || 'Text',
+                        hint: c.hint || c.description || c.range || ''
+                    });
+                });
+            } else {
+                reportRowsData = cols.map(c => ({
+                    test: c.fieldName || c.test || '',
+                    range: c.hint || c.description || c.range || ''
+                }));
+                renderRows();
             }
         }
     }
-    renderRows();
     document.getElementById('rtModal').classList.remove('hidden');
 }
 
@@ -853,10 +905,10 @@ function updateRow(index, field, value) {
     reportRowsData[index][field] = value;
 }
 
-function addRow() {
-    reportRowsData.push({ test: "", range: "" });
-    renderRows();
-}
+// function addRow() {
+//     reportRowsData.push({ test: "", range: "" });
+//     renderRows();
+// }
 
 function deleteRow(index) {
     reportRowsData.splice(index, 1);

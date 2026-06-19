@@ -50,6 +50,7 @@ import com.server.realsync.services.AdminUserService;
 import com.server.realsync.services.AppointmentService;
 import com.server.realsync.services.CatlogPlanService;
 
+import com.server.realsync.entity.AccountPlan;
 import com.server.realsync.entity.Promotion;
 import com.server.realsync.entity.PromotionEntry;
 import com.server.realsync.services.PromotionEntryService;
@@ -143,15 +144,15 @@ public class HomeController {
 		// return "realsync/index";
 	}
 
-	@GetMapping({"/signup.html", "/register.html"})
-public String getRegister(
-        @RequestParam(value = "refAccId", required = false) String refAccId,
-        Model model) {
+	@GetMapping({ "/signup.html", "/register.html" })
+	public String getRegister(
+			@RequestParam(value = "refAccId", required = false) String refAccId,
+			Model model) {
 
-    model.addAttribute("refAccId", refAccId);
+		model.addAttribute("refAccId", refAccId);
 
-    return "remindmeui/register";
-}
+		return "remindmeui/register";
+	}
 
 	@GetMapping("/home.html")
 	public String getAdminDashboard(Model model) {
@@ -535,16 +536,17 @@ public String getRegister(
 		return "remindmeui/promotions";
 	}
 
-	@GetMapping({"/aitemplates.html", "/ai-templates.html"})
-public String getCatalogTemplates(Model model) {
+	@GetMapping({ "/aitemplates.html", "/ai-templates.html" })
+	public String getCatalogTemplates(Model model) {
 
-    Account loggedIn = SecurityUtil.getCurrentAccountId();
-    Account account = accountService.getById(loggedIn.getId());
+		Account loggedIn = SecurityUtil.getCurrentAccountId();
+		Account account = accountService.getById(loggedIn.getId());
 
-    model.addAttribute("account", account);
+		model.addAttribute("account", account);
 
-    return "remindmeui/Templates";
-}
+		return "remindmeui/Templates";
+	}
+
 	@GetMapping("/reminder-detail.html")
 	public String getReminderDetail(@RequestParam("id") Integer id, Model model) {
 
@@ -860,6 +862,11 @@ public String getCatalogTemplates(Model model) {
 		return "remindmeui/create-report";
 	}
 
+	@GetMapping("/reports/create")
+	public String createReportPage() {
+		return "remindmeui/create-report";
+	}
+
 	@GetMapping("/report-history")
 	public String reportHistory(Model model) {
 		Account loggedIn = SecurityUtil.getCurrentAccountId();
@@ -894,17 +901,25 @@ public String getCatalogTemplates(Model model) {
 
 	@GetMapping("/settings.html")
 	public String getSettings(Model model) {
+
 		Account loggedIn = SecurityUtil.getCurrentAccountId();
 
 		Account account = accountService.getById(loggedIn.getId());
 
 		List<CustomerGroup> groups = customerGroupService.getByAccountId(account.getId());
-		com.server.realsync.entity.AccountPlan accountPlan = accountPlanService.getAccountPlanUsage(account.getId()).orElse(null);
+
+		AccountPlan accountPlan = accountPlanService.getAccountPlanUsage(account.getId())
+				.orElse(null);
+
+		List<AdminUser> users = adminUserService.getByAccount(account.getId(), Pageable.unpaged())
+				.getContent();
 
 		model.addAttribute("account", account);
 		model.addAttribute("groups", groups);
 		model.addAttribute("accountPlan", accountPlan);
+		model.addAttribute("users", users); // <-- IMPORTANT
 		model.addAttribute("activePage", "settings");
+
 		return "remindmeui/settings";
 	}
 

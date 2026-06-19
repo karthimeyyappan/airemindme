@@ -8,5 +8,7 @@ public interface ReportRepository extends JpaRepository<Report, Integer> {
 
     List<Report> findByAccountId(Integer accountId);
 
+    List<Report> findByAccountIdOrderByCreatedAtDesc(Integer accountId);
+
     
 }

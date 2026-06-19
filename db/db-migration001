@@ -1,0 +1,6 @@
+ALTER TABLE report ADD COLUMN report_number VARCHAR(255);
+ALTER TABLE report ADD COLUMN template_name VARCHAR(255);
+ALTER TABLE report ADD COLUMN template_category VARCHAR(255);
+ALTER TABLE report ADD COLUMN template_price DOUBLE;
+ALTER TABLE report ADD COLUMN template_snapshot LONGTEXT;
+ALTER TABLE report ADD COLUMN report_data LONGTEXT;

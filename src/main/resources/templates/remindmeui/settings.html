@@ -165,14 +165,14 @@
           </svg>
           General
         </button>
-        <button onclick="switchSettingsTab('gateways')" id="st-gateways"
+        <!-- <button onclick="switchSettingsTab('gateways')" id="st-gateways"
           class="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-500 text-sm font-semibold hover:text-gray-700 flex-shrink-0">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
           </svg>
           Gateways
-        </button>
+        </button> -->
 
         <button onclick="switchSettingsTab('users')" id="st-users"
           class="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-500 text-sm font-semibold hover:text-gray-700 flex-shrink-0">
@@ -367,11 +367,16 @@
             <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Timezone</label>
               <div class="relative"><select id="timezone"
                   class="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
-                  <option th:selected="${account.timezone == 'Asia/Kolkata (IST +5:30)'}">Asia/Kolkata (IST +5:30)</option>
-                  <option th:selected="${account.timezone == 'Europe/Paris (CET +1:00)'}">Europe/Paris (CET +1:00)</option>
-                  <option th:selected="${account.timezone == 'Europe/London (GMT +0:00)'}">Europe/London (GMT +0:00)</option>
-                  <option th:selected="${account.timezone == 'America/New_York (EST -5:00)'}">America/New_York (EST -5:00)</option>
-                  <option th:selected="${account.timezone == 'Africa/Harare (CAT +2:00)'}">Africa/Harare (CAT +2:00)</option>
+                  <option th:selected="${account.timezone == 'Asia/Kolkata (IST +5:30)'}">Asia/Kolkata (IST +5:30)
+                  </option>
+                  <option th:selected="${account.timezone == 'Europe/Paris (CET +1:00)'}">Europe/Paris (CET +1:00)
+                  </option>
+                  <option th:selected="${account.timezone == 'Europe/London (GMT +0:00)'}">Europe/London (GMT +0:00)
+                  </option>
+                  <option th:selected="${account.timezone == 'America/New_York (EST -5:00)'}">America/New_York (EST
+                    -5:00)</option>
+                  <option th:selected="${account.timezone == 'Africa/Harare (CAT +2:00)'}">Africa/Harare (CAT +2:00)
+                  </option>
                 </select><svg
                   class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -618,7 +623,7 @@
       </div>
 
       <!-- ══════════════════ GATEWAYS TAB ══════════════════ -->
-      <div id="sp-gateways" class="hidden">
+      <!-- <div id="sp-gateways" class="hidden">
         <p class="text-xs text-gray-400 mb-4">Configure your messaging gateways</p>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -656,76 +661,112 @@
               class="w-full py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">Reconfigure</button>
           </div>
         </div>
-      </div>
+      </div> -->
 
-      <!-- ══════════════════ CATALOG TAB ══════════════════ -->
+
 
 
       <!-- ══════════════════ USER MANAGEMENT TAB ══════════════════ -->
       <div id="sp-users" class="hidden">
-        <div class="flex items-center justify-between mb-5">
-          <p class="text-xs text-gray-400">Manage team members, roles and access permissions</p>
-          <a href="user-management.html"
-            class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700"><svg
-              class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>Add User</a>
+
+    <div class="flex items-center justify-between mb-5">
+        <p class="text-xs text-gray-400">
+            Manage team members, roles and access permissions
+        </p>
+
+        <a th:href="@{/user-management.html}"
+            class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Add User
+        </a>
+    </div>
+
+    <div class="space-y-3" id="settingsUserList">
+
+        <div th:if="${#lists.isEmpty(users)}"
+            class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+            <p class="text-sm text-gray-500">No users found</p>
         </div>
-        <div class="space-y-3" id="settingsUserList">
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-            <div
-              class="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 text-white text-sm font-bold">
-              AS</div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap mb-0.5">
-                <p class="text-sm font-bold text-gray-900">Arjun Sharma</p><span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700">👑
-                  Admin</span><span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span>
-              </div>
-              <p class="text-xs text-gray-500">admin@acmefinancial.com · +91 98765 43210</p>
-            </div><a href="user-management.html"
-              class="text-xs text-indigo-600 font-semibold hover:underline flex-shrink-0">Manage all →</a>
-          </div>
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-            <div
-              class="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 text-white text-sm font-bold">
-              MI</div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap mb-0.5">
-                <p class="text-sm font-bold text-gray-900">Dr. Meena Iyer</p><span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700">🩺
-                  Doctor</span><span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span>
-              </div>
-              <p class="text-xs text-gray-500">meena@acmefinancial.com</p>
+
+        <div th:each="user : ${users}"
+            class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+
+            <!-- Avatar -->
+            <div class="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+
+                <span th:text="${#strings.substring(user.firstName,0,1)}">
+                    U
+                </span>
+
             </div>
-          </div>
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-            <div
-              class="w-11 h-11 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0 text-white text-sm font-bold">
-              PN</div>
+
+            <!-- User Details -->
             <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap mb-0.5">
-                <p class="text-sm font-bold text-gray-900">Priya Nair</p><span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-pink-100 text-pink-700">📋
-                  Receptionist</span><span
-                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span>
-              </div>
-              <p class="text-xs text-gray-500">priya@acmefinancial.com</p>
+
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+
+                    <p class="text-sm font-bold text-gray-900"
+                        th:text="${user.firstName + (user.lastName != null ? ' ' + user.lastName : '')}">
+                        User Name
+                    </p>
+
+                    <span
+                        class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700"
+                        th:text="${user.role}">
+                        ADMIN
+                    </span>
+
+                    <span
+                        class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700"
+                        th:text="'ID-' + ${user.id}">
+                        ID-1
+                    </span>
+
+                    <span th:if="${user.status != null}"
+                        class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700"
+                        th:text="${user.status}">
+                        ACTIVE
+                    </span>
+
+                </div>
+
+                <p class="text-xs text-gray-500">
+                    <span th:text="${user.email}"></span>
+                    <span th:if="${user.phone != null}">
+                        · <span th:text="${user.phone}"></span>
+                    </span>
+                </p>
+
             </div>
-          </div>
+
+            <a th:href="@{/user-management.html}"
+                class="text-xs text-indigo-600 font-semibold hover:underline">
+                Manage →
+            </a>
+
         </div>
-        <a href="user-management.html"
-          class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700">View
-          all users &amp; permissions <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg></a>
-      </div>
+
+    </div>
+
+    <a th:href="@{/user-management.html}"
+        class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+
+        View all users &amp; permissions
+
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5l7 7-7 7" />
+        </svg>
+
+    </a>
+
+</div>
 
 
-      <!-- GROUPS TAB -->
+      <!-- ══════════════════ GROUPS TAB ══════════════════ -->
       <div id="sp-groups" class="hidden">
         <div class="flex items-center justify-between mb-5">
           <div>
@@ -991,7 +1032,7 @@
 
     // ── Settings main tabs (ALL FOUR panels) ────────────────────
     function switchSettingsTab(t) {
-      ['general', 'gateways', 'catalog', 'users'].forEach(x => {
+      ['general', 'catalog', 'users'].forEach(x => {
         const p = document.getElementById('sp-' + x);
         const b = document.getElementById('st-' + x);
         if (!p || !b) return;

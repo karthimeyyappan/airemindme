@@ -420,7 +420,18 @@ public ResponseEntity<CatalogProduct> updateProduct(
     public CatalogRTemplate createRTemplate(@RequestBody CatalogRTemplate template) {
         Account account = SecurityUtil.getCurrentAccountId();
         template.setAccountId(account.getId());
-        return rTemplateService.save(template);
+        
+        System.out.println("[TEMPLATE SAVE PAYLOAD] Title: " + template.getTitle()
+                + ", Category: " + template.getCategory()
+                + ", Description: " + template.getDescription()
+                + ", Columns: " + template.getColumns());
+
+        CatalogRTemplate saved = rTemplateService.save(template);
+
+        System.out.println("[STORED COLUMNS JSON] ID: " + saved.getId()
+                + ", Columns: " + saved.getColumns());
+
+        return saved;
     }
 
     // UPDATE
@@ -435,7 +446,19 @@ public ResponseEntity<CatalogProduct> updateProduct(
                 .map(existing -> {
                     template.setId(id);
                     template.setAccountId(account.getId());
-                    return ResponseEntity.ok(rTemplateService.save(template));
+                    
+                    System.out.println("[TEMPLATE SAVE PAYLOAD] ID: " + id
+                            + ", Title: " + template.getTitle()
+                            + ", Category: " + template.getCategory()
+                            + ", Description: " + template.getDescription()
+                            + ", Columns: " + template.getColumns());
+
+                    CatalogRTemplate saved = rTemplateService.save(template);
+
+                    System.out.println("[STORED COLUMNS JSON] ID: " + saved.getId()
+                            + ", Columns: " + saved.getColumns());
+
+                    return ResponseEntity.ok(saved);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -452,6 +475,9 @@ public ResponseEntity<CatalogProduct> updateProduct(
                             "id", template.getId(),
                             "title", template.getTitle(),
                             "columns", template.getParsedColumns());
+
+                    System.out.println("[TEMPLATE LOAD RESPONSE] ID: " + id
+                            + ", Response: " + response);
 
                     return ResponseEntity.ok(response);
                 })

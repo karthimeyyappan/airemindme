@@ -54,14 +54,24 @@ public class AdminUserController {
     }
 
     @GetMapping("/{id}")
-    public AdminUser getById(@PathVariable Integer id, @RequestParam Integer accountId) {
+    public AdminUser getById(@PathVariable Integer id) {
+
+        Integer accountId = SecurityUtil.getCurrentAccountId().getId();
+
         return service.getById(accountId, id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Integer id) {
-        service.delete(id);
+
+        Integer accountId = SecurityUtil.getCurrentAccountId().getId();
+
+        AdminUser user = service.getById(accountId, id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        service.delete(user.getId());
+
         return "Deleted successfully";
     }
 
