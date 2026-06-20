@@ -191,7 +191,7 @@
           Groups
         </button>
 
-        <button onclick="switchSettingsTab('referrals')" id="st-referrals"
+        <button onclick="switchSettingsTab('referrals'); loadReferralInfo();" id="st-referrals"
           class="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-500 text-sm font-semibold hover:text-gray-700 flex-shrink-0">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -1315,97 +1315,86 @@
     if (document.getElementById('rtGrid')) { renderRTGrid(); }
   </script>
 
-  
-  <!-- Referral Tab JS -->
+
   <script>
     var referralLoaded = false;
 
-    // Direct approach - patch the onclick directly
-    document.addEventListener('DOMContentLoaded', function () {
-
-      // Find the referrals tab button and add click listener directly
-      var referralBtn = document.getElementById('st-referrals');
-      if (referralBtn) {
-        referralBtn.addEventListener('click', function () {
-          setTimeout(function () {
-            if (!referralLoaded) {
-              loadReferralInfo();
-            }
-          }, 100);
-        });
-      }
-    });
-
     function loadReferralInfo() {
-      var loadingEl = document.getElementById('referralLoading');
-      var contentEl = document.getElementById('referralContent');
+      // Always make the panel visible first
+      var panel = document.getElementById('sp-referrals');
+      if (panel) panel.classList.remove('hidden');
 
-      if (!loadingEl) return;
+      // If already loaded successfully, just show content and hide spinner
+      if (referralLoaded) {
+        document.getElementById('referralLoading').style.display = 'none';
+        document.getElementById('referralContent').style.display = 'block';
+        document.getElementById('referralStatsRow').style.display = 'block';
+        document.getElementById('referralHistorySection').style.display = 'block';
+        return;
+      }
 
-      loadingEl.style.display = 'block';
+      // Reset display state before every fresh fetch
+      document.getElementById('referralLoading').style.display = 'block';
+      document.getElementById('referralContent').style.display = 'none';
+      document.getElementById('referralStatsRow').style.display = 'none';
+      document.getElementById('referralHistorySection').style.display = 'none';
 
       fetch('/api/referrals/info')
         .then(function (res) {
-          if (!res.ok) throw new Error('Status ' + res.status);
+          if (!res.ok) throw new Error('Server error ' + res.status);
           return res.json();
         })
         .then(function (data) {
-          referralLoaded = true;
-          renderReferralTab(data);
+          console.log('Referral data:', data);
+
+          // Populate referral link
+          var link = 'https://numen.uno/register?ref=' + data.referralCode;
+          document.getElementById('referralLinkInput').value = link;
+          document.getElementById('referralCodeDisplay').textContent = data.referralCode;
+
+          // Populate stats
+          document.getElementById('statTotal').textContent = data.totalReferrals || 0;
+          document.getElementById('statCredited').textContent = data.creditedReferrals || 0;
+          document.getElementById('statPending').textContent = Math.max(0, (data.totalReferrals || 0) - (data.creditedReferrals || 0));
+
+          // Hide spinner, show content
+          document.getElementById('referralLoading').style.display = 'none';
+          document.getElementById('referralContent').style.display = 'block';
+          document.getElementById('referralStatsRow').style.display = 'block';
+          document.getElementById('referralHistorySection').style.display = 'block';
+
+          // History table
+          var history = data.history || [];
+          if (history.length === 0) {
+            document.getElementById('referralTableWrapper').style.display = 'none';
+            document.getElementById('referralEmptyState').style.display = 'block';
+          } else {
+            document.getElementById('referralEmptyState').style.display = 'none';
+            document.getElementById('referralTableWrapper').style.display = 'block';
+            document.getElementById('referralTableBody').innerHTML =
+              history.map(function (r, i) {
+                var badge = r.status === 'CREDITED'
+                  ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">Credited</span>'
+                  : '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Pending</span>';
+                return '<tr class="border-b border-gray-50">'
+                  + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (i + 1) + '</td>'
+                  + '<td class="py-3 pr-4 font-semibold text-gray-900">' + (r.referredName || '—') + '</td>'
+                  + '<td class="py-3 pr-4 text-gray-500">' + (r.referredEmail || '—') + '</td>'
+                  + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (r.referredAt ? r.referredAt.substring(0, 10) : '—') + '</td>'
+                  + '<td class="py-3 pr-4">' + badge + '</td>'
+                  + '<td class="py-3 font-bold text-emerald-600">' + (r.creditGiven > 0 ? '₹' + parseFloat(r.creditGiven).toFixed(2) : '—') + '</td>'
+                  + '</tr>';
+              }).join('');
+          }
+
+          referralLoaded = true; // mark success only after everything is set
         })
         .catch(function (err) {
-          loadingEl.innerHTML =
-            '<p class="text-sm text-red-500 text-center py-4">' +
-            '⚠️ Unable to load referral info: ' + err.message + '</p>';
+          console.error('Referral error:', err);
+          referralLoaded = false; // allow retry
+          document.getElementById('referralLoading').innerHTML =
+            '<p class="text-sm text-red-500 text-center py-4">⚠️ Could not load referral info. Click Referrals tab again to retry.</p>';
         });
-    }
-
-    function renderReferralTab(data) {
-      // Build referral link
-      var link = 'https://numen.uno/register?ref=' + data.referralCode;
-
-      // Set link and code
-      document.getElementById('referralLinkInput').value = link;
-      document.getElementById('referralCodeDisplay').textContent = data.referralCode;
-
-      // Set stats
-      var total = data.totalReferrals || 0;
-      var credited = data.creditedReferrals || 0;
-      var pending = Math.max(0, total - credited);
-
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statCredited').textContent = credited;
-      document.getElementById('statPending').textContent = pending;
-
-      // Show sections
-      document.getElementById('referralLoading').style.display = 'none';
-      document.getElementById('referralContent').style.display = 'block';
-      document.getElementById('referralStatsRow').style.display = 'block';
-      document.getElementById('referralHistorySection').style.display = 'block';
-
-      // Render history
-      var history = data.history || [];
-      if (history.length === 0) {
-        document.getElementById('referralTableWrapper').style.display = 'none';
-        document.getElementById('referralEmptyState').style.display = 'block';
-      } else {
-        document.getElementById('referralTableBody').innerHTML =
-          history.map(function (r, i) {
-            var badge = r.status === 'CREDITED'
-              ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">Credited</span>'
-              : '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Pending</span>';
-            return '<tr class="border-b border-gray-50 hover:bg-gray-50">'
-              + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (i + 1) + '</td>'
-              + '<td class="py-3 pr-4 font-semibold text-gray-900 text-sm">' + (r.referredName || '—') + '</td>'
-              + '<td class="py-3 pr-4 text-gray-500 text-sm">' + (r.referredEmail || '—') + '</td>'
-              + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (r.referredAt ? r.referredAt.substring(0, 10) : '—') + '</td>'
-              + '<td class="py-3 pr-4">' + badge + '</td>'
-              + '<td class="py-3 font-bold text-emerald-600 text-sm">'
-              + (r.creditGiven > 0 ? '₹' + parseFloat(r.creditGiven).toFixed(2) : '—')
-              + '</td>'
-              + '</tr>';
-          }).join('');
-      }
     }
 
     function copyReferralLink() {
@@ -1413,11 +1402,7 @@
       var btn = document.getElementById('copyReferralBtn');
       navigator.clipboard.writeText(input.value).then(function () {
         btn.textContent = '✅ Copied!';
-        btn.classList.add('bg-emerald-50', 'text-emerald-600');
-        setTimeout(function () {
-          btn.textContent = '📋 Copy';
-          btn.classList.remove('bg-emerald-50', 'text-emerald-600');
-        }, 2500);
+        setTimeout(function () { btn.textContent = '📋 Copy'; }, 2500);
       });
     }
 
@@ -1432,6 +1417,7 @@
       }
     }
   </script>
+
   <!-- Settings JS (profile save, password update) -->
   <script src="/js/settings/settings.js"></script>
 </body>
