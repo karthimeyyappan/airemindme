@@ -358,5 +358,68 @@ async function deleteGroup(id) {
     }
 }
 
+// Load customer fields settings on page load
+async function loadCustomerFieldsConfig() {
+    try {
+        const response = await fetch("/api/settings/customer-fields");
+        if (!response.ok) throw new Error("Failed to fetch settings");
+        const data = await response.json();
+
+        for (let i = 1; i <= 5; i++) {
+            const input = document.getElementById(`cfgField${i}`);
+            if (input) {
+                input.value = data[`field${i}Name`] || "";
+            }
+        }
+    } catch (error) {
+        console.error("Failed to load customer field configurations:", error);
+    }
+}
+
+async function saveCustomFieldsConfig(event) {
+    if (event) event.preventDefault();
+
+    const payload = {
+        field1Name: document.getElementById("cfgField1")?.value?.trim() || "",
+        field2Name: document.getElementById("cfgField2")?.value?.trim() || "",
+        field3Name: document.getElementById("cfgField3")?.value?.trim() || "",
+        field4Name: document.getElementById("cfgField4")?.value?.trim() || "",
+        field5Name: document.getElementById("cfgField5")?.value?.trim() || ""
+    };
+
+    const btn = document.querySelector("#customFieldsConfigForm button[type='submit']");
+    if (btn) setButtonLoading(btn, true, "Save Fields");
+
+    try {
+        const response = await fetch("/api/settings/customer-fields", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        showToast("Customer fields updated successfully!", "success");
+
+        for (let i = 1; i <= 5; i++) {
+            const input = document.getElementById(`cfgField${i}`);
+            if (input) {
+                input.value = data[`field${i}Name`] || "";
+            }
+        }
+    } catch (error) {
+        console.error("Failed to save customer field configurations:", error);
+        showToast("Failed to save configurations. Please try again.", "error");
+    } finally {
+        if (btn) setButtonLoading(btn, false, "Save Fields");
+    }
+}
+
 // Initial call when page loads
-document.addEventListener('DOMContentLoaded', renderGroups);
+document.addEventListener('DOMContentLoaded', () => {
+    renderGroups();
+    loadCustomerFieldsConfig();
+});

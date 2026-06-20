@@ -22,6 +22,7 @@ import java.time.format.DateTimeParseException;
 import com.server.realsync.entity.Account;
 import com.server.realsync.entity.Customer;
 import com.server.realsync.services.CustomerService;
+import com.server.realsync.services.AccountService;
 import com.server.realsync.util.SecurityUtil;
 
 @RestController
@@ -29,6 +30,9 @@ public class CustomerController {
 
     @Autowired
     private CustomerService customerService;
+
+    @Autowired
+    private AccountService accountService;
 
     // ===============================
     // CREATE CUSTOMER API
@@ -171,10 +175,52 @@ public class CustomerController {
 
     @GetMapping("/api/customers/template")
     public ResponseEntity<Resource> downloadTemplate() {
+        Account account = SecurityUtil.getCurrentAccountId();
+        Account fullAccount = accountService.getById(account.getId());
 
-        String csv = "name,phone,email,segment,channel,birthday,anniversary\n" +
-                "Rajesh Kumar,+919876543210,rajesh@gmail.com,VIP,1,1995-06-15,2020-01-10\n";
+        StringBuilder headers = new StringBuilder("name,phone,email,segment,city,address,birthday,anniversary,gstNo,whatsAppOptIn");
+        StringBuilder sample = new StringBuilder("Rajesh Kumar,+919876543210,rajesh@gmail.com,VIP,Chennai,123 Main St,1995-06-15,2020-01-10,22AAAAA1111A1Z1,Yes");
 
+        if (fullAccount.getCustomerField1Name() != null && !fullAccount.getCustomerField1Name().trim().isEmpty()) {
+            headers.append(",").append(fullAccount.getCustomerField1Name().trim());
+            sample.append(",Value1");
+        } else {
+            headers.append(",Field1");
+            sample.append(",");
+        }
+        if (fullAccount.getCustomerField2Name() != null && !fullAccount.getCustomerField2Name().trim().isEmpty()) {
+            headers.append(",").append(fullAccount.getCustomerField2Name().trim());
+            sample.append(",Value2");
+        } else {
+            headers.append(",Field2");
+            sample.append(",");
+        }
+        if (fullAccount.getCustomerField3Name() != null && !fullAccount.getCustomerField3Name().trim().isEmpty()) {
+            headers.append(",").append(fullAccount.getCustomerField3Name().trim());
+            sample.append(",Value3");
+        } else {
+            headers.append(",Field3");
+            sample.append(",");
+        }
+        if (fullAccount.getCustomerField4Name() != null && !fullAccount.getCustomerField4Name().trim().isEmpty()) {
+            headers.append(",").append(fullAccount.getCustomerField4Name().trim());
+            sample.append(",Value4");
+        } else {
+            headers.append(",Field4");
+            sample.append(",");
+        }
+        if (fullAccount.getCustomerField5Name() != null && !fullAccount.getCustomerField5Name().trim().isEmpty()) {
+            headers.append(",").append(fullAccount.getCustomerField5Name().trim());
+            sample.append(",Value5");
+        } else {
+            headers.append(",Field5");
+            sample.append(",");
+        }
+
+        headers.append("\n");
+        sample.append("\n");
+
+        String csv = headers.toString() + sample.toString();
         ByteArrayResource resource = new ByteArrayResource(csv.getBytes(StandardCharsets.UTF_8));
 
         return ResponseEntity.ok()

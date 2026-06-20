@@ -27,17 +27,19 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationSuccessHandler successHandler,
-			CustomAuthenticationFailureHandler failureHandler, CustomLogoutSuccessHandler customLogoutSuccessHandler)
+			CustomAuthenticationFailureHandler failureHandler, CustomLogoutSuccessHandler customLogoutSuccessHandler,
+			CustomOAuth2SuccessHandler oauthSuccessHandler)
 			throws Exception {
 
 		http.csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/accounts/signup", "/api/accounts/check-email",
-    "/api/accounts/check-mobile","/mweb/login", "/signup.html", "/register.html",
+								"/api/accounts/check-mobile", "/mweb/login", "/signup.html", "/register.html",
 								"/login", "/privacy",
 								"/terms", "/css/**", "/js/**", "/img/**", "/assets/**", "/realsync-assets/**",
 								"/promo/**", "/api/promotions/public/**",
-								"/api/public/invoices/**", "/i/**", "/invoice-view/**")
+								"/api/public/invoices/**", "/i/**", "/invoice-view/**", "/oauth2/**",
+								"/login/oauth2/**", "/forgot-password.html", "/api/auth/forgot-password")
 						.permitAll().requestMatchers("/").permitAll()
 						.requestMatchers("/register").permitAll()
 						.requestMatchers("/register.html").permitAll()
@@ -53,6 +55,9 @@ public class SecurityConfig {
 						.defaultSuccessUrl("/home.html", true)
 						.failureUrl("/login.html?error=true")
 						.permitAll())
+				.oauth2Login(oauth -> oauth
+						.loginPage("/login.html")
+						.successHandler(oauthSuccessHandler))
 
 				.logout(logout -> logout
 						.logoutUrl("/logout")

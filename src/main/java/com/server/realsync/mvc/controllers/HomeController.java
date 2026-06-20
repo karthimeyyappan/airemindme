@@ -144,6 +144,11 @@ public class HomeController {
 		// return "realsync/index";
 	}
 
+	@GetMapping({ "/forgot-password.html" })
+	public String getForgotPassword() {
+		return "remindmeui/forgot-password";
+	}
+
 	@GetMapping({ "/signup.html", "/register.html" })
 	public String getRegister(
 			@RequestParam(value = "refAccId", required = false) String refAccId,

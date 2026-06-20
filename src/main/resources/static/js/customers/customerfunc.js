@@ -23,10 +23,11 @@ function showToast(message, type = "success") {
 
 /* =================  ================= */
 const phoneInput = document.getElementById("cPhone");
-
-phoneInput.addEventListener("input", function () {
-    this.value = this.value.replace(/\D/g, "").slice(0, 11);
-});
+if (phoneInput) {
+    phoneInput.addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, "").slice(0, 11);
+    });
+}
 function getFullPhone() {
     const code = document.getElementById("countryCode").value;
     const phone = document.getElementById("cPhone").value;
@@ -114,7 +115,12 @@ function saveCustomer(e) {
         address: address || null,
         city: city || null,
         state: state || null,
-        country: country || null
+        country: country || null,
+        customerField1: document.getElementById("cField1") ? document.getElementById("cField1").value : null,
+        customerField2: document.getElementById("cField2") ? document.getElementById("cField2").value : null,
+        customerField3: document.getElementById("cField3") ? document.getElementById("cField3").value : null,
+        customerField4: document.getElementById("cField4") ? document.getElementById("cField4").value : null,
+        customerField5: document.getElementById("cField5") ? document.getElementById("cField5").value : null
     };
 
     const url = id ? "/api/customers/" + id : "/api/customers";
@@ -410,3 +416,64 @@ window.addEventListener("DOMContentLoaded", function () {
         clearSearchBtn.classList.toggle("hidden", !searchInput || searchInput.value.trim() === "");
     }
 });
+
+async function loadCustomerFields(customerData = null) {
+    try {
+        const response = await fetch("/api/settings/customer-fields");
+        if (!response.ok) throw new Error("Failed to load settings");
+        const settings = await response.json();
+
+        // 1. Check if we are on the customers list/modal page
+        const container = document.getElementById("customFieldsContainer");
+        if (container) {
+            container.innerHTML = "";
+            for (let i = 1; i <= 5; i++) {
+                const fieldName = settings[`field${i}Name`] || "";
+                if (fieldName.trim() !== "") {
+                    const value = customerData ? (customerData[`customerField${i}`] || "") : "";
+                    
+                    const fieldDiv = document.createElement("div");
+                    fieldDiv.innerHTML = `
+                        <label class="text-sm font-medium text-gray-700 mb-1.5 block">${fieldName}</label>
+                        <input type="text" id="cField${i}" placeholder="Enter ${fieldName}" value="${value}"
+                            class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400">
+                    `;
+                    container.appendChild(fieldDiv);
+                }
+            }
+        }
+
+        // 2. Check if we are on the customer details page
+        const detailsGrid = document.getElementById("customCustomerInfoGrid");
+        const detailsCard = document.getElementById("customCustomerInfoCard");
+        if (detailsGrid && detailsCard) {
+            detailsGrid.innerHTML = "";
+            let hasAnyVisibleField = false;
+
+            if (customerData) {
+                for (let i = 1; i <= 5; i++) {
+                    const fieldName = settings[`field${i}Name`] || "";
+                    const fieldValue = customerData[`customerField${i}`] || "";
+
+                    if (fieldName.trim() !== "" && fieldValue.trim() !== "") {
+                        hasAnyVisibleField = true;
+                        const itemDiv = document.createElement("div");
+                        itemDiv.innerHTML = `
+                            <span class="text-slate-400 font-medium">${fieldName}:</span>
+                            <span class="text-slate-800 ml-1 font-semibold">${fieldValue}</span>
+                        `;
+                        detailsGrid.appendChild(itemDiv);
+                    }
+                }
+            }
+
+            if (hasAnyVisibleField) {
+                detailsCard.classList.remove("hidden");
+            } else {
+                detailsCard.classList.add("hidden");
+            }
+        }
+    } catch (err) {
+        console.error("Error loading custom customer fields:", err);
+    }
+}
