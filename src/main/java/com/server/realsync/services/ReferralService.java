@@ -1,10 +1,9 @@
-package com.server.realsync.service;
+package com.server.realsync.services;
 
-import com.server.realsync.model.Referral;
-import com.server.realsync.repository.ReferralRepository;
+import com.server.realsync.entity.Referral;
+import com.server.realsync.repo.ReferralRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

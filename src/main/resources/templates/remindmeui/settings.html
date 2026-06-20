@@ -197,7 +197,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 8v13m0-13V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v3m-4 0h4" />
           </svg>
-          🎁 Referrals
+          Referrals
         </button>
       </div>
 
@@ -1312,25 +1312,41 @@
     }
 
     // Init report templates grid on page load
-    renderRTGrid();
+    if (document.getElementById('rtGrid')) { renderRTGrid(); }
   </script>
 
+  
   <!-- Referral Tab JS -->
   <script>
     var referralLoaded = false;
 
-    var _origSwitchTab = window.switchSettingsTab;
-    window.switchSettingsTab = function (t) {
-      _origSwitchTab(t);
-      if (t === 'referrals' && !referralLoaded) {
-        loadReferralInfo();
+    // Direct approach - patch the onclick directly
+    document.addEventListener('DOMContentLoaded', function () {
+
+      // Find the referrals tab button and add click listener directly
+      var referralBtn = document.getElementById('st-referrals');
+      if (referralBtn) {
+        referralBtn.addEventListener('click', function () {
+          setTimeout(function () {
+            if (!referralLoaded) {
+              loadReferralInfo();
+            }
+          }, 100);
+        });
       }
-    };
+    });
 
     function loadReferralInfo() {
+      var loadingEl = document.getElementById('referralLoading');
+      var contentEl = document.getElementById('referralContent');
+
+      if (!loadingEl) return;
+
+      loadingEl.style.display = 'block';
+
       fetch('/api/referrals/info')
         .then(function (res) {
-          if (!res.ok) throw new Error('Server error ' + res.status);
+          if (!res.ok) throw new Error('Status ' + res.status);
           return res.json();
         })
         .then(function (data) {
@@ -1338,14 +1354,17 @@
           renderReferralTab(data);
         })
         .catch(function (err) {
-          document.getElementById('referralLoading').innerHTML =
-            '<p class="text-sm text-red-500 text-center">⚠️ Unable to load: ' + err.message + '</p>';
+          loadingEl.innerHTML =
+            '<p class="text-sm text-red-500 text-center py-4">' +
+            '⚠️ Unable to load referral info: ' + err.message + '</p>';
         });
     }
 
     function renderReferralTab(data) {
-      // Set referral link and code
+      // Build referral link
       var link = 'https://numen.uno/register?ref=' + data.referralCode;
+
+      // Set link and code
       document.getElementById('referralLinkInput').value = link;
       document.getElementById('referralCodeDisplay').textContent = data.referralCode;
 
@@ -1353,17 +1372,18 @@
       var total = data.totalReferrals || 0;
       var credited = data.creditedReferrals || 0;
       var pending = Math.max(0, total - credited);
+
       document.getElementById('statTotal').textContent = total;
       document.getElementById('statCredited').textContent = credited;
       document.getElementById('statPending').textContent = pending;
 
-      // Show all sections
+      // Show sections
       document.getElementById('referralLoading').style.display = 'none';
       document.getElementById('referralContent').style.display = 'block';
       document.getElementById('referralStatsRow').style.display = 'block';
       document.getElementById('referralHistorySection').style.display = 'block';
 
-      // Render history table
+      // Render history
       var history = data.history || [];
       if (history.length === 0) {
         document.getElementById('referralTableWrapper').style.display = 'none';
@@ -1380,7 +1400,7 @@
               + '<td class="py-3 pr-4 text-gray-500 text-sm">' + (r.referredEmail || '—') + '</td>'
               + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (r.referredAt ? r.referredAt.substring(0, 10) : '—') + '</td>'
               + '<td class="py-3 pr-4">' + badge + '</td>'
-              + '<td class="py-3 text-emerald-600 font-bold text-sm">'
+              + '<td class="py-3 font-bold text-emerald-600 text-sm">'
               + (r.creditGiven > 0 ? '₹' + parseFloat(r.creditGiven).toFixed(2) : '—')
               + '</td>'
               + '</tr>';
@@ -1393,10 +1413,10 @@
       var btn = document.getElementById('copyReferralBtn');
       navigator.clipboard.writeText(input.value).then(function () {
         btn.textContent = '✅ Copied!';
-        btn.classList.add('bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
+        btn.classList.add('bg-emerald-50', 'text-emerald-600');
         setTimeout(function () {
           btn.textContent = '📋 Copy';
-          btn.classList.remove('bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
+          btn.classList.remove('bg-emerald-50', 'text-emerald-600');
         }, 2500);
       });
     }
@@ -1404,7 +1424,7 @@
     function shareReferralLink() {
       var link = document.getElementById('referralLinkInput').value;
       var code = document.getElementById('referralCodeDisplay').textContent;
-      var msg = 'Join Numen! Use my referral code ' + code + ' when signing up: ' + link;
+      var msg = 'Join Numen! Use my referral code ' + code + ': ' + link;
       if (navigator.share) {
         navigator.share({ title: 'Join Numen', text: msg, url: link });
       } else {
@@ -1412,7 +1432,6 @@
       }
     }
   </script>
-
   <!-- Settings JS (profile save, password update) -->
   <script src="/js/settings/settings.js"></script>
 </body>

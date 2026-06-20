@@ -1,4 +1,4 @@
-package com.server.realsync.model;
+package com.server.realsync.entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;

@@ -1,6 +1,6 @@
-package com.server.realsync.repository;
+package com.server.realsync.repo;
 
-import com.server.realsync.model.Referral;
+import com.server.realsync.entity.Referral;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
