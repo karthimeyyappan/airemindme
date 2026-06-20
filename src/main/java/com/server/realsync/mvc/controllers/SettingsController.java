@@ -15,10 +15,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.server.realsync.dto.PasswordResetDto;
 import com.server.realsync.dto.SettingsUpdateDto;
+import com.server.realsync.dto.CustomerFieldSettingsRequest;
+import com.server.realsync.dto.CustomerFieldSettingsResponse;
 import com.server.realsync.entity.Account;
 import com.server.realsync.entity.User;
 import com.server.realsync.services.AccountService;
 import com.server.realsync.services.UserService;
+import com.server.realsync.services.SettingsService;
 import com.server.realsync.util.SecurityUtil;
 
 @RestController
@@ -27,6 +30,9 @@ public class SettingsController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private SettingsService settingsService;
 
     @Autowired
     private UserService userService;
@@ -192,5 +198,17 @@ public ResponseEntity<?> getLocalizationSettings() {
             "success", true,
             "message", "Settings updated successfully"
         ));
+    }
+
+    @GetMapping("/api/settings/customer-fields")
+    public ResponseEntity<CustomerFieldSettingsResponse> getCustomerFields() {
+        CustomerFieldSettingsResponse response = settingsService.getCustomerFieldSettings();
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/settings/customer-fields")
+    public ResponseEntity<CustomerFieldSettingsResponse> updateCustomerFields(@RequestBody CustomerFieldSettingsRequest request) {
+        CustomerFieldSettingsResponse response = settingsService.updateCustomerFieldSettings(request);
+        return ResponseEntity.ok(response);
     }
 }

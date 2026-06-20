@@ -11,6 +11,11 @@ public class CustomerImportDto {
     private String weddingDate;
     private String gstNo;
     private String whatsAppOptIn;
+    private String customerField1;
+    private String customerField2;
+    private String customerField3;
+    private String customerField4;
+    private String customerField5;
 
     public CustomerImportDto() {}
 
@@ -105,5 +110,45 @@ public class CustomerImportDto {
 
     public void setWhatsAppOptIn(String whatsAppOptIn) {
         this.whatsAppOptIn = whatsAppOptIn;
+    }
+
+    public String getCustomerField1() {
+        return customerField1;
+    }
+
+    public void setCustomerField1(String customerField1) {
+        this.customerField1 = customerField1;
+    }
+
+    public String getCustomerField2() {
+        return customerField2;
+    }
+
+    public void setCustomerField2(String customerField2) {
+        this.customerField2 = customerField2;
+    }
+
+    public String getCustomerField3() {
+        return customerField3;
+    }
+
+    public void setCustomerField3(String customerField3) {
+        this.customerField3 = customerField3;
+    }
+
+    public String getCustomerField4() {
+        return customerField4;
+    }
+
+    public void setCustomerField4(String customerField4) {
+        this.customerField4 = customerField4;
+    }
+
+    public String getCustomerField5() {
+        return customerField5;
+    }
+
+    public void setCustomerField5(String customerField5) {
+        this.customerField5 = customerField5;
     }
 }

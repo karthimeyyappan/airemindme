@@ -77,6 +77,21 @@ public class Account {
 	@Column(name = "number_format", length = 20)
 	private String numberFormat;
 
+	@Column(name = "customer_field_1_name", length = 100)
+	private String customerField1Name;
+
+	@Column(name = "customer_field_2_name", length = 100)
+	private String customerField2Name;
+
+	@Column(name = "customer_field_3_name", length = 100)
+	private String customerField3Name;
+
+	@Column(name = "customer_field_4_name", length = 100)
+	private String customerField4Name;
+
+	@Column(name = "customer_field_5_name", length = 100)
+	private String customerField5Name;
+
 	// Getters and Setters
 	public Integer getId() {
 		return id;
@@ -231,6 +246,46 @@ public class Account {
 
 	public void setTimezone(String timezone) {
 		this.timezone = timezone;
+	}
+
+	public String getCustomerField1Name() {
+		return customerField1Name;
+	}
+
+	public void setCustomerField1Name(String customerField1Name) {
+		this.customerField1Name = customerField1Name;
+	}
+
+	public String getCustomerField2Name() {
+		return customerField2Name;
+	}
+
+	public void setCustomerField2Name(String customerField2Name) {
+		this.customerField2Name = customerField2Name;
+	}
+
+	public String getCustomerField3Name() {
+		return customerField3Name;
+	}
+
+	public void setCustomerField3Name(String customerField3Name) {
+		this.customerField3Name = customerField3Name;
+	}
+
+	public String getCustomerField4Name() {
+		return customerField4Name;
+	}
+
+	public void setCustomerField4Name(String customerField4Name) {
+		this.customerField4Name = customerField4Name;
+	}
+
+	public String getCustomerField5Name() {
+		return customerField5Name;
+	}
+
+	public void setCustomerField5Name(String customerField5Name) {
+		this.customerField5Name = customerField5Name;
 	}
 
 }

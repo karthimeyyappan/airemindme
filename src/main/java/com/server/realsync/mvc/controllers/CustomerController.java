@@ -106,6 +106,11 @@ public class CustomerController {
         existing.setCity(customer.getCity());
         existing.setState(customer.getState());
         existing.setCountry(customer.getCountry());
+        existing.setCustomerField1(customer.getCustomerField1());
+        existing.setCustomerField2(customer.getCustomerField2());
+        existing.setCustomerField3(customer.getCustomerField3());
+        existing.setCustomerField4(customer.getCustomerField4());
+        existing.setCustomerField5(customer.getCustomerField5());
 
         Customer saved = customerService.save(existing);
 

@@ -219,6 +219,11 @@ public class CustomerImportService {
             customer.setCity(raw.getCity() != null ? raw.getCity().trim() : null);
             customer.setAddress(raw.getAddress() != null ? raw.getAddress().trim() : null);
             customer.setGstNo(raw.getGstNo() != null ? raw.getGstNo().trim() : null);
+            customer.setCustomerField1(raw.getCustomerField1() != null ? raw.getCustomerField1().trim() : null);
+            customer.setCustomerField2(raw.getCustomerField2() != null ? raw.getCustomerField2().trim() : null);
+            customer.setCustomerField3(raw.getCustomerField3() != null ? raw.getCustomerField3().trim() : null);
+            customer.setCustomerField4(raw.getCustomerField4() != null ? raw.getCustomerField4().trim() : null);
+            customer.setCustomerField5(raw.getCustomerField5() != null ? raw.getCustomerField5().trim() : null);
             
             if (raw.getDob() != null && !raw.getDob().trim().isEmpty()) {
                 customer.setDob(parseLocalDate(raw.getDob()));
