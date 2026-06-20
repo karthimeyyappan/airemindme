@@ -39,7 +39,7 @@ public class SecurityConfig {
 								"/terms", "/css/**", "/js/**", "/img/**", "/assets/**", "/realsync-assets/**",
 								"/promo/**", "/api/promotions/public/**",
 								"/api/public/invoices/**", "/i/**", "/invoice-view/**", "/oauth2/**",
-								"/login/oauth2/**", "/forgot-password.html", "/api/auth/forgot-password")
+								"/login/oauth2/**", "/forgot-password.html", "/api/auth/forgot-password", "/no-account")
 						.permitAll().requestMatchers("/").permitAll()
 						.requestMatchers("/register").permitAll()
 						.requestMatchers("/register.html").permitAll()
@@ -57,7 +57,15 @@ public class SecurityConfig {
 						.permitAll())
 				.oauth2Login(oauth -> oauth
 						.loginPage("/login.html")
-						.successHandler(oauthSuccessHandler))
+						.successHandler(oauthSuccessHandler)
+						.failureHandler((request, response, exception) -> {
+
+							System.out.println("FAILURE HANDLER HIT");
+
+							exception.printStackTrace();
+
+							response.sendRedirect("/login.html?oauthFailure");
+						}))
 
 				.logout(logout -> logout
 						.logoutUrl("/logout")

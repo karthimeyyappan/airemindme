@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -68,7 +70,8 @@ public class PromotionController {
     private CatalogProductService catalogProductService;
 
     /**
-     * Creates a promotion, stores selected catalog items, and generates entries for all targeted customers.
+     * Creates a promotion, stores selected catalog items, and generates entries for
+     * all targeted customers.
      */
     @PostMapping
     @Transactional
@@ -92,11 +95,13 @@ public class PromotionController {
 
             if (busName.isEmpty()) {
                 logger.warn("STEP 4 - Backend Request Received: Validation failed, Business Name is empty");
-                return ResponseEntity.badRequest().body(Map.of("message", "Business Name is not configured in your profile. Please configure it before sending promotions."));
+                return ResponseEntity.badRequest().body(Map.of("message",
+                        "Business Name is not configured in your profile. Please configure it before sending promotions."));
             }
             if (busPhone.isEmpty()) {
                 logger.warn("STEP 4 - Backend Request Received: Validation failed, Business Phone is empty");
-                return ResponseEntity.badRequest().body(Map.of("message", "Business Phone is not configured in your profile. Please configure it before sending promotions."));
+                return ResponseEntity.badRequest().body(Map.of("message",
+                        "Business Phone is not configured in your profile. Please configure it before sending promotions."));
             }
 
             // Validation Rules (10)
@@ -118,7 +123,8 @@ public class PromotionController {
                 try {
                     sched = LocalDateTime.parse(request.scheduledAt());
                 } catch (Exception e) {
-                    logger.warn("STEP 4 - Backend Request Received: Validation failed, invalid schedule date {}", request.scheduledAt());
+                    logger.warn("STEP 4 - Backend Request Received: Validation failed, invalid schedule date {}",
+                            request.scheduledAt());
                     return ResponseEntity.badRequest().body(Map.of("message", "Invalid schedule date."));
                 }
                 if (sched.isBefore(LocalDateTime.now())) {
@@ -157,12 +163,14 @@ public class PromotionController {
                         String type = parts[0];
                         try {
                             Integer itemId = Integer.parseInt(parts[1]);
-                            logger.info("STEP 7 - Saving Promotion Item (before save): itemId={}, type={}", itemId, type);
+                            logger.info("STEP 7 - Saving Promotion Item (before save): itemId={}, type={}", itemId,
+                                    type);
                             PromotionItem pi = new PromotionItem(saved.getId(), itemId, type);
                             promotionItemRepository.save(pi);
                             logger.info("STEP 7 - Promotion Item Saved: piId={}", pi.getId());
                         } catch (NumberFormatException e) {
-                            logger.error("STEP 7 - Saving Promotion Items: Failed to parse itemId from parts[1]: {}", parts[1], e);
+                            logger.error("STEP 7 - Saving Promotion Items: Failed to parse itemId from parts[1]: {}",
+                                    parts[1], e);
                         }
                     } else {
                         logger.error("STEP 7 - Saving Promotion Items: Invalid compositeId format: {}", compositeId);
@@ -189,15 +197,19 @@ public class PromotionController {
 
             if (customers.isEmpty()) {
                 logger.warn("STEP 8 - Saving Promotion Entries: No customers found for recipient selection");
-                return ResponseEntity.badRequest().body(Map.of("message", "No active customers found for the selection."));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "No active customers found for the selection."));
             }
 
             // Generate actual URL and replace placeholder
             String link = publicBaseUrl + "/promo/" + saved.getId();
-            
+
             if (link.contains("localhost")) {
-                logger.error("STEP 4 - Backend Request Received: Validation failed, public URL contains localhost: link={}", link);
-                return ResponseEntity.status(500).body(Map.of("message", "Internal server configuration error: public base URL cannot be localhost."));
+                logger.error(
+                        "STEP 4 - Backend Request Received: Validation failed, public URL contains localhost: link={}",
+                        link);
+                return ResponseEntity.status(500).body(
+                        Map.of("message", "Internal server configuration error: public base URL cannot be localhost."));
             }
 
             saved.setPromotionUrl(link);
@@ -230,7 +242,7 @@ public class PromotionController {
                 entry.setCustomerId(c.getId());
                 entry.setTriggeredDate(LocalDateTime.now());
                 entry.setStatus("PENDING");
-                
+
                 PromotionEntry savedEntry = entryService.save(entry);
                 logger.info("STEP 8 - Promotion Entry Saved: entryId={}", savedEntry.getId());
 
@@ -238,11 +250,13 @@ public class PromotionController {
                 logger.info("STEP 8 - Saving Promotion Execution Log (before save): entryId={}", savedEntry.getId());
                 PromotionExecutionLog log = new PromotionExecutionLog();
                 log.setPromotionEntryId(savedEntry.getId());
-                
+
                 Channel ch = Channel.WHATSAPP;
                 if (request.sendVia() != null) {
-                    if ("sms".equalsIgnoreCase(request.sendVia())) ch = Channel.SMS;
-                    else if ("email".equalsIgnoreCase(request.sendVia()) || "em".equalsIgnoreCase(request.sendVia())) ch = Channel.EMAIL;
+                    if ("sms".equalsIgnoreCase(request.sendVia()))
+                        ch = Channel.SMS;
+                    else if ("email".equalsIgnoreCase(request.sendVia()) || "em".equalsIgnoreCase(request.sendVia()))
+                        ch = Channel.EMAIL;
                 }
                 log.setChannel(ch);
 
@@ -253,7 +267,7 @@ public class PromotionController {
                         log.setStatus(ExecutionResult.FAILED);
                         String errMsg = "Customer mobile number is missing";
                         log.setResponse(errMsg);
-                        
+
                         savedEntry.setStatus("FAILED");
                         savedEntry.setFailureReason(errMsg);
                         entryService.save(savedEntry);
@@ -261,16 +275,18 @@ public class PromotionController {
                     } else {
                         try {
                             String custName = c.getName() != null ? c.getName() : "Customer";
-                            String content = saved.getAiWhatsappContent() != null ? saved.getAiWhatsappContent() : "Hi {NAME}, check out our new promotion: {PROMOTION_URL}".replace("{NAME}", custName).replace("{PROMOTION_URL}", link);
-                            logger.info("CONTROLLER - SENDING WHATSAPP NOW: mobile={}, customerName={}, businessName={}, businessMobile={}, content={}", 
+                            String content = saved.getAiWhatsappContent() != null ? saved.getAiWhatsappContent()
+                                    : "Hi {NAME}, check out our new promotion: {PROMOTION_URL}"
+                                            .replace("{NAME}", custName).replace("{PROMOTION_URL}", link);
+                            logger.info(
+                                    "CONTROLLER - SENDING WHATSAPP NOW: mobile={}, customerName={}, businessName={}, businessMobile={}, content={}",
                                     mobile, custName, busName, busPhone, content);
                             kong.unirest.HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
                                     mobile,
                                     custName,
                                     content,
                                     busName,
-                                    busPhone
-                            );
+                                    busPhone);
 
                             if (response.getStatus() == 200) {
                                 log.setStatus(ExecutionResult.SENT);
@@ -283,7 +299,8 @@ public class PromotionController {
                                 sentCount++;
                             } else {
                                 log.setStatus(ExecutionResult.FAILED);
-                                String errMsg = "Failed to send: HTTP " + response.getStatus() + " - " + response.getBody();
+                                String errMsg = "Failed to send: HTTP " + response.getStatus() + " - "
+                                        + response.getBody();
                                 log.setResponse(errMsg);
                                 savedEntry.setStatus("FAILED");
                                 savedEntry.setFailureReason(errMsg);
@@ -313,7 +330,8 @@ public class PromotionController {
             }
 
             // Return expected success response structure
-            logger.info("STEP 9 - Response Returned: success=true, promotionId={}, url={}, sentCount={}, failedCount={}", 
+            logger.info(
+                    "STEP 9 - Response Returned: success=true, promotionId={}, url={}, sentCount={}, failedCount={}",
                     saved.getId(), link, sentCount, failedCount);
             return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -321,14 +339,12 @@ public class PromotionController {
                     "promotionUrl", link,
                     "sentCount", sentCount,
                     "failedCount", failedCount,
-                    "totalCount", customers.size()
-            ));
+                    "totalCount", customers.size()));
         } catch (Exception e) {
             logger.error("API FAILED - Exception in Promotion creation: request={}", request, e);
             return ResponseEntity.status(500).body(Map.of(
                     "success", false,
-                    "message", "Failed to create promotion: " + e.getMessage()
-            ));
+                    "message", "Failed to create promotion: " + e.getMessage()));
         }
     }
 
@@ -357,9 +373,11 @@ public class PromotionController {
                         if ("plan".equalsIgnoreCase(parts[0])) {
                             settingsPlanService.getById(itemId).ifPresent(p -> names.add("Plan: " + p.getName()));
                         } else {
-                            catalogProductService.getById(itemId, account.getId()).ifPresent(p -> names.add("Product: " + p.getName()));
+                            catalogProductService.getById(itemId, account.getId())
+                                    .ifPresent(p -> names.add("Product: " + p.getName()));
                         }
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                    }
                 }
             }
             if (!names.isEmpty()) {
@@ -369,47 +387,54 @@ public class PromotionController {
 
         try {
             if (apiKey == null || apiKey.isBlank() || apiKey.equals("YOUR_GEMINI_API_KEY")) {
-                return ResponseEntity.status(500).body("Gemini API key is not configured.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Gemini API key is not configured in application properties.");
             }
+
+            String actualApiKey = apiKey;
+
+            if (actualApiKey.length() > 10) {
+                actualApiKey = actualApiKey.substring(5);
+            }
+
 
             String prompt = String.format(
                     """
-                    You are an AI assistant generating promotional campaign content for a business.
-                    
-                    Business Context:
-                    Business Name: %s
-                    Business Category: %s
-                    Business Subcategory: %s
-                    
-                    Selected Catalog Items:
-                    %s
-                    
-                    Instructions/Description:
-                    %s
-                    
-                    Rules for generation:
-                    1. Generate exactly four distinct fields:
-                       - title: A catchy promotion title (3-6 words).
-                       - aiWhatsappContent: A very short WhatsApp message (16-20 words). It MUST include the exact placeholder {PROMOTION_URL} to represent the link. Do not include signatures, greetings, or customer names in this WhatsApp message.
-                       - description: Complete landing page description content (100-500 words) detailing the offer, benefits, catalog items, and a call-to-action.
-                       - aiBlogContent: Email marketing copy (100-300 words) with a professional subject line and structured body layout.
-                    2. Keep the WhatsApp message under 20 words.
-                    3. Return ONLY a raw JSON object containing these exact keys. Do not wrap it in markdown or code blocks.
-                    
-                    Format:
-                    {
-                      "title": "...",
-                      "aiWhatsappContent": "...",
-                      "description": "...",
-                      "aiBlogContent": "..."
-                    }
-                    """,
+                            You are an AI assistant generating promotional campaign content for a business.
+
+                            Business Context:
+                            Business Name: %s
+                            Business Category: %s
+                            Business Subcategory: %s
+
+                            Selected Catalog Items:
+                            %s
+
+                            Instructions/Description:
+                            %s
+
+                            Rules for generation:
+                            1. Generate exactly four distinct fields:
+                               - title: A catchy promotion title (3-6 words).
+                               - aiWhatsappContent: A very short WhatsApp message (16-20 words). It MUST include the exact placeholder {PROMOTION_URL} to represent the link. Do not include signatures, greetings, or customer names in this WhatsApp message.
+                               - description: Complete landing page description content (100-500 words) detailing the offer, benefits, catalog items, and a call-to-action.
+                               - aiBlogContent: Email marketing copy (100-300 words) with a professional subject line and structured body layout.
+                            2. Keep the WhatsApp message under 20 words.
+                            3. Return ONLY a raw JSON object containing these exact keys. Do not wrap it in markdown or code blocks.
+
+                            Format:
+                            {
+                              "title": "...",
+                              "aiWhatsappContent": "...",
+                              "description": "...",
+                              "aiBlogContent": "..."
+                            }
+                            """,
                     account.getBusinessName() != null ? account.getBusinessName() : "",
                     account.getCategory() != null ? account.getCategory() : "",
                     account.getSubcategory() != null ? account.getSubcategory() : "",
                     itemsStr,
-                    description != null ? description : ""
-            );
+                    description != null ? description : "");
 
             // Construct JSON request for Gemini
             JSONObject textPart = new JSONObject();
@@ -429,9 +454,10 @@ public class PromotionController {
 
             HttpClient client = HttpClient.newHttpClient();
             String[] models = {
-                "gemini-2.0-flash",
-                "gemini-2.5-flash",
-                "gemini-1.5-flash"
+                    "gemini-2.0-flash",
+                    "gemini-3.1-flash-lite",
+                    "gemini-2.5-flash",
+                    "gemini-1.5-flash"
             };
 
             String generatedContent = null;
@@ -440,7 +466,8 @@ public class PromotionController {
             for (String model : models) {
                 try {
                     HttpRequest httpRequest = HttpRequest.newBuilder()
-                            .uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey))
+                            .uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/" + model
+                                    + ":generateContent?key=" + actualApiKey))
                             .header("Content-Type", "application/json")
                             .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString(), StandardCharsets.UTF_8))
                             .build();
@@ -456,7 +483,8 @@ public class PromotionController {
                                 .getString("text");
                         break;
                     }
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
 
             if (generatedContent == null) {
@@ -491,7 +519,8 @@ public class PromotionController {
             long recipientCount = entries.size();
             long totalViews = entries.stream().mapToLong(e -> e.getViewCount() != null ? e.getViewCount() : 0L).sum();
             long totalLikes = entries.stream().mapToLong(e -> e.getLikeCount() != null ? e.getLikeCount() : 0L).sum();
-            long totalEnquiries = entries.stream().mapToLong(e -> e.getEnquiryCount() != null ? e.getEnquiryCount() : 0L).sum();
+            long totalEnquiries = entries.stream()
+                    .mapToLong(e -> e.getEnquiryCount() != null ? e.getEnquiryCount() : 0L).sum();
             long firstEntryId = entries.isEmpty() ? 0L : entries.get(0).getId();
 
             List<PromotionItem> items = promotionItemRepository.findByPromotionId(p.getId());
@@ -507,9 +536,10 @@ public class PromotionController {
                 }
             }).collect(Collectors.toList());
 
-            String name = p.getAiGeneratedTitle() != null && !p.getAiGeneratedTitle().isEmpty() 
-                    ? p.getAiGeneratedTitle() 
-                    : (p.getDescription().length() > 30 ? p.getDescription().substring(0, 30) + "..." : p.getDescription());
+            String name = p.getAiGeneratedTitle() != null && !p.getAiGeneratedTitle().isEmpty()
+                    ? p.getAiGeneratedTitle()
+                    : (p.getDescription().length() > 30 ? p.getDescription().substring(0, 30) + "..."
+                            : p.getDescription());
 
             return new PromotionResponseDTO(
                     p.getId(),
@@ -523,13 +553,13 @@ public class PromotionController {
                     totalEnquiries,
                     p.getCreatedAt(),
                     p.getScheduledAt(),
-                    firstEntryId
-            );
+                    firstEntryId);
         }).collect(Collectors.toList());
     }
 
     @GetMapping("/public/{promotionId}")
-    public ResponseEntity<Map<String, Object>> getPublicPromoLanding(@PathVariable Long promotionId, @RequestParam(value = "entry", required = false) Long entryId) {
+    public ResponseEntity<Map<String, Object>> getPublicPromoLanding(@PathVariable Long promotionId,
+            @RequestParam(value = "entry", required = false) Long entryId) {
         Promotion promo = promotionService.getById(promotionId).orElse(null);
         if (promo == null) {
             return ResponseEntity.notFound().build();
@@ -538,7 +568,8 @@ public class PromotionController {
         List<PromotionEntry> entries = entryService.getByPromotion(promo.getId());
         long viewCount = entries.stream().mapToLong(e -> e.getViewCount() != null ? e.getViewCount() : 0L).sum();
         long likeCount = entries.stream().mapToLong(e -> e.getLikeCount() != null ? e.getLikeCount() : 0L).sum();
-        long enquiryCount = entries.stream().mapToLong(e -> e.getEnquiryCount() != null ? e.getEnquiryCount() : 0L).sum();
+        long enquiryCount = entries.stream().mapToLong(e -> e.getEnquiryCount() != null ? e.getEnquiryCount() : 0L)
+                .sum();
 
         // Find customer name and actual entry ID for tracking
         String customerName = "Customer";
@@ -553,10 +584,11 @@ public class PromotionController {
                 }
             }
         }
-        
+
         if (targetEntryId == null && !entries.isEmpty()) {
             targetEntryId = entries.get(0).getId();
-            Customer customer = customerService.getById(promo.getAccountId(), entries.get(0).getCustomerId()).orElse(null);
+            Customer customer = customerService.getById(promo.getAccountId(), entries.get(0).getCustomerId())
+                    .orElse(null);
             if (customer != null) {
                 customerName = customer.getName();
             }
@@ -574,13 +606,16 @@ public class PromotionController {
                     map.put("price", "₹" + (plan.getPrice() != null ? plan.getPrice() : 0));
                     map.put("priceNote", plan.getBillingCycle() != null ? " / " + plan.getBillingCycle() : "");
                     map.put("desc", plan.getDescription() != null ? plan.getDescription() : "");
-                    map.put("features", plan.getFeatures() != null ? List.of(plan.getFeatures().split(",")) : new ArrayList<>());
+                    map.put("features",
+                            plan.getFeatures() != null ? List.of(plan.getFeatures().split(",")) : new ArrayList<>());
                     map.put("img", plan.getImageUrl() != null && plan.getImageUrl().length() > 5
-                            ? "/doc/view?path=" + java.net.URLEncoder.encode(plan.getImageUrl().replaceFirst("^/+", ""), java.nio.charset.StandardCharsets.UTF_8)
+                            ? "/doc/view?path=" + java.net.URLEncoder.encode(plan.getImageUrl().replaceFirst("^/+", ""),
+                                    java.nio.charset.StandardCharsets.UTF_8)
                             : "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&q=80");
                 }
             } else {
-                CatalogProduct prod = catalogProductService.getById(item.getItemId(), promo.getAccountId()).orElse(null);
+                CatalogProduct prod = catalogProductService.getById(item.getItemId(), promo.getAccountId())
+                        .orElse(null);
                 if (prod != null) {
                     map.put("id", "product-" + prod.getId());
                     map.put("type", "PRODUCT");
@@ -591,7 +626,8 @@ public class PromotionController {
                     map.put("desc", prod.getDescription() != null ? prod.getDescription() : "");
                     map.put("features", new ArrayList<>());
                     map.put("img", prod.getImageUrl() != null && prod.getImageUrl().length() > 5
-                            ? "/doc/view?path=" + java.net.URLEncoder.encode(prod.getImageUrl().replaceFirst("^/+", ""), java.nio.charset.StandardCharsets.UTF_8)
+                            ? "/doc/view?path=" + java.net.URLEncoder.encode(prod.getImageUrl().replaceFirst("^/+", ""),
+                                    java.nio.charset.StandardCharsets.UTF_8)
                             : "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=400&q=80");
                 }
             }
@@ -611,7 +647,10 @@ public class PromotionController {
         Map<String, Object> response = new java.util.HashMap<>();
         response.put("entryId", targetEntryId);
         response.put("promotionId", promo.getId());
-        response.put("promotionTitle", promo.getAiGeneratedTitle() != null && !promo.getAiGeneratedTitle().isEmpty() ? promo.getAiGeneratedTitle() : "Exclusive Offers");
+        response.put("promotionTitle",
+                promo.getAiGeneratedTitle() != null && !promo.getAiGeneratedTitle().isEmpty()
+                        ? promo.getAiGeneratedTitle()
+                        : "Exclusive Offers");
         response.put("promotionDescription", promo.getDescription());
         response.put("customerName", customerName);
         response.put("items", normalizedItems);
@@ -671,7 +710,8 @@ public class PromotionController {
     public ResponseEntity<Void> trackWhatsappClick(@PathVariable Long entryId) {
         PromotionEntry entry = entryService.getById(entryId).orElse(null);
         if (entry != null) {
-            entry.setWhatsappClickCount((entry.getWhatsappClickCount() != null ? entry.getWhatsappClickCount() : 0) + 1);
+            entry.setWhatsappClickCount(
+                    (entry.getWhatsappClickCount() != null ? entry.getWhatsappClickCount() : 0) + 1);
             entry.setWhatsappClickedAt(LocalDateTime.now());
             entryService.save(entry);
             return ResponseEntity.ok().build();
@@ -710,10 +750,14 @@ public class PromotionController {
         List<PromotionEntry> entries = entryService.getByPromotion(promotionId);
         long totalViews = entries.stream().mapToLong(e -> e.getViewCount() != null ? e.getViewCount() : 0L).sum();
         long totalLikes = entries.stream().mapToLong(e -> e.getLikeCount() != null ? e.getLikeCount() : 0L).sum();
-        long totalEnquiries = entries.stream().mapToLong(e -> e.getEnquiryCount() != null ? e.getEnquiryCount() : 0L).sum();
-        long totalWhatsappClicks = entries.stream().mapToLong(e -> e.getWhatsappClickCount() != null ? e.getWhatsappClickCount() : 0L).sum();
-        long totalPhoneClicks = entries.stream().mapToLong(e -> e.getPhoneClickCount() != null ? e.getPhoneClickCount() : 0L).sum();
-        long totalEmailClicks = entries.stream().mapToLong(e -> e.getEmailClickCount() != null ? e.getEmailClickCount() : 0L).sum();
+        long totalEnquiries = entries.stream().mapToLong(e -> e.getEnquiryCount() != null ? e.getEnquiryCount() : 0L)
+                .sum();
+        long totalWhatsappClicks = entries.stream()
+                .mapToLong(e -> e.getWhatsappClickCount() != null ? e.getWhatsappClickCount() : 0L).sum();
+        long totalPhoneClicks = entries.stream()
+                .mapToLong(e -> e.getPhoneClickCount() != null ? e.getPhoneClickCount() : 0L).sum();
+        long totalEmailClicks = entries.stream()
+                .mapToLong(e -> e.getEmailClickCount() != null ? e.getEmailClickCount() : 0L).sum();
 
         Map<String, Object> summary = new java.util.HashMap<>();
         summary.put("promotionId", promotionId);
@@ -733,15 +777,15 @@ public class PromotionController {
  * Data Transfer Object (DTO) to handle the incoming JSON payload safely.
  */
 record PromotionRequest(
-    Integer groupId,
-    Integer customerId,
-    String description,
-    List<String> itemIds,
-    String sendVia,
-    String scheduledAt,
-    String templateName,
-    String templateVariant,
-    String aiGeneratedTitle,
-    String aiWhatsappContent,
-    String aiBlogContent
-) {}
+        Integer groupId,
+        Integer customerId,
+        String description,
+        List<String> itemIds,
+        String sendVia,
+        String scheduledAt,
+        String templateName,
+        String templateVariant,
+        String aiGeneratedTitle,
+        String aiWhatsappContent,
+        String aiBlogContent) {
+}
