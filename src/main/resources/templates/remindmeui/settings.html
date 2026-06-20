@@ -190,6 +190,15 @@
           </svg>
           Groups
         </button>
+
+        <button onclick="switchSettingsTab('referrals')" id="st-referrals"
+          class="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-500 text-sm font-semibold hover:text-gray-700 flex-shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v13m0-13V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v3m-4 0h4" />
+          </svg>
+          🎁 Referrals
+        </button>
       </div>
 
       <!-- ══════════════════ GENERAL TAB ══════════════════ -->
@@ -623,104 +632,101 @@
       </div>
 
 
-  <!-- ══════════════════ USER MANAGEMENT TAB ══════════════════ -->
+      <!-- ══════════════════ USER MANAGEMENT TAB ══════════════════ -->
       <div id="sp-users" class="hidden">
 
-    <div class="flex items-center justify-between mb-5">
-        <p class="text-xs text-gray-400">
+        <div class="flex items-center justify-between mb-5">
+          <p class="text-xs text-gray-400">
             Manage team members, roles and access permissions
-        </p>
+          </p>
 
-        <a th:href="@{/user-management.html}"
+          <a th:href="@{/user-management.html}"
             class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
             Add User
-        </a>
-    </div>
-
-    <div class="space-y-3" id="settingsUserList">
-
-        <div th:if="${#lists.isEmpty(users)}"
-            class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
-            <p class="text-sm text-gray-500">No users found</p>
+          </a>
         </div>
 
-        <div th:each="user : ${users}"
+        <div class="space-y-3" id="settingsUserList">
+
+          <div th:if="${#lists.isEmpty(users)}"
+            class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+            <p class="text-sm text-gray-500">No users found</p>
+          </div>
+
+          <div th:each="user : ${users}"
             class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
 
             <!-- Avatar -->
-            <div class="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">
+            <div
+              class="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center text-white text-sm font-bold">
 
-                <span th:text="${#strings.substring(user.firstName,0,1)}">
-                    U
-                </span>
+              <span th:text="${#strings.substring(user.firstName,0,1)}">
+                U
+              </span>
 
             </div>
 
             <!-- User Details -->
             <div class="flex-1 min-w-0">
 
-                <div class="flex items-center gap-2 flex-wrap mb-1">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
 
-                    <p class="text-sm font-bold text-gray-900"
-                        th:text="${user.firstName + (user.lastName != null ? ' ' + user.lastName : '')}">
-                        User Name
-                    </p>
-
-                    <span
-                        class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700"
-                        th:text="${user.role}">
-                        ADMIN
-                    </span>
-
-                    <span
-                        class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700"
-                        th:text="'ID-' + ${user.id}">
-                        ID-1
-                    </span>
-
-                    <span th:if="${user.status != null}"
-                        class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700"
-                        th:text="${user.status}">
-                        ACTIVE
-                    </span>
-
-                </div>
-
-                <p class="text-xs text-gray-500">
-                    <span th:text="${user.email}"></span>
-                    <span th:if="${user.phone != null}">
-                        · <span th:text="${user.phone}"></span>
-                    </span>
+                <p class="text-sm font-bold text-gray-900"
+                  th:text="${user.firstName + (user.lastName != null ? ' ' + user.lastName : '')}">
+                  User Name
                 </p>
+
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700"
+                  th:text="${user.role}">
+                  ADMIN
+                </span>
+
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700"
+                  th:text="'ID-' + ${user.id}">
+                  ID-1
+                </span>
+
+                <span th:if="${user.status != null}"
+                  class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700"
+                  th:text="${user.status}">
+                  ACTIVE
+                </span>
+
+              </div>
+
+              <p class="text-xs text-gray-500">
+                <span th:text="${user.email}"></span>
+                <span th:if="${user.phone != null}">
+                  · <span th:text="${user.phone}"></span>
+                </span>
+              </p>
 
             </div>
 
-            <a th:href="@{/user-management.html}"
-                class="text-xs text-indigo-600 font-semibold hover:underline">
-                Manage →
+            <a th:href="@{/user-management.html}" class="text-xs text-indigo-600 font-semibold hover:underline">
+              Manage →
             </a>
+
+          </div>
 
         </div>
 
-    </div>
+        <a th:href="@{/user-management.html}"
+          class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
 
-    <a th:href="@{/user-management.html}"
-        class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+          View all users &amp; permissions
 
-        View all users &amp; permissions
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
 
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 5l7 7-7 7" />
-        </svg>
+        </a>
 
-    </a>
-
-</div>
+      </div>
 
 
       <!-- ══════════════════ GROUPS TAB ══════════════════ -->
@@ -759,6 +765,137 @@
           </div>
         </div>
       </div>
+
+      <!-- ══════════════════ REFERRALS TAB ══════════════════ -->
+      <div id="sp-referrals" class="hidden">
+
+        <!-- Hero Banner -->
+        <div class="rounded-2xl p-6 mb-5 text-white"
+          style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+          <div class="flex items-center gap-4">
+            <span style="font-size:2.5rem;">🎁</span>
+            <div>
+              <p class="text-lg font-bold mb-1">Refer &amp; Earn</p>
+              <p class="text-sm" style="opacity:0.85;">
+                Share your link. When a friend signs up using it,
+                <strong>you both get rewarded!</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Referral Link Card -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+            Your Referral Link
+          </p>
+
+          <!-- Spinner shown while loading -->
+          <div id="referralLoading" class="text-center py-6">
+            <div class="inline-block w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin">
+            </div>
+            <p class="text-sm text-gray-400 mt-2">Loading your referral info...</p>
+          </div>
+
+          <!-- Shown after API loads -->
+          <div id="referralContent" style="display:none;">
+            <div class="flex gap-2 mb-3">
+              <input type="text" id="referralLinkInput" readonly
+                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-mono text-gray-700 focus:outline-none">
+              <button onclick="copyReferralLink()" id="copyReferralBtn"
+                class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition flex-shrink-0">
+                📋 Copy
+              </button>
+              <button onclick="shareReferralLink()"
+                class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition flex-shrink-0">
+                🔗 Share
+              </button>
+            </div>
+            <p class="text-xs text-gray-400">
+              Your code: <strong id="referralCodeDisplay" class="text-indigo-600 text-sm tracking-wider"></strong>
+            </p>
+          </div>
+        </div>
+
+        <!-- Stats Row (shown after load) -->
+        <div id="referralStatsRow" style="display:none;" class="mb-5">
+          <div class="grid grid-cols-3 gap-3">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+              <p class="text-2xl font-bold text-indigo-600" id="statTotal">0</p>
+              <p class="text-xs text-gray-400 mt-1">Total Referred</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+              <p class="text-2xl font-bold text-emerald-600" id="statCredited">0</p>
+              <p class="text-xs text-gray-400 mt-1">Credits Earned</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+              <p class="text-2xl font-bold text-amber-500" id="statPending">0</p>
+              <p class="text-xs text-gray-400 mt-1">Pending</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+            How It Works
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="flex items-start gap-3">
+              <span
+                class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
+              <p class="text-sm text-gray-500">Share your unique referral link with friends or businesses.</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span
+                class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
+              <p class="text-sm text-gray-500">They sign up at numen.uno using your referral link.</p>
+            </div>
+            <div class="flex items-start gap-3">
+              <span
+                class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
+              <p class="text-sm text-gray-500">You both receive a free credit reward automatically!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Referral History Table -->
+        <div id="referralHistorySection" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
+          style="display:none;">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+            People Who Used Your Referral
+          </p>
+
+          <!-- Empty state -->
+          <div id="referralEmptyState" class="text-center py-6" style="display:none;">
+            <p style="font-size:2.5rem;">📭</p>
+            <p class="text-sm text-gray-400 mt-2">
+              No referrals yet.<br>Share your link and start earning!
+            </p>
+          </div>
+
+          <!-- Table -->
+          <div id="referralTableWrapper" class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gray-100">
+                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">#</th>
+                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Name</th>
+                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Email</th>
+                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Joined Date</th>
+                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Status</th>
+                  <th class="text-left text-xs font-semibold text-gray-400 pb-3">Credit</th>
+                </tr>
+              </thead>
+              <tbody id="referralTableBody">
+                <!-- Filled by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <!-- ══════════════════ END REFERRALS TAB ══════════════════ -->
 
       <!-- Group Creation Modal -->
       <div id="groupModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -989,7 +1126,7 @@
 
     // ── Settings main tabs (ALL FOUR panels) ────────────────────
     function switchSettingsTab(t) {
-      ['general', 'catalog', 'users'].forEach(x => {
+      ['general', 'catalog', 'users', 'groups', 'referrals'].forEach(x => {
         const p = document.getElementById('sp-' + x);
         const b = document.getElementById('st-' + x);
         if (!p || !b) return;
@@ -1176,6 +1313,104 @@
 
     // Init report templates grid on page load
     renderRTGrid();
+  </script>
+
+  <!-- Referral Tab JS -->
+  <script>
+    var referralLoaded = false;
+
+    var _origSwitchTab = window.switchSettingsTab;
+    window.switchSettingsTab = function (t) {
+      _origSwitchTab(t);
+      if (t === 'referrals' && !referralLoaded) {
+        loadReferralInfo();
+      }
+    };
+
+    function loadReferralInfo() {
+      fetch('/api/referrals/info')
+        .then(function (res) {
+          if (!res.ok) throw new Error('Server error ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          referralLoaded = true;
+          renderReferralTab(data);
+        })
+        .catch(function (err) {
+          document.getElementById('referralLoading').innerHTML =
+            '<p class="text-sm text-red-500 text-center">⚠️ Unable to load: ' + err.message + '</p>';
+        });
+    }
+
+    function renderReferralTab(data) {
+      // Set referral link and code
+      var link = 'https://numen.uno/register?ref=' + data.referralCode;
+      document.getElementById('referralLinkInput').value = link;
+      document.getElementById('referralCodeDisplay').textContent = data.referralCode;
+
+      // Set stats
+      var total = data.totalReferrals || 0;
+      var credited = data.creditedReferrals || 0;
+      var pending = Math.max(0, total - credited);
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statCredited').textContent = credited;
+      document.getElementById('statPending').textContent = pending;
+
+      // Show all sections
+      document.getElementById('referralLoading').style.display = 'none';
+      document.getElementById('referralContent').style.display = 'block';
+      document.getElementById('referralStatsRow').style.display = 'block';
+      document.getElementById('referralHistorySection').style.display = 'block';
+
+      // Render history table
+      var history = data.history || [];
+      if (history.length === 0) {
+        document.getElementById('referralTableWrapper').style.display = 'none';
+        document.getElementById('referralEmptyState').style.display = 'block';
+      } else {
+        document.getElementById('referralTableBody').innerHTML =
+          history.map(function (r, i) {
+            var badge = r.status === 'CREDITED'
+              ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">Credited</span>'
+              : '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Pending</span>';
+            return '<tr class="border-b border-gray-50 hover:bg-gray-50">'
+              + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (i + 1) + '</td>'
+              + '<td class="py-3 pr-4 font-semibold text-gray-900 text-sm">' + (r.referredName || '—') + '</td>'
+              + '<td class="py-3 pr-4 text-gray-500 text-sm">' + (r.referredEmail || '—') + '</td>'
+              + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (r.referredAt ? r.referredAt.substring(0, 10) : '—') + '</td>'
+              + '<td class="py-3 pr-4">' + badge + '</td>'
+              + '<td class="py-3 text-emerald-600 font-bold text-sm">'
+              + (r.creditGiven > 0 ? '₹' + parseFloat(r.creditGiven).toFixed(2) : '—')
+              + '</td>'
+              + '</tr>';
+          }).join('');
+      }
+    }
+
+    function copyReferralLink() {
+      var input = document.getElementById('referralLinkInput');
+      var btn = document.getElementById('copyReferralBtn');
+      navigator.clipboard.writeText(input.value).then(function () {
+        btn.textContent = '✅ Copied!';
+        btn.classList.add('bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
+        setTimeout(function () {
+          btn.textContent = '📋 Copy';
+          btn.classList.remove('bg-emerald-50', 'text-emerald-600', 'border-emerald-200');
+        }, 2500);
+      });
+    }
+
+    function shareReferralLink() {
+      var link = document.getElementById('referralLinkInput').value;
+      var code = document.getElementById('referralCodeDisplay').textContent;
+      var msg = 'Join Numen! Use my referral code ' + code + ' when signing up: ' + link;
+      if (navigator.share) {
+        navigator.share({ title: 'Join Numen', text: msg, url: link });
+      } else {
+        window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+      }
+    }
   </script>
 
   <!-- Settings JS (profile save, password update) -->
