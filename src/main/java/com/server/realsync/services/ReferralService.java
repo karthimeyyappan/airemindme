@@ -1,9 +1,14 @@
 package com.server.realsync.services;
 
+import com.server.realsync.entity.Account;
+import com.server.realsync.repo.AccountRepository;
+import java.util.Optional;
+
 import com.server.realsync.entity.Referral;
 import com.server.realsync.repo.ReferralRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,28 +19,33 @@ public class ReferralService {
     @Autowired
     private ReferralRepository referralRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
     /**
      * Get existing referral code for account, or create a new one
      */
-    public String getOrCreateReferralCode(Long accountId) {
-        List<Referral> list = referralRepository.findByAccountId(accountId);
-
-        // Find master code row (no referred account linked yet = the owner's code row)
-        Optional<Referral> master = list.stream()
-            .filter(r -> r.getReferredAccountId() == null)
-            .findFirst();
-
-        if (master.isPresent()) {
-            return master.get().getReferralCode();
+   public String getOrCreateReferralCode(Long accountId) {
+    // Get referral_id directly from account table
+    Optional<Account> accountOpt = accountRepository.findById(accountId.intValue());
+    
+    if (accountOpt.isPresent()) {
+        Account account = accountOpt.get();
+        
+        // If referral_id already set, return it
+        if (account.getReferralId() != null && !account.getReferralId().isEmpty()) {
+            return account.getReferralId();
         }
-
-        // Create a brand new referral code for this account
-        Referral r = new Referral();
-        r.setAccountId(accountId);
-        r.setReferralCode("NUMEN-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
-        referralRepository.save(r);
-        return r.getReferralCode();
+        
+        // Generate new referral_id = NUMEN-{accountId}
+        String newCode = "NUMEN-" + accountId;
+        account.setReferralId(newCode);
+        accountRepository.save(account);
+        return newCode;
     }
+    
+    return "NUMEN-" + accountId;
+}
 
     /**
      * Get list of people who signed up using this account's referral code

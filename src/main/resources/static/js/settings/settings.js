@@ -265,7 +265,7 @@ async function updatePassword() {
 
 // Update existing switch function to include 'groups'
 function switchSettingsTab(t) {
-    ['general', 'gateways', 'catalog', 'users', 'groups'].forEach(x => {
+    ['general', 'users', 'groups', 'referrals'].forEach(x => {
         const p = document.getElementById('sp-' + x);
         const b = document.getElementById('st-' + x);
         if (!p || !b) return;
@@ -419,7 +419,4 @@ async function saveCustomFieldsConfig(event) {
 }
 
 // Initial call when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    renderGroups();
-    loadCustomerFieldsConfig();
-});
+document.addEventListener('DOMContentLoaded', renderGroups);

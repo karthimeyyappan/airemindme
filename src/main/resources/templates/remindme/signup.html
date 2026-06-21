@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Your Account - Numen</title>
-  
+
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Join Numen to automate your payment tracking, customer reminders, and interactive catalog promotions. Seamlessly scale your business onboarding today.">
+  <meta name="description"
+    content="Join Numen to automate your payment tracking, customer reminders, and interactive catalog promotions. Seamlessly scale your business onboarding today.">
   <meta name="robots" content="index, follow">
-  
+
   <!-- Google Fonts & Icon Providers -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
   <style>
     /* ---------------------------------------------------- */
     /* Design Tokens & CSS Variables                       */
@@ -22,7 +25,7 @@
       --primary-blue: #2563eb;
       --primary-purple: #9333ea;
       --dark-slate: #0f172a;
-      
+
       --slate-900: #0f172a;
       --slate-800: #1e293b;
       --slate-700: #334155;
@@ -33,27 +36,27 @@
       --slate-200: #e2e8f0;
       --slate-100: #f1f5f9;
       --slate-50: #f8fafc;
-      
+
       --emerald-500: #10b981;
       --emerald-600: #059669;
       --emerald-50: #ecfdf5;
-      
+
       --red-500: #ef4444;
       --red-600: #dc2626;
       --red-50: #fef2f2;
-      
+
       /* Gradients */
       --gradient-brand: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-purple) 100%);
       --gradient-brand-hover: linear-gradient(135deg, #1d4ed8 0%, #7e22ce 100%);
       --gradient-dark: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-      
+
       /* Shadows */
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
       --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
       --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
       --shadow-premium: 0 25px 50px -12px rgba(15, 23, 42, 0.08);
-      
+
       /* Transitions */
       --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -105,7 +108,8 @@
 
     @media (max-width: 1100px) {
       .brand-sidebar {
-        display: none; /* Auto responsive collapse for mobile/tablet */
+        display: none;
+        /* Auto responsive collapse for mobile/tablet */
       }
     }
 
@@ -135,8 +139,15 @@
     }
 
     @keyframes pulse-slow {
-      0% { transform: scale(1) translate(0, 0); opacity: 0.8; }
-      100% { transform: scale(1.1) translate(15px, -15px); opacity: 1; }
+      0% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.8;
+      }
+
+      100% {
+        transform: scale(1.1) translate(15px, -15px);
+        opacity: 1;
+      }
     }
 
     /* Brand Logo styling */
@@ -308,8 +319,8 @@
       padding: 4rem 2rem;
       position: relative;
       background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 40%),
-                  radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 45%),
-                  #f8fafc;
+        radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 45%),
+        #f8fafc;
       overflow: hidden;
     }
 
@@ -348,8 +359,13 @@
     }
 
     @keyframes float-shape {
-      0% { transform: translateY(0) rotate(0deg) scale(1); }
-      100% { transform: translateY(-40px) rotate(15deg) scale(1.1); }
+      0% {
+        transform: translateY(0) rotate(0deg) scale(1);
+      }
+
+      100% {
+        transform: translateY(-40px) rotate(15deg) scale(1.1);
+      }
     }
 
     /* Onboarding glassmorphism card */
@@ -361,9 +377,9 @@
       -webkit-backdrop-filter: blur(20px);
       border-radius: 28px;
       border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: var(--shadow-premium), 
-                  0 1px 3px rgba(0, 0, 0, 0.02),
-                  inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+      box-shadow: var(--shadow-premium),
+        0 1px 3px rgba(0, 0, 0, 0.02),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4);
       padding: 3rem;
       position: relative;
       z-index: 1;
@@ -532,7 +548,8 @@
     .form-text-input {
       width: 100%;
       padding: 0.85rem 1.15rem;
-      padding-right: 2.75rem; /* Space for status/interactive icons */
+      padding-right: 2.75rem;
+      /* Space for status/interactive icons */
       font-family: inherit;
       font-size: 0.95rem;
       font-weight: 500;
@@ -619,8 +636,15 @@
     }
 
     @keyframes feedback-slide {
-      from { transform: translateY(-4px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      from {
+        transform: translateY(-4px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     /* ---------------------------------------------------- */
@@ -792,7 +816,9 @@
     }
 
     @keyframes loader-spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* ---------------------------------------------------- */
@@ -811,8 +837,15 @@
     }
 
     @keyframes alert-slide-down {
-      from { transform: scale(0.96) translateY(-8px); opacity: 0; }
-      to { transform: scale(1) translateY(0); opacity: 1; }
+      from {
+        transform: scale(0.96) translateY(-8px);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
     }
 
     .api-error-banner i.error-alert-icon {
@@ -859,8 +892,13 @@
     }
 
     @keyframes fade-in-overlay {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     .success-card-content {
@@ -871,8 +909,15 @@
     }
 
     @keyframes popup-success-card {
-      from { transform: scale(0.85); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+      from {
+        transform: scale(0.85);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     /* Custom drawing CSS animation checkmark */
@@ -907,16 +952,27 @@
     }
 
     @keyframes draw-stroke-line {
-      to { stroke-dashoffset: 0; }
+      to {
+        stroke-dashoffset: 0;
+      }
     }
 
     @keyframes pop-checkmark-scale {
-      0%, 100% { transform: none; }
-      50% { transform: scale3d(1.15, 1.15, 1); }
+
+      0%,
+      100% {
+        transform: none;
+      }
+
+      50% {
+        transform: scale3d(1.15, 1.15, 1);
+      }
     }
 
     @keyframes fill-checkmark-bg {
-      to { box-shadow: inset 0px 0px 0px 88px var(--emerald-500); }
+      to {
+        box-shadow: inset 0px 0px 0px 88px var(--emerald-500);
+      }
     }
 
     .success-primary-msg {
@@ -948,27 +1004,31 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="onboarding-container">
-    
+
     <!-- Left Section: Premium Branding Sidebar -->
     <div class="brand-sidebar">
       <div class="brand-glow-1"></div>
       <div class="brand-glow-2"></div>
-      
+
       <!-- Brand Logo Header -->
       <div class="brand-logo-area">
         <a href="/">
-          <img src="https://cdn.builder.io/api/v1/image/assets%2Ffbb0194a6d774fff8617236e5030fdfd%2F95b642517bf849079b5f6a616232ebb4?format=webp&width=800" alt="Numen Logo" class="brand-logo-img">
+          <img
+            src="https://cdn.builder.io/api/v1/image/assets%2Ffbb0194a6d774fff8617236e5030fdfd%2F95b642517bf849079b5f6a616232ebb4?format=webp&width=800"
+            alt="Numen Logo" class="brand-logo-img">
         </a>
       </div>
 
       <!-- Core Marketing Pitch Content -->
       <div class="brand-marketing-box">
         <h2 class="marketing-heading">Grow your business without the friction.</h2>
-        <p class="marketing-paragraph">Streamline payment tracking, follow-ups, and catalog promotions in a unified platform built for modern business operators.</p>
-        
+        <p class="marketing-paragraph">Streamline payment tracking, follow-ups, and catalog promotions in a unified
+          platform built for modern business operators.</p>
+
         <ul class="benefits-list">
           <li class="benefit-item">
             <div class="benefit-icon-box">
@@ -976,7 +1036,8 @@
             </div>
             <div>
               <h3 class="benefit-heading">Automated Payment Reminders</h3>
-              <p class="benefit-desc">Send friendly automated reminders over SMS, Email, and WhatsApp to collect dues faster.</p>
+              <p class="benefit-desc">Send friendly automated reminders over SMS, Email, and WhatsApp to collect dues
+                faster.</p>
             </div>
           </li>
           <li class="benefit-item">
@@ -985,7 +1046,8 @@
             </div>
             <div>
               <h3 class="benefit-heading">Interactive Catalog Marketing</h3>
-              <p class="benefit-desc">Attach products and plans to promo lists and track customer views, clicks, and enquiries.</p>
+              <p class="benefit-desc">Attach products and plans to promo lists and track customer views, clicks, and
+                enquiries.</p>
             </div>
           </li>
           <li class="benefit-item">
@@ -994,7 +1056,8 @@
             </div>
             <div>
               <h3 class="benefit-heading">Bank-Grade Onboarding</h3>
-              <p class="benefit-desc">Safe payment integrations and secured data flow keeping business credentials encrypted.</p>
+              <p class="benefit-desc">Safe payment integrations and secured data flow keeping business credentials
+                encrypted.</p>
             </div>
           </li>
         </ul>
@@ -1004,13 +1067,16 @@
       <div class="sidebar-footer-strip">
         <div class="social-proof-customers">
           <div class="customer-avatars-group">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" class="customer-avatar" alt="User Avatar">
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80" class="customer-avatar" alt="User Avatar">
-            <img src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=80&q=80" class="customer-avatar" alt="User Avatar">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80"
+              class="customer-avatar" alt="User Avatar">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&q=80"
+              class="customer-avatar" alt="User Avatar">
+            <img src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=80&q=80"
+              class="customer-avatar" alt="User Avatar">
           </div>
           <p class="social-proof-text">Trusted by <strong>10,000+</strong> business operators.</p>
         </div>
-        
+
         <div class="badge-ssl-secure">
           <i class="fa-solid fa-lock"></i> SSL SECURED
         </div>
@@ -1022,10 +1088,10 @@
       <!-- Floating decorative shapes inside workspace panel background -->
       <div class="bg-shape-decor decor-shape-1"></div>
       <div class="bg-shape-decor decor-shape-2"></div>
-      
+
       <!-- Glassmorphism card containing registration wizard -->
       <div class="glass-registration-card">
-        
+
         <!-- Dismissible Alert Banner for API Server Errors -->
         <div id="apiErrorBanner" class="api-error-banner">
           <i class="fa-solid fa-triangle-exclamation error-alert-icon"></i>
@@ -1042,7 +1108,7 @@
         <div class="wizard-progress-area">
           <div class="wizard-track-line"></div>
           <div id="wizardProgressBar" class="wizard-progress-bar"></div>
-          
+
           <div class="wizard-step-node active" id="stepNode1" data-step-title="Personal">1</div>
           <div class="wizard-step-node" id="stepNode2" data-step-title="Business">2</div>
           <div class="wizard-step-node" id="stepNode3" data-step-title="Security">3</div>
@@ -1050,7 +1116,7 @@
 
         <!-- The SignUp Form Element -->
         <form id="numenSignupForm" autocomplete="off" novalidate>
-          
+
           <!-- Thymeleaf Hidden Referral Account ID if present -->
           <input type="hidden" id="refAccIdHidden" th:value="${refAccId}">
 
@@ -1059,7 +1125,8 @@
             <div class="form-group-item">
               <label for="inputName">Full Name *</label>
               <div class="form-input-wrapper">
-                <input type="text" id="inputName" placeholder="John Doe" class="form-text-input" autocomplete="name" required>
+                <input type="text" id="inputName" placeholder="John Doe" class="form-text-input" autocomplete="name"
+                  required>
                 <i class="fa-solid fa-user form-input-status-icon"></i>
               </div>
               <div class="field-error-feedback" id="feedbackName"></div>
@@ -1068,7 +1135,8 @@
             <div class="form-group-item">
               <label for="inputEmail">Personal Email *</label>
               <div class="form-input-wrapper">
-                <input type="email" id="inputEmail" placeholder="john@example.com" class="form-text-input" autocomplete="email" required>
+                <input type="email" id="inputEmail" placeholder="john@example.com" class="form-text-input"
+                  autocomplete="email" required>
                 <i class="fa-solid fa-envelope form-input-status-icon"></i>
               </div>
               <div class="field-error-feedback" id="feedbackEmail"></div>
@@ -1077,10 +1145,20 @@
             <div class="form-group-item">
               <label for="inputMobile">Mobile Number *</label>
               <div class="form-input-wrapper">
-                <input type="tel" id="inputMobile" placeholder="9876543210" class="form-text-input" maxlength="10" autocomplete="tel" required>
+                <input type="tel" id="inputMobile" placeholder="9876543210" class="form-text-input" maxlength="10"
+                  autocomplete="tel" required>
                 <i class="fa-solid fa-phone form-input-status-icon"></i>
               </div>
               <div class="field-error-feedback" id="feedbackMobile"></div>
+            </div>
+
+            <div class="mb-3">
+              <label for="refAccId" class="form-label">
+                Referral Code <span class="text-muted fs-7">(optional)</span>
+              </label>
+              <input type="text" class="form-control" id="refAccId" name="refAccId" placeholder="e.g. NUMEN-109"
+                autocomplete="off" oninput="this.value = this.value.toUpperCase()">
+              <div class="form-text">If someone referred you, enter their code here.</div>
             </div>
           </div>
 
@@ -1089,7 +1167,8 @@
             <div class="form-group-item">
               <label for="inputBusinessName">Business Name *</label>
               <div class="form-input-wrapper">
-                <input type="text" id="inputBusinessName" placeholder="Acme Enterprises" class="form-text-input" required>
+                <input type="text" id="inputBusinessName" placeholder="Acme Enterprises" class="form-text-input"
+                  required>
                 <i class="fa-solid fa-building form-input-status-icon"></i>
               </div>
               <div class="field-error-feedback" id="feedbackBusinessName"></div>
@@ -1098,7 +1177,8 @@
             <div class="form-group-item">
               <label for="inputBusinessEmail">Business Email *</label>
               <div class="form-input-wrapper">
-                <input type="email" id="inputBusinessEmail" placeholder="support@acme.com" class="form-text-input" required>
+                <input type="email" id="inputBusinessEmail" placeholder="support@acme.com" class="form-text-input"
+                  required>
                 <i class="fa-solid fa-envelope-open-text form-input-status-icon"></i>
               </div>
               <div class="field-error-feedback" id="feedbackBusinessEmail"></div>
@@ -1124,7 +1204,8 @@
             <div class="form-group-item">
               <label for="inputAddress">Address (Optional)</label>
               <div class="form-input-wrapper">
-                <input type="text" id="inputAddress" placeholder="42, Innovation Hub, Tech City" class="form-text-input">
+                <input type="text" id="inputAddress" placeholder="42, Innovation Hub, Tech City"
+                  class="form-text-input">
                 <i class="fa-solid fa-location-dot form-input-status-icon"></i>
               </div>
             </div>
@@ -1135,8 +1216,10 @@
             <div class="form-group-item">
               <label for="inputPassword">Password *</label>
               <div class="form-input-wrapper">
-                <input type="password" id="inputPassword" placeholder="••••••••" class="form-text-input" autocomplete="new-password" required>
-                <button type="button" class="password-visibility-trigger" onclick="togglePasswordVisibility('inputPassword', this)">
+                <input type="password" id="inputPassword" placeholder="••••••••" class="form-text-input"
+                  autocomplete="new-password" required>
+                <button type="button" class="password-visibility-trigger"
+                  onclick="togglePasswordVisibility('inputPassword', this)">
                   <i class="fa-solid fa-eye"></i>
                 </button>
               </div>
@@ -1153,8 +1236,10 @@
             <div class="form-group-item">
               <label for="inputConfirmPassword">Confirm Password *</label>
               <div class="form-input-wrapper">
-                <input type="password" id="inputConfirmPassword" placeholder="••••••••" class="form-text-input" autocomplete="new-password" required>
-                <button type="button" class="password-visibility-trigger" onclick="togglePasswordVisibility('inputConfirmPassword', this)">
+                <input type="password" id="inputConfirmPassword" placeholder="••••••••" class="form-text-input"
+                  autocomplete="new-password" required>
+                <button type="button" class="password-visibility-trigger"
+                  onclick="togglePasswordVisibility('inputConfirmPassword', this)">
                   <i class="fa-solid fa-eye"></i>
                 </button>
               </div>
@@ -1168,7 +1253,8 @@
               </div>
               <input type="checkbox" id="hiddenTermsCheckbox" style="display:none;" required>
               <div class="terms-label-text">
-                I agree to the Numen <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>.
+                I agree to the Numen <a href="#" target="_blank">Terms of Service</a> and <a href="#"
+                  target="_blank">Privacy Policy</a>.
               </div>
             </div>
             <div class="field-error-feedback" id="feedbackTermsCheckbox"></div>
@@ -1176,10 +1262,12 @@
 
           <!-- Navigation Action Button Row -->
           <div class="wizard-actions-row">
-            <button type="button" id="prevStepBtn" class="wizard-action-btn wizard-btn-prev" disabled onclick="transitionStep(-1)">
+            <button type="button" id="prevStepBtn" class="wizard-action-btn wizard-btn-prev" disabled
+              onclick="transitionStep(-1)">
               <i class="fa-solid fa-arrow-left"></i> Previous
             </button>
-            <button type="button" id="nextStepBtn" class="wizard-action-btn wizard-btn-next" onclick="transitionStep(1)">
+            <button type="button" id="nextStepBtn" class="wizard-action-btn wizard-btn-next"
+              onclick="transitionStep(1)">
               Next <i class="fa-solid fa-arrow-right"></i>
             </button>
             <button type="submit" id="submitWizardBtn" class="wizard-action-btn wizard-btn-next" style="display: none;">
@@ -1198,12 +1286,13 @@
   <div class="fullscreen-success-screen" id="fullscreenSuccessOverlay">
     <div class="success-card-content">
       <svg class="success-animated-checkmark" viewBox="0 0 52 52">
-        <circle class="checkmark-outer-circle" cx="26" cy="26" r="25" fill="none"/>
-        <path class="checkmark-check-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        <circle class="checkmark-outer-circle" cx="26" cy="26" r="25" fill="none" />
+        <path class="checkmark-check-path" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
       </svg>
       <h1 class="success-primary-msg">Welcome to Numen</h1>
-      <p class="success-secondary-msg">Your account registration was successful. Creating your personalized workspace...</p>
-      
+      <p class="success-secondary-msg">Your account registration was successful. Creating your personalized workspace...
+      </p>
+
       <div class="redirecting-subtext">
         <i class="fa-solid fa-spinner fa-spin"></i> Redirecting you in a moment
       </div>
@@ -1211,7 +1300,7 @@
   </div>
 
   <!-- ---------------------------------------------------- -->
-  /* Interactive Page JavaScript Control Code              */
+  /* Interactive Page JavaScript Control Code */
   <!-- ---------------------------------------------------- -->
   <script>
     // Form and Stepper Wizard Configuration
@@ -1300,12 +1389,12 @@
             lower: /[a-z]/.test(val),
             number: /\d/.test(val)
           };
-          
+
           if (!rules.length) return { isValid: false, msg: 'Password must be at least 8 characters long.' };
           if (!rules.upper) return { isValid: false, msg: 'Include at least one uppercase letter (A-Z).' };
           if (!rules.lower) return { isValid: false, msg: 'Include at least one lowercase letter (a-z).' };
           if (!rules.number) return { isValid: false, msg: 'Include at least one numeric digit (0-9).' };
-          
+
           return { isValid: true };
         }
       },
@@ -1321,6 +1410,7 @@
           return { isValid: true };
         }
       }
+
     };
 
     // Stepper header node updates and slider bar width
@@ -1328,7 +1418,7 @@
       for (let idx = 1; idx <= maxStepCount; idx++) {
         const stepView = document.getElementById(`stepContainer${idx}`);
         const indicatorNode = document.getElementById(`stepNode${idx}`);
-        
+
         if (idx === activeStepNum) {
           stepView.classList.add('active');
           indicatorNode.className = 'wizard-step-node active';
@@ -1428,9 +1518,9 @@
       if (dirOffset === 1 && !verifyActiveStepInputs(activeStepNum)) {
         return;
       }
-      
+
       activeStepNum += dirOffset;
-      
+
       // Keep boundaries intact
       if (activeStepNum < 1) activeStepNum = 1;
       if (activeStepNum > maxStepCount) activeStepNum = maxStepCount;
@@ -1448,11 +1538,11 @@
     });
 
     // Mask tel inputs to strict integer values only
-    document.getElementById('inputMobile').addEventListener('input', function() {
+    document.getElementById('inputMobile').addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '');
     });
 
-    document.getElementById('inputBusinessPhone').addEventListener('input', function() {
+    document.getElementById('inputBusinessPhone').addEventListener('input', function () {
       this.value = this.value.replace(/[^\d\s\-\+\(\)]/g, '');
     });
 
@@ -1470,11 +1560,11 @@
     }
 
     // Password strength score meter configuration
-    document.getElementById('inputPassword').addEventListener('input', function() {
+    document.getElementById('inputPassword').addEventListener('input', function () {
       const text = this.value;
       const progressIndicator = document.getElementById('strengthBarIndicator');
       const textLabelFeedback = document.getElementById('strengthLabelFeedback');
-      
+
       let meterScore = 0;
       if (text.length >= 8) meterScore++;
       if (/[A-Z]/.test(text)) meterScore++;
@@ -1511,7 +1601,7 @@
       const errorMsgFeedback = document.getElementById('feedbackTermsCheckbox');
 
       hiddenCheckboxInput.checked = !hiddenCheckboxInput.checked;
-      
+
       if (hiddenCheckboxInput.checked) {
         checkboxFacade.classList.add('facade-checked');
         checkboxFacade.style.borderColor = 'var(--primary-blue)';
@@ -1536,9 +1626,9 @@
     }
 
     // Submit payload handler function
-    document.getElementById('numenSignupForm').addEventListener('submit', async function(eventObj) {
+    document.getElementById('numenSignupForm').addEventListener('submit', async function (eventObj) {
       eventObj.preventDefault();
-      
+
       // Perform full validation sweeps across all steps prior to sending request
       let isFormFullyValid = true;
       for (let idx = 1; idx <= maxStepCount; idx++) {
@@ -1556,7 +1646,7 @@
       const submitBtn = document.getElementById('submitWizardBtn');
       const submitBtnTextSpan = submitBtn.querySelector('span');
       const submitBtnIcon = submitBtn.querySelector('i');
-      
+
       const prevInner = submitBtn.innerHTML;
       submitBtn.disabled = true;
       submitBtn.innerHTML = `<span class="btn-loader-spinner"></span> <span>Registering Account...</span>`;
@@ -1572,7 +1662,8 @@
         businessPhone: validationSchema.businessPhone.inputEl.value.trim(),
         gstNumber: document.getElementById('inputGst').value.trim(),
         address: document.getElementById('inputAddress').value.trim(),
-        password: validationSchema.password.inputEl.value
+        password: validationSchema.password.inputEl.value,
+        refAccId: document.getElementById('refAccId').value.trim()
       };
 
       try {
@@ -1587,7 +1678,7 @@
         if (requestResponse.ok) {
           // Trigger fullscreen success overlays
           document.getElementById('fullscreenSuccessOverlay').style.display = 'flex';
-          
+
           // Clear active localStorage cache to reset user environment state
           localStorage.clear();
 
@@ -1600,7 +1691,7 @@
           try {
             const parsedErrJson = await requestResponse.json();
             errorDescription = parsedErrJson.message || errorDescription;
-          } catch(ignore) {
+          } catch (ignore) {
             const rawTextErr = await requestResponse.text();
             if (rawTextErr) errorDescription = rawTextErr;
           }
@@ -1617,4 +1708,5 @@
     });
   </script>
 </body>
+
 </html>

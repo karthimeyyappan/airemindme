@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings - Numen</title>
   <script src="https://cdn.tailwindcss.com"></script>
+   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- <script>(function () { var t = localStorage.getItem('rm_theme') || 'light'; document.documentElement.setAttribute('data-theme', t); })()</script>
   <link rel="stylesheet" href="/css/theme.css"> -->
@@ -191,7 +192,7 @@
           Groups
         </button>
 
-        <button onclick="switchSettingsTab('referrals')" id="st-referrals"
+        <button onclick="switchSettingsTab('referrals'); referralLoaded = false; loadReferralInfo();" id="st-referrals"
           class="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-500 text-sm font-semibold hover:text-gray-700 flex-shrink-0">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -815,108 +816,58 @@
       <!-- ══════════════════ REFERRALS TAB ══════════════════ -->
       <div id="sp-referrals" class="hidden">
 
-        <!-- Hero Banner -->
-        <div class="rounded-2xl p-6 mb-5 text-white"
-          style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
-          <div class="flex items-center gap-4">
-            <span style="font-size:2.5rem;">🎁</span>
-            <div>
-              <p class="text-lg font-bold mb-1">Refer &amp; Earn</p>
-              <p class="text-sm" style="opacity:0.85;">
-                Share your link. When a friend signs up using it,
-                <strong>you both get rewarded!</strong>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Referral Link Card -->
+        <!-- Referral Code Card -->
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
           <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
-            Your Referral Link
+            Your Referral Code
           </p>
 
-          <!-- Spinner shown while loading -->
-          <div id="referralLoading" class="text-center py-6">
-            <div class="inline-block w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin">
+          <!-- Loading spinner -->
+          <div id="referralLoading" class="text-center py-4">
+            <div class="inline-block w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin">
             </div>
-            <p class="text-sm text-gray-400 mt-2">Loading your referral info...</p>
           </div>
 
-          <!-- Shown after API loads -->
+          <!-- Code + Copy button -->
           <div id="referralContent" style="display:none;">
-            <div class="flex gap-2 mb-3">
-              <input type="text" id="referralLinkInput" readonly
-                class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-mono text-gray-700 focus:outline-none">
-              <button onclick="copyReferralLink()" id="copyReferralBtn"
-                class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition flex-shrink-0">
-                📋 Copy
-              </button>
-              <button onclick="shareReferralLink()"
-                class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition flex-shrink-0">
-                🔗 Share
+            <div class="flex items-center gap-3">
+              <div class="flex-1 px-5 py-3 rounded-xl bg-indigo-50 border border-indigo-200">
+                <span id="referralCodeDisplay" class="text-indigo-700 font-bold text-xl tracking-widest"></span>
+              </div>
+              <button onclick="copyReferralCode()" id="copyReferralBtn"
+                class="px-5 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition flex-shrink-0">
+                📋 Copy Code
               </button>
             </div>
-            <p class="text-xs text-gray-400">
-              Your code: <strong id="referralCodeDisplay" class="text-indigo-600 text-sm tracking-wider"></strong>
-            </p>
           </div>
         </div>
 
-        <!-- Stats Row (shown after load) -->
-        <div id="referralStatsRow" style="display:none;" class="mb-5">
-          <div class="grid grid-cols-3 gap-3">
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
-              <p class="text-2xl font-bold text-indigo-600" id="statTotal">0</p>
-              <p class="text-xs text-gray-400 mt-1">Total Referred</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
-              <p class="text-2xl font-bold text-emerald-600" id="statCredited">0</p>
-              <p class="text-xs text-gray-400 mt-1">Credits Earned</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
-              <p class="text-2xl font-bold text-amber-500" id="statPending">0</p>
-              <p class="text-xs text-gray-400 mt-1">Pending</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- How It Works -->
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-5">
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-            How It Works
-          </p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="flex items-start gap-3">
-              <span
-                class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
-              <p class="text-sm text-gray-500">Share your unique referral link with friends or businesses.</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <span
-                class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
-              <p class="text-sm text-gray-500">They sign up at numen.uno using your referral link.</p>
-            </div>
-            <div class="flex items-start gap-3">
-              <span
-                class="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
-              <p class="text-sm text-gray-500">You both receive a free credit reward automatically!</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Referral History Table -->
+        <!-- People Who Used Your Referral -->
         <div id="referralHistorySection" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5"
           style="display:none;">
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-            People Who Used Your Referral
-          </p>
+
+          <!-- Header + Filter -->
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+              People Who Used Your Referral
+            </p>
+            <div class="flex gap-2">
+              <button onclick="filterReferrals('all')" id="filter-all"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition">
+                All
+              </button>
+              <button onclick="filterReferrals('active')" id="filter-active"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+                Active
+              </button>
+            </div>
+          </div>
 
           <!-- Empty state -->
-          <div id="referralEmptyState" class="text-center py-6" style="display:none;">
+          <div id="referralEmptyState" class="text-center py-8" style="display:none;">
             <p style="font-size:2.5rem;">📭</p>
             <p class="text-sm text-gray-400 mt-2">
-              No referrals yet.<br>Share your link and start earning!
+              No referrals yet. Share your code and start earning!
             </p>
           </div>
 
@@ -927,122 +878,124 @@
                 <tr class="border-b border-gray-100">
                   <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">#</th>
                   <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Name</th>
-                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Email</th>
-                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Joined Date</th>
-                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Status</th>
-                  <th class="text-left text-xs font-semibold text-gray-400 pb-3">Credit</th>
+                  <th class="text-left text-xs font-semibold text-gray-400 pb-3 pr-4">Date Joined</th>
+                  <th class="text-left text-xs font-semibold text-gray-400 pb-3">Status</th>
                 </tr>
               </thead>
-              <tbody id="referralTableBody">
-                <!-- Filled by JavaScript -->
-              </tbody>
+              <tbody id="referralTableBody"></tbody>
             </table>
           </div>
+
         </div>
 
       </div>
-      <!-- ══════════════════ END REFERRALS TAB ══════════════════ -->
 
-      <!-- Group Creation Modal -->
-      <div id="groupModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeGroupModal()"></div>
-        <div class="relative bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
-          <h3 class="text-lg font-bold text-gray-900 mb-4">Create New Group</h3>
-          <div class="space-y-4">
-            <div>
-              <label class="text-sm font-medium text-gray-700 mb-1.5 block">Group Name</label>
-              <input type="text" id="newGroupName" placeholder="e.g. Corporate Clients"
-                class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
-            </div>
-            <button onclick="saveNewGroup()"
-              class="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition">
-              Save Group
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Upgrade Plan Modal (Dummy UI) -->
-      <div id="upgradeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeUpgradeModal()"></div>
-        <div class="relative bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold text-gray-900">Upgrade Subscription</h3>
-            <button onclick="closeUpgradeModal()"
-              class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="space-y-3">
-            <!-- Trial -->
-            <div
-              class="p-4 rounded-2xl border border-gray-100 flex items-center justify-between hover:border-indigo-100 transition bg-gray-50">
-              <div>
-                <p class="text-sm font-bold text-gray-900">Trial</p>
-                <p class="text-xs text-gray-500">50 Credits included</p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm font-bold text-indigo-600">Free</p>
-                <button onclick="alert('Trial active')"
-                  class="mt-1.5 px-3.5 py-1.5 bg-gray-200 text-gray-750 text-xs font-semibold rounded-xl hover:bg-gray-300 transition">Current</button>
-              </div>
-            </div>
-
-            <!-- Starter -->
-            <div
-              class="p-4 rounded-2xl border border-gray-200 flex items-center justify-between hover:border-indigo-500 hover:shadow-sm transition bg-white">
-              <div>
-                <p class="text-sm font-bold text-gray-900">Starter</p>
-                <p class="text-xs text-gray-500">100 Credits included</p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm font-bold text-indigo-600">₹399</p>
-                <button onclick="alert('Starter Upgrade requested (Dummy UI)')"
-                  class="mt-1.5 px-3.5 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition shadow-sm">Choose</button>
-              </div>
-            </div>
-
-            <!-- Growth -->
-            <div
-              class="p-4 rounded-2xl border-2 border-indigo-600 flex items-center justify-between shadow-sm relative bg-white">
-              <span
-                class="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-bold uppercase tracking-wider">Most
-                Popular</span>
-              <div>
-                <p class="text-sm font-bold text-gray-900">Growth</p>
-                <p class="text-xs text-gray-500">250 Credits included</p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm font-bold text-indigo-600">₹699</p>
-                <button onclick="alert('Growth Upgrade requested (Dummy UI)')"
-                  class="mt-1.5 px-3.5 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition shadow-sm">Choose</button>
-              </div>
-            </div>
-
-            <!-- Business -->
-            <div
-              class="p-4 rounded-2xl border border-gray-200 flex items-center justify-between hover:border-indigo-500 hover:shadow-sm transition bg-white">
-              <div>
-                <p class="text-sm font-bold text-gray-900">Business</p>
-                <p class="text-xs text-gray-500">500 Credits included</p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm font-bold text-indigo-600">₹999</p>
-                <button onclick="alert('Business Upgrade requested (Dummy UI)')"
-                  class="mt-1.5 px-3.5 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition shadow-sm">Choose</button>
-              </div>
-            </div>
-          </div>
-
-          <p class="text-[10px] text-center text-gray-400 mt-4">Subscription purchases are processed instantly. Taxes
-            applicable at checkout.</p>
-        </div>
-      </div>
 
     </div>
+
+  </div>
+  <!-- ══════════════════ END REFERRALS TAB ══════════════════ -->
+
+  <!-- Group Creation Modal -->
+  <div id="groupModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeGroupModal()"></div>
+    <div class="relative bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-gray-900 mb-4">Create New Group</h3>
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm font-medium text-gray-700 mb-1.5 block">Group Name</label>
+          <input type="text" id="newGroupName" placeholder="e.g. Corporate Clients"
+            class="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+        <button onclick="saveNewGroup()"
+          class="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition">
+          Save Group
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upgrade Plan Modal (Dummy UI) -->
+  <div id="upgradeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeUpgradeModal()"></div>
+    <div class="relative bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-gray-900">Upgrade Subscription</h3>
+        <button onclick="closeUpgradeModal()"
+          class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <!-- Trial -->
+        <div
+          class="p-4 rounded-2xl border border-gray-100 flex items-center justify-between hover:border-indigo-100 transition bg-gray-50">
+          <div>
+            <p class="text-sm font-bold text-gray-900">Trial</p>
+            <p class="text-xs text-gray-500">50 Credits included</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-bold text-indigo-600">Free</p>
+            <button onclick="alert('Trial active')"
+              class="mt-1.5 px-3.5 py-1.5 bg-gray-200 text-gray-750 text-xs font-semibold rounded-xl hover:bg-gray-300 transition">Current</button>
+          </div>
+        </div>
+
+        <!-- Starter -->
+        <div
+          class="p-4 rounded-2xl border border-gray-200 flex items-center justify-between hover:border-indigo-500 hover:shadow-sm transition bg-white">
+          <div>
+            <p class="text-sm font-bold text-gray-900">Starter</p>
+            <p class="text-xs text-gray-500">100 Credits included</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-bold text-indigo-600">₹399</p>
+            <button onclick="alert('Starter Upgrade requested (Dummy UI)')"
+              class="mt-1.5 px-3.5 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition shadow-sm">Choose</button>
+          </div>
+        </div>
+
+        <!-- Growth -->
+        <div
+          class="p-4 rounded-2xl border-2 border-indigo-600 flex items-center justify-between shadow-sm relative bg-white">
+          <span
+            class="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[9px] font-bold uppercase tracking-wider">Most
+            Popular</span>
+          <div>
+            <p class="text-sm font-bold text-gray-900">Growth</p>
+            <p class="text-xs text-gray-500">250 Credits included</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-bold text-indigo-600">₹699</p>
+            <button onclick="alert('Growth Upgrade requested (Dummy UI)')"
+              class="mt-1.5 px-3.5 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition shadow-sm">Choose</button>
+          </div>
+        </div>
+
+        <!-- Business -->
+        <div
+          class="p-4 rounded-2xl border border-gray-200 flex items-center justify-between hover:border-indigo-500 hover:shadow-sm transition bg-white">
+          <div>
+            <p class="text-sm font-bold text-gray-900">Business</p>
+            <p class="text-xs text-gray-500">500 Credits included</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-bold text-indigo-600">₹999</p>
+            <button onclick="alert('Business Upgrade requested (Dummy UI)')"
+              class="mt-1.5 px-3.5 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition shadow-sm">Choose</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-[10px] text-center text-gray-400 mt-4">Subscription purchases are processed instantly. Taxes
+        applicable at checkout.</p>
+    </div>
+  </div>
+
+  </div>
   </div>
 
   <!-- ═══════════════════════ REPORT TEMPLATE MODAL ═══════════════════════ -->
@@ -1171,22 +1124,22 @@
     function closeUpgradeModal() { document.getElementById('upgradeModal').classList.add('hidden'); }
 
     // ── Settings main tabs (ALL FOUR panels) ────────────────────
-    function switchSettingsTab(t) {
-      ['general', 'catalog', 'users', 'groups', 'referrals'].forEach(x => {
-        const p = document.getElementById('sp-' + x);
-        const b = document.getElementById('st-' + x);
-        if (!p || !b) return;
-        if (x === t) {
-          p.classList.remove('hidden');
-          b.classList.add('border-indigo-600', 'text-indigo-600');
-          b.classList.remove('border-transparent', 'text-gray-500');
-        } else {
-          p.classList.add('hidden');
-          b.classList.remove('border-indigo-600', 'text-indigo-600');
-          b.classList.add('border-transparent', 'text-gray-500');
-        }
-      });
-    }
+//     function switchSettingsTab(t) {
+//   ['general', 'users', 'groups', 'referrals'].forEach(x => { 
+//     const p = document.getElementById('sp-' + x);
+//     const b = document.getElementById('st-' + x);
+//     if (!p || !b) return;
+//     if (x === t) {
+//       p.classList.remove('hidden');
+//       b.classList.add('border-indigo-600', 'text-indigo-600');
+//       b.classList.remove('border-transparent', 'text-gray-500');
+//     } else {
+//       p.classList.add('hidden');
+//       b.classList.remove('border-indigo-600', 'text-indigo-600');
+//       b.classList.add('border-transparent', 'text-gray-500');
+//     }
+//   });
+// }
 
     // ── Catalog sub-tabs ─────────────────────────────────────────
     function switchCatSubTab(t) {
@@ -1358,126 +1311,94 @@
     }
 
     // Init report templates grid on page load
-    if (document.getElementById('rtGrid')) { renderRTGrid(); }
+    // Init report templates grid on page load
+if (document.getElementById('rtGrid')) { renderRTGrid(); }
+
   </script>
 
-  
-  <!-- Referral Tab JS -->
   <script>
-    var referralLoaded = false;
+    let referralLoaded = false;
 
-    // Direct approach - patch the onclick directly
-    document.addEventListener('DOMContentLoaded', function () {
+   async function loadReferralInfo() {
+    switchSettingsTab('referrals');
 
-      // Find the referrals tab button and add click listener directly
-      var referralBtn = document.getElementById('st-referrals');
-      if (referralBtn) {
-        referralBtn.addEventListener('click', function () {
-          setTimeout(function () {
-            if (!referralLoaded) {
-              loadReferralInfo();
-            }
-          }, 100);
-        });
-      }
-    });
+    document.getElementById('referralLoading').style.display = 'block';
+    document.getElementById('referralContent').style.display = 'none';
+    document.getElementById('referralHistorySection').style.display = 'none';
 
-    function loadReferralInfo() {
-      var loadingEl = document.getElementById('referralLoading');
-      var contentEl = document.getElementById('referralContent');
+    try {
+        const res = await fetch('/api/referrals/info');
 
-      if (!loadingEl) return;
+        // Check if response is JSON (not a login page redirect)
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Session expired');
+        }
 
-      loadingEl.style.display = 'block';
+        const data = await res.json();
 
-      fetch('/api/referrals/info')
-        .then(function (res) {
-          if (!res.ok) throw new Error('Status ' + res.status);
-          return res.json();
-        })
-        .then(function (data) {
-          referralLoaded = true;
-          renderReferralTab(data);
-        })
-        .catch(function (err) {
-          loadingEl.innerHTML =
-            '<p class="text-sm text-red-500 text-center py-4">' +
-            '⚠️ Unable to load referral info: ' + err.message + '</p>';
-        });
+        const codeEl = document.getElementById('referralCodeDisplay');
+        if (codeEl) codeEl.textContent = data.referralCode || '-';
+
+        document.getElementById('referralLoading').style.display = 'none';
+        document.getElementById('referralContent').style.display = 'block';
+        document.getElementById('referralHistorySection').style.display = 'block';
+
+        renderReferralTable(data.history || []);
+
+    } catch (err) {
+        console.error('Failed to load referral info', err);
+        document.getElementById('referralLoading').style.display = 'none';
+        document.getElementById('referralContent').innerHTML =
+            '<p class="text-sm text-red-500 text-center py-4">Could not load referral info. Please refresh the page.</p>';
+        document.getElementById('referralContent').style.display = 'block';
     }
+}
 
-    function renderReferralTab(data) {
-      // Build referral link
-      var link = 'https://numen.uno/register?ref=' + data.referralCode;
+    function renderReferralTable(list) {
+      // ✅ Correct IDs matching your actual HTML
+      const emptyEl = document.getElementById('referralEmptyState');
+      const wrapEl = document.getElementById('referralTableWrapper');
+      const bodyEl = document.getElementById('referralTableBody');
 
-      // Set link and code
-      document.getElementById('referralLinkInput').value = link;
-      document.getElementById('referralCodeDisplay').textContent = data.referralCode;
-
-      // Set stats
-      var total = data.totalReferrals || 0;
-      var credited = data.creditedReferrals || 0;
-      var pending = Math.max(0, total - credited);
-
-      document.getElementById('statTotal').textContent = total;
-      document.getElementById('statCredited').textContent = credited;
-      document.getElementById('statPending').textContent = pending;
-
-      // Show sections
-      document.getElementById('referralLoading').style.display = 'none';
-      document.getElementById('referralContent').style.display = 'block';
-      document.getElementById('referralStatsRow').style.display = 'block';
-      document.getElementById('referralHistorySection').style.display = 'block';
-
-      // Render history
-      var history = data.history || [];
-      if (history.length === 0) {
-        document.getElementById('referralTableWrapper').style.display = 'none';
-        document.getElementById('referralEmptyState').style.display = 'block';
-      } else {
-        document.getElementById('referralTableBody').innerHTML =
-          history.map(function (r, i) {
-            var badge = r.status === 'CREDITED'
-              ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">Credited</span>'
-              : '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold">Pending</span>';
-            return '<tr class="border-b border-gray-50 hover:bg-gray-50">'
-              + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (i + 1) + '</td>'
-              + '<td class="py-3 pr-4 font-semibold text-gray-900 text-sm">' + (r.referredName || '—') + '</td>'
-              + '<td class="py-3 pr-4 text-gray-500 text-sm">' + (r.referredEmail || '—') + '</td>'
-              + '<td class="py-3 pr-4 text-gray-400 text-xs">' + (r.referredAt ? r.referredAt.substring(0, 10) : '—') + '</td>'
-              + '<td class="py-3 pr-4">' + badge + '</td>'
-              + '<td class="py-3 font-bold text-emerald-600 text-sm">'
-              + (r.creditGiven > 0 ? '₹' + parseFloat(r.creditGiven).toFixed(2) : '—')
-              + '</td>'
-              + '</tr>';
-          }).join('');
+      if (!list || list.length === 0) {
+        if (emptyEl) emptyEl.style.display = 'block';
+        if (wrapEl) wrapEl.style.display = 'none';
+        return;
       }
-    }
 
-    function copyReferralLink() {
-      var input = document.getElementById('referralLinkInput');
-      var btn = document.getElementById('copyReferralBtn');
-      navigator.clipboard.writeText(input.value).then(function () {
-        btn.textContent = '✅ Copied!';
-        btn.classList.add('bg-emerald-50', 'text-emerald-600');
-        setTimeout(function () {
-          btn.textContent = '📋 Copy';
-          btn.classList.remove('bg-emerald-50', 'text-emerald-600');
-        }, 2500);
+      if (emptyEl) emptyEl.style.display = 'none';
+      if (wrapEl) wrapEl.style.display = 'block';
+
+      bodyEl.innerHTML = '';
+      list.forEach((item, i) => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-gray-50';
+        tr.innerHTML = `
+                <td class="py-3 pr-4 text-xs text-gray-400">${i + 1}</td>
+                <td class="py-3 pr-4 text-sm font-semibold text-gray-800">${item.name || '-'}</td>
+                <td class="py-3 pr-4 text-sm text-gray-500">${item.joinedDate || '-'}</td>
+                <td class="py-3">
+                    <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">Active</span>
+                </td>
+            `;
+        bodyEl.appendChild(tr);
       });
     }
 
-    function shareReferralLink() {
-      var link = document.getElementById('referralLinkInput').value;
-      var code = document.getElementById('referralCodeDisplay').textContent;
-      var msg = 'Join Numen! Use my referral code ' + code + ': ' + link;
-      if (navigator.share) {
-        navigator.share({ title: 'Join Numen', text: msg, url: link });
-      } else {
-        window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-      }
+    function copyReferralCode() {
+      const code = document.getElementById('referralCodeDisplay').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        showSettingsToast('Referral code copied! 🎉');
+      });
+    }
+
+    function filterReferrals(type) {
+      document.getElementById('filter-all').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition ' + (type === 'all' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200');
+      document.getElementById('filter-active').className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition ' + (type === 'active' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200');
     }
   </script>
+
   <!-- Settings JS (profile save, password update) -->
   <script src="/js/settings/settings.js"></script>
 </body>
