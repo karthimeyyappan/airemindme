@@ -3,6 +3,8 @@ package com.server.realsync.services;
 import java.util.List;
 import java.util.Optional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,17 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import com.server.realsync.config.AccountNotFoundException;
 import com.server.realsync.dto.SignupRequestDto;
 import com.server.realsync.entity.Account;
+import com.server.realsync.entity.AccountPlan;
+import com.server.realsync.entity.CreditTransaction;
+import com.server.realsync.entity.Plan;
 import com.server.realsync.entity.Role;
 import com.server.realsync.entity.User;
-import com.server.realsync.entity.AccountPlan;
-import com.server.realsync.entity.Plan;
+import com.server.realsync.repo.AccountPlanRepository;
 import com.server.realsync.repo.AccountRepository;
+import com.server.realsync.repo.CreditTransactionRepository;
+import com.server.realsync.repo.PlanRepository;
 import com.server.realsync.repo.RoleRepository;
 import com.server.realsync.repo.UserRepository;
-import com.server.realsync.repo.AccountPlanRepository;
-import com.server.realsync.repo.PlanRepository;
-import com.server.realsync.repo.CreditTransactionRepository;
-import com.server.realsync.entity.CreditTransaction;
 
 @Service
 public class AccountService {
@@ -79,10 +81,8 @@ public class AccountService {
 
     @Transactional
     public void registerAccount(SignupRequestDto dto) {
-        // Validate inputs
         validateSignupRequest(dto);
 
-        // Duplicate checks
         if (repository.findByEmail(dto.getEmail()).isPresent()) {
             throw new IllegalStateException("Email already registered");
         }
@@ -90,7 +90,7 @@ public class AccountService {
             throw new IllegalStateException("Mobile number already registered");
         }
 
-        // Create Account
+        // 1. Create Account
         Account account = new Account();
         account.setName(dto.getName());
         account.setEmail(dto.getEmail());
@@ -104,6 +104,7 @@ public class AccountService {
         account.setCountry(dto.getCountry());
         account.setCurrency(dto.getCurrency());
         account.setLanguage(dto.getDefaultLanguage());
+<<<<<<< HEAD
         Account savedAccount = repository.save(account);
 
         // Auto-generate this account's own referral code
@@ -118,16 +119,36 @@ public class AccountService {
         }
 
         // Save again with referral_code and referred_by
+=======
+
+        if (dto.getRefAccId() != null && !dto.getRefAccId().trim().isEmpty()) {
+            try {
+                String code = dto.getRefAccId().trim().toUpperCase();
+                if (code.startsWith("NUMEN-")) {
+                    Integer referrerId = Integer.parseInt(
+                            code.replace("NUMEN-", "").trim());
+                    account.setReferredBy(referrerId);
+                }
+            } catch (Exception e) {
+                // Invalid referral code - ignore silently
+            }
+        }
+
+        Account savedAccount = repository.save(account);
+
+        // Auto-generate referral ID
+        savedAccount.setReferralId("NUMEN-" + savedAccount.getId());
+>>>>>>> 5ac4df241cf1277df1e653972e41b3578048dbd1
         repository.save(savedAccount);
 
-        // Fetch/Create ROLE_USER Role
+        // 2. Assign Role
         Role userRole = roleRepository.findByName("ROLE_USER").orElseGet(() -> {
             Role newRole = new Role();
             newRole.setName("ROLE_USER");
             return roleRepository.save(newRole);
         });
 
-        // Create User
+        // 3. Create User
         User user = new User();
         user.setUsername(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -138,43 +159,31 @@ public class AccountService {
         user.setRole(userRole);
         userRepository.save(user);
 
-        // Create AccountPlan
-        String planName = dto.getSelectedPlan() != null ? dto.getSelectedPlan() : "Starter";
-        Plan plan = planRepository.findByNameIgnoreCase(planName).orElseGet(() -> {
-            Plan newPlan = new Plan();
-            newPlan.setName(planName);
-            newPlan.setChargePerAI(0.0);
-            newPlan.setChargePerNonAI(0.0);
-            newPlan.setChargePerAiPhoto(0.0);
-            newPlan.setChargePerNonAiPhoto(0.0);
-            return planRepository.save(newPlan);
-        });
-
-        double credits = 50.0;
-        if ("Growth".equalsIgnoreCase(planName)) {
-            credits = 150.0;
-        } else if ("Business".equalsIgnoreCase(planName)) {
-            credits = 300.0;
-        }
+        // 4. Always assign Free Trial plan on new registration
+        Plan freeTrial = planRepository.findByIsTrial(true)
+                .orElseThrow(() -> new RuntimeException(
+                        "Free Trial plan not found. Please insert it in the plan table."));
 
         AccountPlan accountPlan = new AccountPlan();
         accountPlan.setAccount(savedAccount);
-        accountPlan.setPlan(plan);
+        accountPlan.setPlan(freeTrial);
         accountPlan.setStartDate(LocalDate.now());
-        accountPlan.setEndDate(LocalDate.now().plusDays(30)); // default 30 days validity period
-        accountPlan.setBalance(credits);
-        accountPlan.setTotalCredits(credits);
+        accountPlan.setEndDate(LocalDate.now().plusDays(freeTrial.getTrialDays())); // 7 days
+        accountPlan.setTotalCredits(Double.valueOf(freeTrial.getWhatsappCredits())); // 40
+        accountPlan.setBalance(freeTrial.getWhatsappCredits()); // 40
+        accountPlan.setStatus(AccountPlan.PlanStatus.active);
+        accountPlan.setTransaction(null); // no payment for trial
         AccountPlan savedAccountPlan = accountPlanRepository.save(accountPlan);
 
-        // Insert CreditTransaction
-        CreditTransaction transaction = new CreditTransaction();
-        transaction.setAccountId(savedAccount.getId());
-        transaction.setAccountPlanId(savedAccountPlan.getId());
-        transaction.setType("PLAN_BOUGHT");
-        transaction.setCredits(credits);
-        transaction.setBalanceAfter(credits);
-        transaction.setRemarks(planName + " Plan Purchased");
-        creditTransactionRepository.save(transaction);
+        // 5. Log credit transaction for trial
+        CreditTransaction ct = new CreditTransaction();
+        ct.setAccountId(savedAccount.getId());
+        ct.setAccountPlanId(savedAccountPlan.getId());
+        ct.setType("TRIAL_ASSIGNED");
+        ct.setCredits(Double.valueOf(freeTrial.getWhatsappCredits()));
+        ct.setBalanceAfter(Double.valueOf(freeTrial.getWhatsappCredits()));
+        ct.setRemarks("Free Trial assigned - " + freeTrial.getTrialDays() + " days");
+        creditTransactionRepository.save(ct);
     }
 
     private void validateSignupRequest(SignupRequestDto dto) {
@@ -193,10 +202,11 @@ public class AccountService {
 
         String password = dto.getPassword();
         if (password == null || password.length() < 8 ||
-                !password.matches(".*[A-Z].*") || !password.matches(".*[a-z].*") || !password.matches(".*\\d.*")) {
+                !password.matches(".*[A-Z].*") ||
+                !password.matches(".*[a-z].*") ||
+                !password.matches(".*\\d.*")) {
             throw new IllegalArgumentException(
                     "Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number.");
         }
     }
-
 }

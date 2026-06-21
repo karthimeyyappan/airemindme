@@ -9,6 +9,8 @@ import java.time.ZoneId;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,7 +27,7 @@ import jakarta.persistence.Table;
 @Table(name = "account_plan")
 public class AccountPlan {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
@@ -45,13 +47,27 @@ public class AccountPlan {
 
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
-    
+
     @Column(name = "balance")
     private double balance;
-    
+
     @Column(name = "total_credits")
     private Double totalCredits;
-    
+
+    // Add these 2 fields to your existing AccountPlan.java
+
+    @ManyToOne
+    @JoinColumn(name = "transaction_id")
+    private Transaction transaction;
+
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PlanStatus status = PlanStatus.active;
+
+    public enum PlanStatus {
+        active, expired, cancelled
+    }
+
     public Integer getId() {
         return id;
     }
@@ -99,31 +115,48 @@ public class AccountPlan {
     public void setUpdatedDate(LocalDateTime updatedDate) {
         this.updatedDate = updatedDate;
     }
-    
+
     @PrePersist
     protected void onCreate() {
         updatedDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
     }
-    
+
     @PreUpdate
     protected void onUpdate() {
         updatedDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
     }
 
-	public double getBalance() {
-		return balance;
-	}
+    public double getBalance() {
+        return balance;
+    }
 
-	public void setBalance(double balance) {
-		this.balance = balance;
-	}
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
 
-	public Double getTotalCredits() {
-		return totalCredits;
-	}
+    public Double getTotalCredits() {
+        return totalCredits;
+    }
 
-	public void setTotalCredits(Double totalCredits) {
-		this.totalCredits = totalCredits;
-	}
+    public void setTotalCredits(Double totalCredits) {
+        this.totalCredits = totalCredits;
+    }
+
+    // Getters and Setters
+    public Transaction getTransaction() {
+        return transaction;
+    }
+
+    public void setTransaction(Transaction transaction) {
+        this.transaction = transaction;
+    }
+
+    public PlanStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PlanStatus status) {
+        this.status = status;
+    }
 
 }

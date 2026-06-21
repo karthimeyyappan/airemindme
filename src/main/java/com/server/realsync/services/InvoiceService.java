@@ -477,7 +477,8 @@ public class InvoiceService {
                     invoice.getInvoiceNumber(),
                     publicUrl,
                     businessName,
-                    businessPhone
+                    businessPhone,
+                    "Invoice"
             );
         } catch (Exception e) {
             throw new RuntimeException("Failed to send WhatsApp message: " + e.getMessage(), e);

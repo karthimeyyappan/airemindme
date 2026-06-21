@@ -886,15 +886,9 @@ public class HomeController {
 		return "remindmeui/create-report";
 	}
 
-	@GetMapping("/report-history")
-	public String reportHistory(Model model) {
-		Account loggedIn = SecurityUtil.getCurrentAccountId();
-
-		Account account = accountService.getById(loggedIn.getId());
-
-		model.addAttribute("account", account);
-		model.addAttribute("activePage", "reports");
-		return "remindmeui/report-history";
+	@GetMapping("/report-history.html")
+	public String reportHistory() {
+		return "report-history";
 	}
 
 	@GetMapping("/view-report.html")
