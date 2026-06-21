@@ -15,6 +15,8 @@ import com.server.realsync.repo.InvoiceRepository;
 import com.server.realsync.spec.InvoiceSpecification;
 import com.server.realsync.util.PublicTokenUtil;
 import com.server.realsync.util.SecurityUtil;
+import com.server.realsync.repo.InvoicePaymentRepository;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +48,9 @@ public class InvoiceService {
     @Autowired
     private InvoiceTimelineService timelineService;
 
+    @Autowired
+    private InvoicePaymentRepository invoicePaymentRepository;
+
     @Value("${app.public.base-url:https://numen.uno}")
     private String publicBaseUrl;
 
@@ -57,9 +62,9 @@ public class InvoiceService {
     // ==========================
     // LIST / SEARCH (summary only)
     // ==========================
-    public Page<InvoiceListResponseDTO> findAll(String search, Long customerId, InvoiceStatus status,
-            Pageable pageable) {
-        Specification<Invoice> spec = InvoiceSpecification.filter(search, customerId, status);
+    public Page<InvoiceListResponseDTO> findAll(String search, Long customerId, String status,
+            LocalDate dateFrom, LocalDate dateTo, Integer accountId, Pageable pageable) {
+        Specification<Invoice> spec = InvoiceSpecification.filter(search, customerId, status, dateFrom, dateTo, accountId);
 
         return invoiceRepository.findAll(spec, pageable)
                 .map(invoice -> {
@@ -68,9 +73,45 @@ public class InvoiceService {
                         customerRepository.findById(invoice.getCustomerId().intValue())
                                 .ifPresent(c -> dto.setCustomerName(c.getName()));
                     }
-
+                    if ((dto.getCustomerName() == null || dto.getCustomerName().isBlank()) && invoice.getCustomerName() != null) {
+                        dto.setCustomerName(invoice.getCustomerName());
+                    }
                     return dto;
                 });
+    }
+
+    public java.util.Map<String, Object> getSummary(Integer accountId, String period) {
+        LocalDate startDate = null;
+        LocalDate endDate = null;
+        LocalDate today = LocalDate.now();
+
+        if ("today".equalsIgnoreCase(period)) {
+            startDate = today;
+            endDate = today;
+        } else if ("weekly".equalsIgnoreCase(period)) {
+            startDate = today.with(java.time.temporal.TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+            endDate = today.with(java.time.temporal.TemporalAdjusters.nextOrSame(java.time.DayOfWeek.SUNDAY));
+        } else if ("monthly".equalsIgnoreCase(period)) {
+            startDate = today.withDayOfMonth(1);
+            endDate = today.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
+        }
+
+        java.math.BigDecimal totalOutstanding = invoiceRepository.getOutstandingBalance(accountId, startDate, endDate);
+        java.math.BigDecimal overdue = invoiceRepository.getOverdueBalance(accountId, today, startDate, endDate);
+        long overdueCount = invoiceRepository.getOverdueCount(accountId, today, startDate, endDate);
+        java.math.BigDecimal dueToday = invoiceRepository.getDueTodayBalance(accountId, today, startDate, endDate);
+        long dueTodayCount = invoiceRepository.getDueTodayCount(accountId, today, startDate, endDate);
+        Double collectedToday = invoicePaymentRepository.getCollectedAmount(accountId, startDate, endDate);
+
+        java.util.Map<String, Object> summary = new java.util.HashMap<>();
+        summary.put("totalOutstanding", totalOutstanding);
+        summary.put("overdue", overdue);
+        summary.put("dueToday", dueToday);
+        summary.put("collectedToday", collectedToday != null ? java.math.BigDecimal.valueOf(collectedToday) : java.math.BigDecimal.ZERO);
+        summary.put("overdueCount", overdueCount);
+        summary.put("dueTodayCount", dueTodayCount);
+
+        return summary;
     }
 
     public Optional<Invoice> findEntityById(Long id) {

@@ -1,6 +1,7 @@
 package com.server.realsync.controllers;
 
 import com.server.realsync.dto.*;
+import java.time.LocalDate;
 import com.server.realsync.entity.InvoiceStatus;
 import com.server.realsync.services.InvoiceService;
 import org.springframework.data.domain.Page;
@@ -32,15 +33,24 @@ public class InvoiceController {
         return ResponseEntity.ok(res);
     }
 
+    @GetMapping("/summary")
+    public ResponseEntity<Map<String, Object>> getSummary(@RequestParam(defaultValue = "overall") String period) {
+        Integer accountId = com.server.realsync.util.SecurityUtil.getCurrentAccountId().getId();
+        return ResponseEntity.ok(invoiceService.getSummary(accountId, period));
+    }
+
     @GetMapping
     public Page<InvoiceListResponseDTO> list(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long customerId,
-            @RequestParam(required = false) InvoiceStatus status,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate dateTo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        return invoiceService.findAll(search, customerId, status, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
+        Integer accountId = com.server.realsync.util.SecurityUtil.getCurrentAccountId().getId();
+        return invoiceService.findAll(search, customerId, status, dateFrom, dateTo, accountId, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
     }
 
     @GetMapping("/{id}")

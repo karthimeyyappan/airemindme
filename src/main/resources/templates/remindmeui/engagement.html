@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://thymeleaf.org">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Engagement - Reminder Me</title>
+  <title>Engagement - Numen</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -24,114 +24,14 @@
   </style>
 </head>
 
-<body style="overflow-x:hidden" class="bg-gray-50">
+<body class="bg-gray-50 text-gray-900">
+
   <!-- Sidebar -->
   <div th:replace="~{remindmeui/fragments/layout :: sidebar(activePage='engagement')}"></div>
 
   <!-- Mobile nav -->
   <div th:replace="~{remindmeui/fragments/layout :: mobileNav(activePage='engagement')}"></div>
 
-  <div id="mobileNavBg" class="md:hidden hidden fixed inset-0 bg-black/50 z-[45] backdrop-blur-sm"
-    onclick="closeMobileNav()"></div>
-  <div id="mobileNavDrawer"
-    class="md:hidden fixed top-0 left-0 h-screen w-72 bg-white z-[46] shadow-2xl flex flex-col transition-transform duration-300"
-    style="transform:translateX(-100%)">
-    <div class="px-4 pt-5 pb-3 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-sm"><svg
-            class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg></div>
-        <div>
-          <p class="text-sm font-bold text-gray-900 leading-none">Reminder Me</p>
-          <p class="text-[10px] text-gray-400 mt-0.5">Business Dashboard</p>
-        </div>
-      </div><button onclick="closeMobileNav()"
-        class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><svg
-          class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg></button>
-    </div>
-    <nav class="flex-1 px-3 py-3 overflow-y-auto space-y-0.5">
-      <a href="home.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg
-          class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg><span class="text-sm font-semibold">Home</span></a>
-      <a href="dashboard360.html"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg class="w-5 h-5"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
-        </svg><span class="text-sm font-semibold">Dashboard 360</span></a>
-      <a href="customers.html"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg class="w-5 h-5"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg><span class="text-sm font-semibold">Customers</span></a>
-      <a href="sales.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg
-          class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-        </svg><span class="text-sm font-semibold">Sales</span></a>
-      <a href="inventory.html"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-500 hover:bg-gray-50 mb-1"><svg class="w-5 h-5"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg><span class="text-sm font-medium">Inventory</span></a>
-      <a href="engagement.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-600 text-white"><svg
-          class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg><span class="text-sm font-semibold">Engage</span></a>
-      <a href="promotions.html"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg class="w-5 h-5"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-        </svg><span class="text-sm font-semibold">Promotions</span></a>
-      <a href="appointments.html"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg class="w-5 h-5"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg><span class="text-sm font-semibold">Appointments</span></a>
-      <a href="reports.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg
-          class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg><span class="text-sm font-semibold">Reports</span></a>
-      <a href="user-management.html"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg class="w-5 h-5"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg><span class="text-sm font-semibold">Users</span></a>
-      <a href="settings.html" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50"><svg
-          class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg><span class="text-sm font-semibold">Settings</span></a>
-    </nav>
-    <div class="px-3 py-3 border-t border-gray-100 flex-shrink-0">
-      <div class="flex items-center gap-2.5 px-2 py-1.5">
-        <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0"><span
-            class="text-white text-xs font-bold">A</span></div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-gray-900 truncate leading-none">Arjun Sharma</p>
-          <p class="text-[10px] text-gray-400 truncate mt-0.5">Acme Financial Services</p>
-        </div>
-      </div><button onclick="window.location.href='login.html'"
-        class="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-gray-500 hover:bg-red-50 hover:text-red-600 mt-1 transition"><svg
-          class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg><span class="text-sm font-medium">Sign Out</span></button>
-    </div>
-  </div>
 
   <!-- Main -->
   <div class="md:ml-56 min-h-screen pb-24 md:pb-0 pt-14 md:pt-0">
@@ -150,7 +50,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg></div>
-          <p class="text-2xl font-bold text-gray-900">12</p>
+          <p id="stat-reminders-count" class="text-2xl font-bold text-gray-900">0</p>
           <p class="text-xs text-gray-500 mt-0.5">Reminders</p>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
@@ -159,7 +59,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg></div>
-          <p class="text-2xl font-bold text-gray-900">10</p>
+          <p id="stat-greetings-count" class="text-2xl font-bold text-gray-900">0</p>
           <p class="text-xs text-gray-500 mt-0.5">Greetings</p>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
@@ -168,7 +68,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg></div>
-          <p class="text-2xl font-bold text-gray-900">12</p>
+          <p id="stat-sent-today" class="text-2xl font-bold text-gray-900">0</p>
           <p class="text-xs text-gray-500 mt-0.5">Sent Today</p>
         </div>
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
@@ -177,7 +77,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg></div>
-          <p class="text-2xl font-bold text-gray-900">17</p>
+          <p id="stat-upcoming" class="text-2xl font-bold text-gray-900">0</p>
           <p class="text-xs text-gray-500 mt-0.5">Upcoming</p>
         </div>
       </div>
@@ -227,7 +127,7 @@
             <input id="remSearch" type="text" placeholder="Search reminders..." oninput="filterReminders()"
               class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
-          <button onclick="openModal('createReminderModal')"
+          <button onclick="openCreateReminder()"
             class="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition shadow-sm flex-shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -235,7 +135,9 @@
             New Reminder
           </button>
         </div>
-        <p id="rem-count" class="text-sm text-gray-500 mb-4">12 reminders</p>
+        <p class="text-sm text-gray-500 mb-4">
+          <span id="total-reminders-label">0</span> reminders
+        </p>
         <div id="remindersGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-5"></div>
         <div id="remindersList" class="hidden bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 mb-5">
         </div>
@@ -291,7 +193,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg></div>
-          <h2 class="text-lg font-bold text-gray-900">Create Reminder</h2>
+          <h2 id="reminderModalTitle" class="text-lg font-bold text-gray-900">Create Reminder</h2>
         </div>
         <button onclick="closeModal('createReminderModal')"
           class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition"><svg
@@ -300,21 +202,28 @@
           </svg></button>
       </div>
       <form onsubmit="submitReminder(event)" class="px-5 pb-6 flex flex-col gap-4">
-        <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Select Customer <span
-              class="text-red-500">*</span></label>
-          <div class="relative"><select id="remCustomer" required
-              class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none">
-              <option value="">Choose customer...</option>
-              <option>Rajesh Kumar</option>
-              <option>Anjali Singh</option>
-              <option>Mohammed Ibrahim</option>
-              <option>Sunita Patel</option>
-            </select><svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg></div>
+        <div class="mb-3"><label class="text-sm font-medium text-gray-700 mb-1.5 block">Select Customer
+            <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <div class="relative">
+              <input type="text" id="customerSearch" placeholder="Search customer (name / mobile)..."
+                class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500"
+                oninput="searchCustomers(this.value)" autocomplete="off">
+
+              <div id="customerDropdown"
+                class="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-y-auto shadow-lg hidden z-50">
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" id="remCustomer" required>
+          <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
-        <div>
+
+        <div class="mb-2">
           <label class="text-sm font-medium text-gray-700 mb-1.5 block">Reminder Title <span
               class="text-red-500">*</span></label>
           <input type="text" id="remTitle" placeholder="e.g. Loan EMI Payment Due" required
@@ -331,18 +240,45 @@
           </div>
         </div>
         <div>
-          <div class="flex items-center justify-between mb-1.5">
-            <label class="text-sm font-medium text-gray-700">Message <span class="text-red-500">*</span></label>
-            <button type="button" onclick="genReminderMsg()"
-              class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 text-violet-600 text-xs font-medium hover:bg-violet-100 transition"><svg
-                class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z" />
-              </svg>Generate Message</button>
+          <div class="space-y-2">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between relative">
+              <label class="text-sm font-semibold text-gray-700">
+                Message <span class="text-red-500">*</span>
+              </label>
+
+              <button type="button" onclick="openAiAssistant({ moduleCode: 'REMINDER', targetField: 'remMessage' }, event)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full 
+             bg-gradient-to-r from-violet-50 to-indigo-50 
+             text-indigo-600 text-xs font-semibold 
+             border border-indigo-100
+             hover:shadow-sm hover:scale-[1.02] 
+             active:scale-[0.98] transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                AI Assistant
+              </button>
+            </div>
+
+            <!-- Textarea wrapper -->
+            <div class="relative">
+
+              <textarea id="remMessage" placeholder="Type your Numenssage..." rows="4" required
+                oninput="updateCharCount(this)" class="w-full px-4 py-3 rounded-2xl border border-gray-200 
+             bg-white text-sm leading-relaxed
+             focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-400
+             transition resize-none placeholder-gray-400 shadow-sm">
+    </textarea>
+
+              <!-- Character count (floating) -->
+              <div class="absolute bottom-2 right-3 text-xs text-gray-400">
+                <span id="remCC">0</span>
+              </div>
+
+            </div>
+
           </div>
-          <textarea id="remMessage" placeholder="Enter your reminder message..." rows="4" required
-            oninput="document.getElementById('remCC').textContent=this.value.length"
-            class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none placeholder-gray-400"></textarea>
-          <p class="text-xs text-gray-400 mt-1"><span id="remCC">0</span> characters</p>
         </div>
         <!-- Reminder Type -->
         <div>
@@ -389,7 +325,7 @@
             </div>
             <div><label class="text-xs font-medium text-gray-600 mb-1 block">Amount per Occurrence</label>
               <div class="flex gap-1"><span
-                  class="flex items-center px-3 py-2 bg-gray-100 border border-gray-200 border-r-0 rounded-l-xl text-sm text-gray-600">₹</span><input
+                  class="currency-symbol flex items-center px-3 py-2 bg-gray-100 border border-gray-200 border-r-0 rounded-l-xl text-sm text-gray-600">₹</span><input
                   type="number" id="remAmount" placeholder="500"
                   class="flex-1 px-3 py-2.5 border border-gray-200 rounded-r-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
               </div>
@@ -428,54 +364,19 @@
           <div id="attachPlansPanel" class="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto pr-1">
             <label
               class="flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 border-indigo-500 bg-indigo-50/50 cursor-pointer">
-              <input type="radio" name="attachedItem" value="plan-1" checked class="accent-indigo-600 w-4 h-4">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-900">Basic SIP Plan</p>
-                <p class="text-[10px] text-gray-400">₹500 · Monthly</p>
-              </div>
+              <input type="radio" name="attachedItem" value="plan-${plan.id}" checked class="accent-indigo-600 w-4
+              h-4">
+
             </label>
-            <label
-              class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-indigo-200">
-              <input type="radio" name="attachedItem" value="plan-2" class="accent-indigo-600 w-4 h-4">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-900">Wealth Builder Pro</p>
-                <p class="text-[10px] text-gray-400">₹5,000 · Monthly</p>
-              </div>
-            </label>
-            <label
-              class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-indigo-200">
-              <input type="radio" name="attachedItem" value="plan-3" class="accent-indigo-600 w-4 h-4">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-900">Term Life Cover</p>
-                <p class="text-[10px] text-gray-400">₹999 · Yearly</p>
-              </div>
-            </label>
+
           </div>
           <div id="attachProductsPanel" class="hidden grid grid-cols-1 gap-2 max-h-36 overflow-y-auto pr-1">
             <label
               class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-indigo-200">
-              <input type="radio" name="attachedItem" value="prod-1" class="accent-indigo-600 w-4 h-4">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-900">Gold ETF Units</p>
-                <p class="text-[10px] text-gray-400">₹4,850 · Investments</p>
-              </div>
+              <input type="radio" name="attachedItem" value="product-${product.id}" class="accent-indigo-600 w-4 h-4">
+
             </label>
-            <label
-              class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-indigo-200">
-              <input type="radio" name="attachedItem" value="prod-2" class="accent-indigo-600 w-4 h-4">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-900">ULIP Standard Plan</p>
-                <p class="text-[10px] text-gray-400">₹12,000 · Insurance</p>
-              </div>
-            </label>
-            <label
-              class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-indigo-200">
-              <input type="radio" name="attachedItem" value="prod-3" class="accent-indigo-600 w-4 h-4">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-gray-900">Corporate FD</p>
-                <p class="text-[10px] text-gray-400">₹10,000 · Fixed Income</p>
-              </div>
-            </label>
+
           </div>
         </div>
 
@@ -495,6 +396,30 @@
               d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>Create Reminder</button>
       </form>
+    </div>
+  </div>
+
+  <div id="reminderLoaderOverlay"
+    class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="absolute inset-0"></div>
+    <div class="relative mx-4 max-w-lg w-full">
+      <div
+        class="rounded-[2rem] bg-white/95 border border-slate-200 shadow-2xl shadow-indigo-500/10 backdrop-blur-xl p-7 sm:p-10">
+        <div class="flex flex-col items-center text-center gap-5">
+          <div class="relative flex h-20 w-20 items-center justify-center rounded-full bg-indigo-50">
+            <div
+              class="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-500/20 to-indigo-600/10 animate-pulse">
+            </div>
+            <div class="relative h-12 w-12 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin">
+            </div>
+          </div>
+          <div class="space-y-2">
+            <p id="reminderLoaderTitle" class="text-xl font-semibold text-slate-900">Creating Reminder...</p>
+            <p id="reminderLoaderSubtitle" class="text-sm text-slate-500 max-w-xs mx-auto">Please wait while we schedule
+              your reminder.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -532,12 +457,12 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg><span class="text-xs font-semibold text-gray-500">Anniversary</span></button><button type="button"
-              onclick="selGT('festival')" id="gt-f"
+              onclick="selGT('others')" id="gt-f"
               class="flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 border-gray-200 hover:border-gray-300 transition"><svg
                 class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-              </svg><span class="text-xs font-semibold text-gray-500">Festival</span></button></div><input type="hidden"
+              </svg><span class="text-xs font-semibold text-gray-500">others</span></button></div><input type="hidden"
             id="gtHidden" value="birthday">
         </div>
         <div><label class="text-sm font-medium text-gray-700 mb-2 block">Send To</label>
@@ -554,65 +479,113 @@
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>Customer Group</button></div>
         </div>
-        <div id="gwCust"><label class="text-sm font-medium text-gray-700 mb-1.5 block">Select Customer</label>
-          <div class="relative"><select id="gtCustomer"
-              class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 appearance-none">
-              <option value="">Choose customer...</option>
-              <option>Rajesh Kumar</option>
-              <option>Anjali Singh</option>
-              <option>Mohammed Ibrahim</option>
-              <option>Sunita Patel</option>
-            </select><svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg></div>
-        </div>
-        <div id="gwGrp" class="hidden"><label class="text-sm font-medium text-gray-700 mb-1.5 block">Select
-            Group</label>
-          <div class="relative"><select
-              class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 appearance-none">
-              <option>⭐ VIP</option>
-              <option>🔄 Regular</option>
-              <option>🆕 New</option>
-              <option>💤 Inactive</option>
-            </select><svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg></div>
-        </div>
-        <div>
-          <label class="text-sm font-medium text-gray-700 mb-1.5 block">Attach Image (optional)</label>
-          <label id="gtImgLabel"
-            class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-2xl p-5 cursor-pointer hover:border-pink-300 transition bg-gray-50/50">
-            <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p class="text-sm text-gray-400">Click to upload image</p>
-            <p class="text-xs text-gray-300">PNG, JPG up to 5MB</p>
-            <input type="file" id="gtImgInput" class="hidden" accept="image/*" onchange="handleGreetingImgUpload(this)">
+        <!-- tamil -->
+        <div class="mb-3">
+          <label class="text-sm font-medium text-gray-700 mb-1.5 block">
+            Select Customer <span class="text-red-500">*</span>
           </label>
-          <div id="gtImgPreview" class="hidden mt-2 relative">
-            <img id="gtImgPreviewImg" src="" alt="Preview"
-              class="w-full h-32 object-cover rounded-2xl border border-gray-200">
-            <div class="absolute inset-0 rounded-2xl bg-black/10 flex items-start justify-end p-2">
-              <button type="button" onclick="clearGreetingImg()"
-                class="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-gray-600 hover:text-red-500 shadow-sm transition">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+
+          <div class="relative">
+
+            <!-- Search Input -->
+            <input type="text" id="gtCustomerSearch" placeholder="Search customer (name / mobile)..."
+              class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:ring-2 focus:ring-pink-400"
+              oninput="searchCustomersForGreeting(this.value)" autocomplete="off">
+
+            <!-- Dropdown -->
+            <div id="gtCustomerDropdown"
+              class="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-y-auto shadow-lg hidden z-50">
             </div>
-            <p id="gtImgFileName" class="text-xs text-gray-400 mt-1 text-center truncate"></p>
+
+            <!-- Dropdown icon -->
+            <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+
+          <!-- Hidden field -->
+          <input type="hidden" id="gtCustomer" required>
+        </div>
+        <div id="gwGrp" class="hidden">
+          <label class="text-sm font-medium text-gray-700 mb-1.5 block">
+            Select Group
+          </label>
+
+          <div class="relative">
+            <select id="gtGroup"
+              class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 appearance-none">
+
+              <option value="">Select group</option>
+
+            </select>
+
+            <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none"
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
         </div>
         <div>
-          <div class="flex items-center justify-between mb-1.5"><label class="text-sm font-medium text-gray-700">Message
-              <span class="text-red-500">*</span></label><button type="button" onclick="genGreetingMsg()"
+          <label class="text-sm font-medium text-gray-700 mb-2 block">
+            Attach Image <span class="text-gray-400 text-xs">(optional)</span>
+          </label>
+
+          <!-- Upload Box -->
+          <label id="gtImgLabel" class="group flex flex-col items-center justify-center gap-3 
+    border-2 border-dashed border-gray-200 rounded-2xl p-6 cursor-pointer 
+    bg-gray-50/60 hover:border-pink-400 hover:bg-pink-50 transition">
+
+            <!-- Icon -->
+            <div class="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center 
+      group-hover:scale-110 transition">
+              <svg class="w-6 h-6 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+
+            <!-- Text -->
+            <div class="text-center">
+              <p class="text-sm font-semibold text-gray-600 group-hover:text-pink-600">
+                Upload Greeting Image
+              </p>
+              <p class="text-xs text-gray-400">
+                PNG, JPG • Max 5MB
+              </p>
+            </div>
+
+            <!-- Hidden Input (IMPORTANT: keep same id + function) -->
+            <input type="file" id="gtImgInput" accept="image/*" class="hidden" onchange="handleGreetingImgUpload(this)">
+          </label>
+
+          <!-- Preview -->
+          <div id="gtImgPreview" class="hidden mt-3 relative">
+
+            <img id="gtImgPreviewImg" class="w-full h-36 object-cover rounded-2xl border border-gray-200 shadow-sm">
+
+            <!-- Overlay -->
+            <div class="absolute inset-0 rounded-2xl bg-black/10 flex items-start justify-end p-2">
+
+              <!-- Remove Button -->
+              <button type="button" onclick="clearGreetingImg()" class="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center 
+        text-gray-600 hover:text-red-500 shadow transition">
+                ✕
+              </button>
+            </div>
+
+            <!-- File name -->
+            <p id="gtImgFileName" class="text-xs text-gray-400 mt-1 text-center truncate">
+            </p>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1.5 relative"><label class="text-sm font-medium text-gray-700">Message
+              <span class="text-red-500">*</span></label><button type="button" onclick="openAiAssistant({ moduleCode: 'GREETING', targetField: 'gtMessage' }, event)"
               class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50 text-pink-600 text-xs font-medium hover:bg-pink-100 transition"><svg
-                class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z" />
-              </svg>Generate Message</button></div><textarea id="gtMessage" placeholder="Enter your greeting message..."
+                class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>AI Assistant</button></div><textarea id="gtMessage" placeholder="Enter your greeting message..."
             rows="4" required
             class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-400 resize-none placeholder-gray-400"></textarea>
         </div>
@@ -706,94 +679,1065 @@
       </svg><span class="text-[10px] font-medium">Settings</span></a>
   </div>
 
-  <script>
-    // ===================== DATA =====================
-    const reminders = [
-      { id: 1, title: 'Loan EMI Payment Due', customer: 'Rajesh Kumar', message: 'Dear Rajesh, your home loan EMI of ₹12,500 is due on 15th March. Please ensure timely payment.', date: '15 Mar 2025', time: '09:00 am', channels: ['wa', 'phone'], status: 'Scheduled', recurring: true },
-      { id: 2, title: 'Policy Renewal', customer: 'Mohammed Ibrahim', message: 'Dear Mohammed, your insurance policy #INS-2021-4432 is due for renewal on 18th March.', date: '18 Mar 2025', time: '10:00 am', channels: ['em', 'phone'], status: 'Scheduled', recurring: false },
-      { id: 3, title: 'SIP Investment Reminder', customer: 'Vikram Nair', message: 'Hi Vikram, your monthly SIP of ₹5,000 is scheduled for 12th March. Ensure sufficient balance.', date: '12 Mar 2025', time: '08:00 am', channels: ['wa'], status: 'Sent', recurring: true },
-      { id: 4, title: 'Document Submission', customer: 'Anjali Singh', message: 'Dear Anjali, please submit your KYC documents at our office before 20th March 2025.', date: '20 Mar 2025', time: '11:00 am', channels: ['wa', 'em'], status: 'Pending', recurring: false },
-      { id: 5, title: 'Quarterly Review Meeting', customer: 'Amit Gupta', message: 'Hi Amit, your quarterly investment portfolio review is scheduled for 22nd March at 2pm.', date: '22 Mar 2025', time: '02:00 pm', channels: ['wa', 'em'], status: 'Scheduled', recurring: false },
-      { id: 6, title: 'FD Maturity Alert', customer: 'Kiran Bose', message: 'Dear Kiran, your Fixed Deposit of ₹2,00,000 matures on 28th March 2025.', date: '28 Mar 2025', time: '10:00 am', channels: ['wa', 'phone', 'em'], status: 'Scheduled', recurring: false },
-      { id: 7, title: 'Premium Payment Due', customer: 'Deepa Krishnan', message: 'Dear Deepa, your annual insurance premium of ₹18,000 is due next week.', date: '5 Apr 2025', time: '10:00 am', channels: ['wa', 'em'], status: 'Scheduled', recurring: true },
-      { id: 8, title: 'Portfolio Rebalancing', customer: 'Priya Mehta', message: 'Hi Priya, it is time to review and rebalance your investment portfolio for the new quarter.', date: '8 Apr 2025', time: '11:00 am', channels: ['wa'], status: 'Scheduled', recurring: false },
-    ];
+  <script src="/js/catlog/template-service.js"></script>
+  <script th:inline="javascript">
+    // ============================================================
+    // roCONSTANTS & CONFIG
+    // ============================================================
+    const API_BASE = "/api";
+    const ACCOUNT_ID = [[${ account.id }]];
 
-    const greetings = [
-      { id: 1, type: 'Birthday', customer: 'Rajesh Kumar', message: '🎉 Wishing you a very Happy Birthday, Rajesh! May this special day bring you joy and prosperity.', date: '15 Mar 2025', channels: ['wa'], status: 'Scheduled', img: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?w=400&q=80' },
-      { id: 2, type: 'Anniversary', customer: 'Mohammed Ibrahim', message: '💍 Happy Wedding Anniversary, Mohammed & Family! May your bond grow stronger each passing year.', date: '15 Apr 2025', channels: ['wa', 'phone'], status: 'Scheduled', img: 'https://images.unsplash.com/photo-1769050736767-bda81a15c397?w=400&q=80' },
-      { id: 3, type: 'Birthday', customer: 'Anjali Singh', message: '🎂 Happy Birthday, Anjali! Sending you warm wishes on your special day from our entire team.', date: '22 Jun 2025', channels: ['wa', 'em'], status: 'Scheduled', img: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?w=400&q=80' },
-      { id: 4, type: 'Birthday', customer: 'Amit Gupta', message: '🎁 Happy Birthday Amit! We are grateful to have you as our valued client.', date: '12 Sept 2025', channels: ['wa'], status: 'Scheduled', img: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?w=400&q=80' },
-      { id: 5, type: 'Festival', customer: 'Sunita Patel', message: '🪔 Happy Diwali, Sunita! May the festival of lights bring happiness and prosperity to you and your family.', date: '20 Oct 2025', channels: ['wa', 'em'], status: 'Scheduled', img: 'https://images.unsplash.com/photo-1635842975205-d6c2f1c0e1fe?w=400&q=80' },
-      { id: 6, type: 'Birthday', customer: 'Kiran Bose', message: '🎉 Happy Birthday, Kiran! Wishing you continued success in all your financial endeavors.', date: '14 Jul 2025', channels: ['wa'], status: 'Scheduled', img: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?w=400&q=80' },
-      { id: 7, type: 'Anniversary', customer: 'Priya Mehta', message: '🌹 Happy Work Anniversary, Priya! Thank you for your continued trust in Acme Financial Services.', date: '3 Aug 2025', channels: ['wa', 'em'], status: 'Scheduled', img: 'https://images.unsplash.com/photo-1769050736767-bda81a15c397?w=400&q=80' },
-    ];
-
-    const statusColors = { Scheduled: 'bg-blue-100 text-blue-700', Sent: 'bg-green-100 text-green-700', Pending: 'bg-orange-100 text-orange-700', Failed: 'bg-red-100 text-red-700' };
-    const chIcon = {
-      wa: `<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>`,
-      phone: `<svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>`,
-      em: `<svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>`
+    const REM_PER_PAGE = 6;
+    const GREET_PER_PAGE = 6;
+    const STORAGE_BASE = "https://gateway.storjshare.io/aiprompt/";
+    const statusColors = {
+      Scheduled: 'bg-blue-100 text-blue-700',
+      Sent: 'bg-green-100 text-green-700',
+      Pending: 'bg-orange-100 text-orange-700',
+      Failed: 'bg-red-100 text-red-700'
     };
 
-    // ===================== STATE =====================
-    let engView = 'card';
-    let remPage = 1, greetPage = 1;
-    let remSearchTerm = '', greetSearchTerm = '';
-    const REM_PER_PAGE = 4, GREET_PER_PAGE = 4;
-    let remType = 'onetime', recurFreq = 'monthly';
-    let activeRemCh = 'wa', activeGtCh = 'wa';
-    let greetingImgDataUrl = null;
+    const chIcon = {
+      wa: `<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+      </svg>`,
+      sms: `<svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+        </svg>`,
+      em: `<svg class="w-4 h-4 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>`
+    };
 
-    // ===================== SEARCH =====================
-    function filterReminders() {
-      remSearchTerm = (document.getElementById('remSearch').value || '').toLowerCase().trim();
-      remPage = 1;
-      renderReminders();
+
+    // ============================================================
+    // roGLOBAL STATE
+    // ============================================================
+    let reminders = [];
+    let allCustomers = [];
+    let greetings = [];
+    let allGroups = [];
+
+    let remType = 'onetime';
+    let recurFreq = 'monthly';
+    let activeRemCh = 'whatsapp';
+    let activeGtCh = 'wa';
+
+    let engView = 'card';
+    let remPage = 1;
+    let greetPage = 1;
+    let remSearchTerm = '';
+    let greetSearchTerm = '';
+    let greetingImgDataUrl = null;
+    const queryReminderId = new URLSearchParams(window.location.search).get("id");
+
+
+    // ============================================================
+    // roINIT  (single window.onload)
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      console.log("Initializing Dashboard...");
+
+      try {
+        await loadCustomers();
+        await loadCustomerGroups();
+        await loadGreetings();
+        await loadReminders();
+        updateTopStats();
+
+        if (typeof loadPlans === "function") loadPlans();
+        if (typeof loadProducts === "function") loadProducts();
+
+        if (queryReminderId) {
+          const reminderId = parseInt(queryReminderId, 10);
+          if (!Number.isNaN(reminderId)) {
+            openEditReminder(reminderId);
+          }
+        }
+
+        const savedTab = localStorage.getItem("eng_active_tab") || "reminders";
+        switchTab(queryReminderId ? "reminders" : savedTab);
+
+        // Check for return template from sessionStorage
+        const selectedTemplateStr = sessionStorage.getItem("selectedTemplate");
+        const returnField = sessionStorage.getItem("returnField");
+        if (selectedTemplateStr && returnField) {
+          try {
+            const template = JSON.parse(selectedTemplateStr);
+            const field = document.getElementById(returnField);
+            if (field && template.content) {
+              const titleField = document.getElementById('remTitle');
+              if (titleField && (template.name || template.title)) {
+                titleField.value = template.name || template.title;
+              }
+              field.value = template.content;
+              if (typeof updateCharCount === 'function') {
+                updateCharCount(field);
+              }
+              // Open the corresponding modal
+              if (returnField === 'remMessage') {
+                openCreateReminder();
+              } else if (returnField === 'gtMessage') {
+                openModal('sendGreetingModal');
+              }
+            }
+          } catch (e) {
+            console.error("Failed to parse returned template", e);
+          } finally {
+            sessionStorage.removeItem("selectedTemplate");
+            sessionStorage.removeItem("returnField");
+          }
+        }
+
+      } catch (err) {
+        console.error("Initialization failed:", err);
+      }
+    });
+
+    // ============================================================
+    // roDATA LOADERS
+    // ============================================================
+
+    async function loadCustomers() {
+      try {
+        const res = await fetch(`${API_BASE}/customers/my-customers`);
+        if (!res.ok) throw new Error("Failed to load customers");
+
+        allCustomers = await res.json();
+
+        const remSel = document.getElementById("remCustomer");
+        const greetSel = document.getElementById("gtCustomer");
+
+        const options = allCustomers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        const placeholder = '<option value="">Choose customer...</option>';
+
+        if (remSel) remSel.innerHTML = placeholder + options;
+        if (greetSel) greetSel.innerHTML = placeholder + options;
+
+        renderReminders();
+      } catch (e) {
+        console.error("Customer Load Error:", e);
+      }
     }
 
+    async function loadCustomerGroups() {
+      try {
+        const res = await fetch(`${API_BASE}/customer-groups/my-groups`);
+
+        if (!res.ok) {
+          if (res.status === 401) console.error("User not logged in");
+          return;
+        }
+
+        allGroups = await res.json();
+
+        const groupSel = document.getElementById("gtGroup");
+        if (groupSel) {
+          groupSel.innerHTML =
+            '<option value="">Select group</option>' +
+            allGroups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+        }
+
+        renderGreetings();
+      } catch (e) {
+        console.error("Group Load Error:", e);
+        allGroups = [];
+      }
+    }
+
+    async function loadReminders() {
+      try {
+        const res = await fetch(`${API_BASE}/engagements/reminders/account/${ACCOUNT_ID}`);
+        if (!res.ok) throw new Error("Failed to load reminders");
+
+        reminders = await res.json();
+
+        const countLabel = document.getElementById('total-reminders-label');
+        if (countLabel) countLabel.textContent = reminders.length;
+
+        const statElem = document.getElementById('stat-reminders-count');
+        if (statElem) statElem.textContent = reminders.length;
+
+        renderReminders();
+      } catch (e) {
+        console.error("Reminder fetch failed", e);
+      }
+    }
+
+    async function loadGreetings() {
+      try {
+        const res = await fetch(`${API_BASE}/engagements/greetings/account/${ACCOUNT_ID}`);
+        if (!res.ok) throw new Error("Failed to load greetings");
+
+        greetings = await res.json();
+
+        const greetCountLabel = document.getElementById('greet-count');
+        if (greetCountLabel) greetCountLabel.textContent = `${greetings.length} greetings`;
+
+        renderGreetings();
+      } catch (e) {
+        console.error("Greeting fetch failed", e);
+      }
+    }
+
+    async function loadPlans() {
+      try {
+        const res = await fetch(`${API_BASE}/catalog/plans`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const plans = data.content || [];
+
+        const container = document.getElementById("attachPlansPanel");
+
+        container.innerHTML = plans.map((p, idx) => `
+      <label class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-indigo-200">
+        <input type="radio" name="attachedItem"
+          value="plan-${p.id}"
+          ${idx === 0 ? 'checked' : ''}
+          class="accent-indigo-600 w-4 h-4">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-bold text-gray-900">${p.name}</p>
+          <p class="text-[10px] text-gray-400">₹${p.price} · ${p.billingCycle || 'Plan'}</p>
+        </div>
+      </label>
+    `).join('');
+
+      } catch (e) {
+        console.error("Plan Load Error:", e);
+      }
+    }
+    async function loadProducts() {
+      try {
+        const res = await fetch(`${API_BASE}/catalog/products`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+
+        // Supports both paginated and non-paginated responses
+        const products = Array.isArray(data) ? data : (data.content || []);
+
+        const container = document.getElementById("attachProductsPanel");
+
+        container.innerHTML = products.map((p, idx) => `
+      <label class="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-200 bg-white cursor-pointer hover:border-indigo-200">
+        <input
+          type="radio"
+          name="attachedItem"
+          value="product-${p.id}"
+          ${idx === 0 ? 'checked' : ''}
+          class="accent-indigo-600 w-4 h-4">
+
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-bold text-gray-900">${p.name}</p>
+          <p class="text-[10px] text-gray-400">
+            ₹${p.price || 0} · ${p.category || 'Product'}
+          </p>
+        </div>
+      </label>
+    `).join('');
+
+      } catch (e) {
+        console.error("Product Load Error:", e);
+      }
+    }
+
+
+    async function updateTopStats() {
+      try {
+
+        const res = await fetch(`${API_BASE}/engagements/stats/${ACCOUNT_ID}`);
+
+        if (!res.ok) throw new Error("Failed to fetch stats");
+
+        const stats = await res.json();
+
+
+        const remElem = document.getElementById('stat-reminders-count');
+        const greetElem = document.getElementById('stat-greetings-count');
+        const sentElem = document.getElementById('stat-sent-today');
+        const upElem = document.getElementById('stat-upcoming');
+
+        // Update values dynamically (fallback to 0 if null)
+        if (remElem) remElem.textContent = stats.reminders || 0;
+        if (greetElem) greetElem.textContent = stats.greetings || 0;
+        if (sentElem) sentElem.textContent = stats.sentToday || 0;
+        if (upElem) upElem.textContent = stats.scheduled || 0;
+
+
+      } catch (e) {
+        console.error("Error updating top stats:", e);
+      }
+    }
+    function searchCustomersForGreeting(query) {
+
+      const dropdown = document.getElementById("gtCustomerDropdown");
+
+      if (!query.trim()) {
+        dropdown.classList.add("hidden");
+        return;
+      }
+
+      const filtered = allCustomers.filter(c =>
+        c.name.toLowerCase().includes(query.toLowerCase()) ||
+        (c.mobile && c.mobile.includes(query))
+      );
+
+      // ✅ No results case
+      if (filtered.length === 0) {
+        dropdown.innerHTML = `
+      <div class="px-4 py-3 text-sm text-gray-400 text-center">
+        😕 No customers found
+      </div>
+    `;
+        dropdown.classList.remove("hidden");
+        return;
+      }
+
+      // ✅ Normal results
+      dropdown.innerHTML = filtered.map(c => `
+    <div onclick="selectGreetingCustomer('${c.id}', '${c.name}')"
+      class="px-4 py-2 hover:bg-pink-50 cursor-pointer text-sm">
+      ${c.name} - ${c.mobile || ''}
+    </div>
+  `).join('');
+
+      dropdown.classList.remove("hidden");
+    }
+    function selectGreetingCustomer(id, name) {
+
+      document.getElementById("gtCustomer").value = id;
+      document.getElementById("gtCustomerSearch").value = name;
+
+      document.getElementById("gtCustomerDropdown").classList.add("hidden");
+    }
+
+    function showReminderLoader(type) {
+      const overlay = document.getElementById("reminderLoaderOverlay");
+      const title = document.getElementById("reminderLoaderTitle");
+      const subtitle = document.getElementById("reminderLoaderSubtitle");
+
+      if (!overlay || !title || !subtitle) return;
+
+      const isRecurring = type === 'recurring';
+      title.textContent = isRecurring ? "Creating Recurring Reminder..." : "Creating Reminder...";
+      subtitle.textContent = isRecurring ? "Generating future reminder schedules and saving data." : "Please wait while we schedule your reminder.";
+
+      overlay.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        overlay.classList.remove("opacity-0");
+        overlay.classList.add("opacity-100");
+        overlay.classList.remove("pointer-events-none");
+      });
+    }
+
+    function hideReminderLoader() {
+      const overlay = document.getElementById("reminderLoaderOverlay");
+      if (!overlay) return;
+
+      overlay.classList.add("opacity-0");
+      overlay.classList.remove("opacity-100");
+      overlay.classList.add("pointer-events-none");
+      setTimeout(() => overlay.classList.add("hidden"), 300);
+    }
+    // ============================================================
+    // roCREATE  (submit handlers)
+    // ============================================================
+
+    async function submitReminder(event) {
+      event.preventDefault();
+
+      const selectedItem = document.querySelector('input[name="attachedItem"]:checked');
+      if (!selectedItem) return showToast("Please select a Plan or Product to attach.");
+      const [itemType, itemId] = selectedItem.value.split('-');
+      const customerId = document.getElementById("remCustomer").value;
+      if (!customerId) {
+        showToast("Please select a customer");
+        return;
+      }
+      const reminderPayload = {
+        accountId: ACCOUNT_ID,
+        customerId: parseInt(document.getElementById("remCustomer").value),
+        title: document.getElementById("remTitle").value,
+        message: document.getElementById("remMessage").value,
+        reminderDate: document.getElementById("remDate").value,
+        reminderTime: document.getElementById("remTime").value + ":00",
+        reminderType: remType,
+        frequency: remType === 'recurring' ? recurFreq : null,
+        totalOccurrences: document.getElementById("remOccurrences")?.value || null,
+        amount: document.getElementById("remAmount")?.value || null,
+        channel: activeRemCh,
+        attachedItemId: parseInt(itemId),
+        attachedItemType: itemType,
+        status: "Scheduled"
+      };
+
+      try {
+        showReminderLoader(remType);
+
+        const isEdit = window.editReminderId != null;
+
+        const url = isEdit
+          ? `${API_BASE}/engagements/reminders/${window.editReminderId}`
+          : `${API_BASE}/engagements/reminders`;
+
+        const method = isEdit ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+          method: method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reminderPayload)
+        });
+
+        if (res.ok) {
+
+          hideReminderLoader();
+          closeModal('createReminderModal');
+          event.target.reset();
+
+          // 🔥 IMPORTANT: reset edit state
+          window.editReminderId = null;
+
+          loadReminders();
+          showToast("Reminder created successfully");
+
+        } else {
+          hideReminderLoader();
+          const errorText = await res.text();
+          console.error("Submission failed:", errorText);
+        }
+
+      } catch (e) {
+        hideReminderLoader();
+        console.error("Submission error", e);
+      }
+    }
+
+    async function submitGreeting(e) {
+      e.preventDefault();
+
+      // 1️⃣ Validate attached item
+      const selectedItem = document.querySelector('input[name="attachedItem"]:checked');
+      if (!selectedItem) {
+        showToast("Please select a Plan or Product to attach.");
+        return;
+      }
+
+      const [itemType, itemId] = selectedItem.value.split('-');
+
+      // 2️⃣ Detect mode (Individual / Group)
+      const isGroupMode = !document.getElementById("gwGrp").classList.contains("hidden");
+
+      let customerId = null;
+      let groupId = null;
+
+      if (isGroupMode) {
+
+        const groupSelect = document.querySelector("#gtGroup");
+
+        if (!groupSelect) {
+          console.error("❌ Group select not found");
+          return;
+        }
+
+        groupId = groupSelect.value;
+
+        if (!groupId) {
+          showToast("Please select a group");
+          return;
+        }
+      } else {
+        customerId = document.getElementById("gtCustomer")?.value;
+
+        if (!customerId) {
+          showToast("Please select a customer");
+          return;
+        }
+      }
+
+      // 3️⃣ File handling
+      const fileInput = document.getElementById("gtImgInput");
+      const file = fileInput?.files?.[0] || null;
+
+      if (file) {
+        console.log("✅ File selected:", file.name);
+      } else {
+        console.warn("❌ No file selected");
+      }
+
+      // 4️⃣ Build payload
+      const greetingPayload = {
+        accountId: ACCOUNT_ID,
+        greetingType: document.getElementById('gtHidden').value,
+        message: document.getElementById('gtMessage').value,
+        greetingDate: document.getElementById('gtDate').value,
+        greetingTime: document.getElementById('gtTime').value + ":00",
+        channels: activeGtCh,
+        status: 'Scheduled',
+
+        customerId: customerId ? parseInt(customerId) : null,
+        customerGroupId: groupId ? parseInt(groupId) : null
+      };
+      console.log("📦 Payload:", greetingPayload);
+      console.log("Customer ID:", customerId);
+      console.log("Group ID:", groupId);
+      try {
+        // 5️⃣ Create greeting
+        const res = await fetch(`${API_BASE}/engagements/greetings`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(greetingPayload)
+        });
+
+        if (!res.ok) throw new Error("Create failed");
+
+        const text = await res.text();
+        let createdGreeting;
+
+        try {
+          createdGreeting = JSON.parse(text);
+        } catch (e) {
+          console.error("❌ JSON parse failed:", text);
+          return;
+        }
+
+        const greetingId = createdGreeting.id;
+        console.log("✅ Created Greeting ID:", greetingId);
+
+        // 6️⃣ Upload image (optional)
+        if (file) {
+          console.log("🚀 Uploading image...");
+
+          const formData = new FormData();
+          formData.append("file", file);
+
+          const uploadRes = await fetch(
+            `${API_BASE.replace('/api', '')}/doc/upload/greeting/${greetingId}`,
+            {
+              method: "POST",
+              body: formData
+            }
+          );
+
+          if (!uploadRes.ok) {
+            console.error("❌ Upload failed");
+          } else {
+            const data = await uploadRes.json();
+            console.log("✅ Image uploaded:", data.url);
+
+            // Save image URL
+            await fetch(`${API_BASE}/engagements/greetings/${greetingId}/image`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ imageUrl: data.url })
+            });
+
+            console.log("✅ Image URL saved to DB");
+          }
+        }
+
+        // 7️⃣ UI reset
+        closeModal('sendGreetingModal');
+        e.target.reset();
+        clearGreetingImg();
+        loadGreetings();
+
+      } catch (err) {
+        console.error("❌ Error:", err);
+        showToast("Something went wrong. Please try again.");
+      }
+    }
+
+    function openCreateReminder() {
+
+      window.editReminderId = null;
+      document.getElementById("reminderModalTitle").textContent = "Create Reminder";
+
+      document.querySelector("#createReminderModal button[type='submit']")
+        .textContent = "Create Reminder";
+      document.querySelector("#createReminderModal form").reset();
+      document.getElementById("customerSearch").value = "";
+      document.getElementById("remCustomer").value = "";
+
+      openModal('createReminderModal');
+    }
+    function openEditReminder(id) {
+      const r = reminders.find(x => x.id === id);
+      if (!r) return;
+      document.getElementById("reminderModalTitle").textContent = "Edit Reminder";
+
+      document.querySelector("#createReminderModal button[type='submit']")
+        .textContent = "Update Reminder";
+
+      openModal('createReminderModal');
+
+      // basic fields
+      document.getElementById("remCustomer").value = r.customerId;
+
+      document.getElementById("remTitle").value = r.title;
+      document.getElementById("remMessage").value = r.message;
+      document.getElementById("remDate").value = r.reminderDate;
+      document.getElementById("remTime").value = r.reminderTime?.slice(0, 5);
+      const customer = allCustomers.find(c => c.id === r.customerId);
+      if (customer) {
+        document.getElementById("customerSearch").value = customer.name;
+      }
+      // ✅ IMPORTANT: SET STATE
+      remType = r.reminderType || 'onetime';
+      recurFreq = r.frequency || 'monthly';
+
+      // trigger UI update
+      setRemType(remType);
+      if (remType === 'recurring') {
+        setFreq(recurFreq);
+      }
+
+      // occurrences + amount
+      document.getElementById("remOccurrences").value = r.totalOccurrences || '';
+      document.getElementById("remAmount").value = r.amount || '';
+
+      // ✅ Plan/Product selection
+      if (r.attachedItemId && r.attachedItemType) {
+        const value = `${r.attachedItemType}-${r.attachedItemId}`;
+        const radio = document.querySelector(`input[name="attachedItem"][value="${value}"]`);
+        if (radio) radio.checked = true;
+      }
+
+      // edit id
+      window.editReminderId = id;
+    }
+    // ============================================================
+    // roDELETE
+    // ============================================================
+
+    async function deleteReminder(reminderId) {
+
+      try {
+
+        const check = await fetch(
+          `/api/engagements/reminders/${reminderId}/can-delete`
+        );
+
+        const result = await check.json();
+
+        if (result.hasPayments) {
+
+          const cancelPlan = confirm(
+            "Payments already received.\n\nPress OK to cancel remaining installments."
+          );
+
+          if (!cancelPlan) return;
+
+          const cancelResponse = await fetch(
+            `/api/engagements/reminders/${reminderId}/cancel`,
+            {
+              method: "POST"
+            }
+          );
+
+          if (!cancelResponse.ok) {
+            showToast("Failed to cancel installments", "error");
+            return;
+          }
+
+          showToast(
+            "Remaining installments cancelled",
+            "warning"
+          );
+
+          await loadReminders();
+
+          return;
+        }
+
+        if (!confirm("Delete reminder permanently?")) {
+          return;
+        }
+
+        const response = await fetch(
+          `/api/engagements/reminders/${reminderId}`,
+          {
+            method: "DELETE"
+          }
+        );
+
+        if (!response.ok) {
+          showToast("Delete failed", "error");
+          return;
+        }
+
+        showToast(
+          "Reminder deleted successfully"
+        );
+
+        await loadReminders();
+
+      } catch (err) {
+
+        console.error(err);
+
+        showToast(
+          "Something went wrong",
+          "error"
+        );
+      }
+    }
+
+
+    async function deleteGreeting(id) {
+      if (!id) return;
+      if (!confirm("Are you sure you want to delete this greeting?")) return;
+
+      try {
+        const res = await fetch(
+          `${API_BASE}/engagements/greetings/${id}?accountId=${ACCOUNT_ID}`,
+          { method: "DELETE" }
+        );
+
+        if (res.ok) {
+          loadGreetings();
+        } else {
+          const errorData = await res.json();
+          showToast("Error: " + (errorData.error || "Server failed to delete"));
+        }
+      } catch (e) {
+        console.error("Network Error during delete:", e);
+      }
+    }
+
+
+    // ============================================================
+    // roSEARCH & FILTER
+    // ============================================================
+
+    function filterReminders() {
+      const q = document.getElementById("remSearch").value.toLowerCase().trim();
+
+      remSearchTerm = q;
+      remPage = 1;
+
+      renderReminders();
+    }
+    function getFilteredReminders() {
+
+      if (!remSearchTerm) return reminders;
+
+      return reminders.filter(r => {
+
+        const customer = allCustomers.find(
+          c => c.id === r.customerId
+        );
+
+        const customerName =
+          customer?.name?.toLowerCase() || "";
+
+        const customerMobile =
+          customer?.mobile?.toString() || "";
+
+        return (
+          (r.title || "").toLowerCase().includes(remSearchTerm) ||
+          (r.message || "").toLowerCase().includes(remSearchTerm) ||
+          customerName.includes(remSearchTerm) ||
+          customerMobile.includes(remSearchTerm) ||
+          (r.reminderDate || "").toLowerCase().includes(remSearchTerm) ||
+          (r.status || "").toLowerCase().includes(remSearchTerm) ||
+          (r.frequency || "").toLowerCase().includes(remSearchTerm)
+        );
+      });
+    }
     function filterGreetings() {
-      greetSearchTerm = (document.getElementById('greetSearch').value || '').toLowerCase().trim();
+      const searchInput = document.getElementById('greetSearch');
+      greetSearchTerm = (searchInput.value || '').toLowerCase().trim();
       greetPage = 1;
       renderGreetings();
     }
 
-    function getFilteredReminders() {
-      if (!remSearchTerm) return reminders;
-      return reminders.filter(r =>
-        r.title.toLowerCase().includes(remSearchTerm) ||
-        r.customer.toLowerCase().includes(remSearchTerm) ||
-        r.message.toLowerCase().includes(remSearchTerm) ||
-        r.status.toLowerCase().includes(remSearchTerm)
-      );
-    }
-
     function getFilteredGreetings() {
       if (!greetSearchTerm) return greetings;
-      return greetings.filter(gr =>
-        gr.customer.toLowerCase().includes(greetSearchTerm) ||
-        gr.type.toLowerCase().includes(greetSearchTerm) ||
-        gr.message.toLowerCase().includes(greetSearchTerm) ||
-        gr.status.toLowerCase().includes(greetSearchTerm)
-      );
+
+      return greetings.filter(gr => {
+        const customerObj = allCustomers.find(c => c.id === gr.customerId);
+        const groupObj = allGroups.find(g => g.id == gr.groupId);
+        const displayName = customerObj ? customerObj.name : (groupObj ? groupObj.name : "");
+
+        return (
+          (gr.greetingType && gr.greetingType.toLowerCase().includes(greetSearchTerm)) ||
+          (gr.message && gr.message.toLowerCase().includes(greetSearchTerm)) ||
+          (displayName.toLowerCase().includes(greetSearchTerm)) ||
+          (gr.status && gr.status.toLowerCase().includes(greetSearchTerm))
+        );
+      });
     }
 
-    // ===================== PAGINATION HELPER =====================
+
+    // ============================================================
+    // roRENDER — Reminders
+    // ============================================================
+
+    function renderReminders(data = null) {
+      const sourceData = data ? data : getFilteredReminders();
+      const total = sourceData.length;
+      const start = (remPage - 1) * REM_PER_PAGE;
+      const page = sourceData.slice(start, start + REM_PER_PAGE);
+
+      const g = document.getElementById('remindersGrid');
+      const l = document.getElementById('remindersList');
+      if (!g || !l) return;
+
+      g.innerHTML = '';
+      l.innerHTML = '';
+
+      const countLabel = document.getElementById('rem-count');
+      if (countLabel) countLabel.textContent = total + ' reminder' + (total !== 1 ? 's' : '');
+
+      if (total === 0) {
+        document.getElementById('rem-page-label').textContent = 'No reminders found';
+        g.innerHTML = `
+      <div class="col-span-3 text-center py-14">
+        <div class="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="text-sm font-semibold text-gray-500 mb-1">No reminders found</p>
+        <p class="text-xs text-gray-400">Try a different search term</p>
+      </div>`;
+        document.getElementById('rem-pagination').innerHTML = '';
+        return;
+      }
+
+      document.getElementById('rem-page-label').textContent =
+        `Showing ${start + 1}–${Math.min(start + REM_PER_PAGE, total)} of ${total}`;
+
+      page.forEach(r => {
+        const customerObj = allCustomers.find(c => c.id === r.customerId);
+        const customerDisplayName = customerObj ? customerObj.name : `Customer #${r.customerId}`;
+
+        let channelKey = r.channel ? r.channel.toLowerCase().trim() : 'wa';
+        if (channelKey === 'whatsapp') channelKey = 'wa';
+        else if (channelKey === 'email') channelKey = 'em';
+        else if (channelKey === 'sms' || channelKey === 'message') channelKey = 'sms';
+        const chIconHtml = chIcon[channelKey] || chIcon['wa'];
+
+        const isRecurring = r.recurring === true ||
+          (r.frequency && !['NULL', '', 'onetime', 'none'].includes(r.frequency.toLowerCase()));
+        const detailPage = isRecurring ? 'reminder-detail.html' : 'reminder-detail-onetime.html';
+        const recurBadge = isRecurring
+          ? `<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600 font-semibold flex items-center gap-0.5">
+           <svg class='w-2.5 h-2.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+             <path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'/>
+           </svg>Recurring</span>`
+          : `<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">One-Time</span>`;
+
+        const displayDate = r.reminderDate || r.date || 'No Date';
+        const displayTime = r.reminderTime ? r.reminderTime.substring(0, 5) : '00:00';
+
+        // GRID VIEW
+        g.innerHTML += `
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md hover:border-indigo-200 transition cursor-pointer" onclick="window.location.href='${detailPage}?id=${r.id}'">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold text-gray-900 flex items-center gap-1 flex-wrap">${r.title} ${recurBadge}</p>
+              <p class="text-xs text-gray-500 font-medium">${customerDisplayName}</p>
+            </div>
+          </div>
+          <button  onclick="event.stopPropagation(); openEditReminder(${r.id})" class="text-xs px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg">Edit</button>
+          <button onclick="event.stopPropagation(); deleteReminder(${r.id})" class="text-gray-300 hover:text-red-500 p-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+
+        </div>
+        <p class="text-xs text-gray-400 mb-3 line-clamp-2">${r.message}</p>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1 text-xs text-gray-400">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            ${displayDate} · ${displayTime}
+          </div>
+          <div class="flex items-center gap-2">
+            ${chIconHtml}
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[r.status] || 'bg-gray-100'}">
+              ${r.status}
+            </span>
+          </div>
+          </div>
+      </div>`;
+
+        // LIST VIEW
+        l.innerHTML += `
+      <div class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer" onclick="window.location.href='${detailPage}?id=${r.id}'">
+        <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-gray-900 truncate">${r.title}</p>
+          <p class="text-xs text-gray-400">${customerDisplayName} · ${displayDate}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          ${chIconHtml}
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[r.status] || 'bg-gray-100'}">${r.status}</span>
+          <button onclick="event.stopPropagation(); deleteReminder(${r.id})" class="ml-2 text-gray-300 hover:text-red-500 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>`;
+      });
+
+      renderEngPagination('rem-pagination', remPage, total, REM_PER_PAGE, 'goRemPage');
+    }
+
+
+    // ============================================================
+    // roRENDER — Greetings
+    // ============================================================
+
+    function renderGreetings() {
+      const filtered = getFilteredGreetings();
+      const total = filtered.length;
+      const start = (greetPage - 1) * GREET_PER_PAGE;
+      const page = filtered.slice(start, start + GREET_PER_PAGE);
+
+      const g = document.getElementById('greetingsGrid');
+      const l = document.getElementById('greetingsList');
+      if (!g || !l) return;
+
+      g.innerHTML = '';
+      l.innerHTML = '';
+
+      const typeEmoji = { Birthday: '🎂', Anniversary: '💍', others: '🎊' };
+      const fallbackImg = "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&q=80";
+
+      const countLabel = document.getElementById('greet-count');
+      if (countLabel) countLabel.textContent = total + ' greeting' + (total !== 1 ? 's' : '');
+
+      if (total === 0) {
+        document.getElementById('greet-page-label').textContent = 'No greetings found';
+        g.innerHTML = `<div class="col-span-3 text-center py-14"><p class="text-gray-400">No greetings found</p></div>`;
+        document.getElementById('greet-pagination').innerHTML = '';
+        return;
+      }
+
+      document.getElementById('greet-page-label').textContent =
+        `Showing ${start + 1}–${Math.min(start + GREET_PER_PAGE, total)} of ${total}`;
+
+      page.forEach(gr => {
+
+        console.log("👉 GR:", gr);
+        console.log("👉 groupId:", gr.groupId);
+        console.log("👉 allGroups:", allGroups);
+
+        let displayName = "Unknown";
+
+        if (gr.customerId) {
+          const customerObj = allCustomers.find(c => c.id == gr.customerId);
+          displayName = customerObj ? customerObj.name : `Customer #${gr.customerId}`;
+        }
+        else if (gr.customerGroupId) {
+          const groupObj = allGroups.find(g => g.id == gr.customerGroupId);
+          displayName = groupObj ? groupObj.name : `Group #${gr.customerGroupId}`;
+        }
+
+        const channelList = gr.channels ? gr.channels.split(',') : ['wa'];
+        const chHtml = channelList.map(c => chIcon[c.trim()] || chIcon['wa']).join('');
+        const imgSrc = gr.imageUrl ? `/doc/view/greeting?path=${encodeURIComponent(gr.imageUrl)}` : fallbackImg;
+        // GRID VIEW
+        g.innerHTML += `
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md hover:border-pink-200 transition cursor-pointer" onclick="window.location.href='greeting-detail.html?id=${gr.id}'">
+        <div class="relative h-36 overflow-hidden">
+        <img src="${imgSrc}" alt="${gr.greetingType}" class="w-full h-full object-cover"onerror="this.src='${fallbackImg}'">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+          <span class="absolute bottom-2 left-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800">
+            ${typeEmoji[gr.greetingType] || '🎊'} ${gr.greetingType}
+          </span>
+          <button onclick="event.stopPropagation(); deleteGreeting(${gr.id})" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-gray-400 hover:text-red-500">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+        <div class="p-4">
+          <p class="text-sm font-bold text-gray-900 mb-1">${displayName}</p>
+          <p class="text-xs text-gray-500 mb-3 line-clamp-2">${gr.message}</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1 text-xs text-gray-400">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              ${gr.greetingDate}
+            </div>
+            <div class="flex items-center gap-1.5">
+              ${chHtml}
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[gr.status] || 'bg-gray-100'}">${gr.status}</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+        // LIST VIEW
+        l.innerHTML += `
+      <div class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer" onclick="window.location.href='greeting-detail.html?id=${gr.id}'">
+        <div class="w-12 h-10 rounded-xl overflow-hidden flex-shrink-0">
+        <img src="${imgSrc}" class="w-full h-full object-cover"onerror="this.src='${fallbackImg}'">
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-gray-900 truncate">${displayName}</p>
+          <p class="text-xs text-gray-400">${typeEmoji[gr.greetingType] || '🎊'} ${gr.greetingType} · ${gr.greetingDate}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          ${chHtml}
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[gr.status] || 'bg-gray-100'}">${gr.status}</span>
+        </div>
+      </div>`;
+      });
+
+      if (typeof renderEngPagination === "function") {
+        renderEngPagination('greet-pagination', greetPage, total, GREET_PER_PAGE, 'goGreetPage');
+      }
+    }
+
+
+    // ============================================================
+    // roPAGINATION
+    // ============================================================
+
     function renderEngPagination(containerId, currentPage, total, perPage, goFnName) {
       const el = document.getElementById(containerId);
       if (!el) return;
+
       const totalPages = Math.ceil(total / perPage);
       if (totalPages <= 1) { el.innerHTML = ''; return; }
+
       const maxVisible = 5;
       let startP = Math.max(1, currentPage - Math.floor(maxVisible / 2));
       let endP = Math.min(totalPages, startP + maxVisible - 1);
       if (endP - startP < maxVisible - 1) startP = Math.max(1, endP - maxVisible + 1);
-      const prev = `<button onclick="${goFnName}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>`;
+
+      const prev = `<button onclick="${goFnName}(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+  </button>`;
+
       let pages = '';
       for (let i = startP; i <= endP; i++) {
         pages += `<button onclick="${goFnName}(${i})" class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium ${i === currentPage ? 'bg-indigo-600 text-white' : 'border border-gray-200 text-gray-600 hover:bg-gray-50'}">${i}</button>`;
       }
-      const next = `<button onclick="${goFnName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>`;
+
+      const next = `<button onclick="${goFnName}(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+  </button>`;
+
       el.innerHTML = prev + pages + next;
     }
 
@@ -813,143 +1757,50 @@
       renderGreetings();
     }
 
-    // ===================== RENDER REMINDERS =====================
-    function renderReminders() {
-      const filtered = getFilteredReminders();
-      const total = filtered.length;
-      const start = (remPage - 1) * REM_PER_PAGE;
-      const page = filtered.slice(start, start + REM_PER_PAGE);
-      const g = document.getElementById('remindersGrid');
-      const l = document.getElementById('remindersList');
-      g.innerHTML = '';
-      l.innerHTML = '';
 
-      document.getElementById('rem-count').textContent = total + ' reminder' + (total !== 1 ? 's' : '');
-      if (total === 0) {
-        document.getElementById('rem-page-label').textContent = 'No reminders found';
-        g.innerHTML = `<div class="col-span-3 text-center py-14"><div class="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><p class="text-sm font-semibold text-gray-500 mb-1">No reminders found</p><p class="text-xs text-gray-400">Try a different search term</p></div>`;
-        document.getElementById('rem-pagination').innerHTML = '';
-        return;
-      }
-
-      document.getElementById('rem-page-label').textContent = `Showing ${start + 1}–${Math.min(start + REM_PER_PAGE, total)} of ${total}`;
-
-      page.forEach(r => {
-        const chHtml = r.channels.map(c => chIcon[c]).join('');
-        const detailPage = r.recurring ? 'reminder-detail.html' : 'reminder-detail-onetime.html';
-        const recurBadge = r.recurring
-          ? `<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-600 font-semibold flex items-center gap-0.5"><svg class='w-2.5 h-2.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'/></svg>Recurring</span>`
-          : `<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">One-Time</span>`;
-        g.innerHTML += `
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md hover:border-indigo-200 transition cursor-pointer" onclick="window.location.href='${detailPage}'">
-            <div class="flex items-start justify-between mb-3">
-              <div class="flex items-center gap-3 flex-1 min-w-0">
-                <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-bold text-gray-900 flex items-center gap-1 flex-wrap">${r.title} ${recurBadge}</p>
-                  <p class="text-xs text-gray-500">${r.customer}</p>
-                </div>
-              </div>
-              <button onclick="event.stopPropagation(); deleteReminder(${r.id})" class="text-gray-300 hover:text-red-400 p-1 flex-shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-            </div>
-            <p class="text-xs text-gray-500 mb-3 line-clamp-2">${r.message}</p>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-1 text-xs text-gray-400"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> ${r.date} · ${r.time}</div>
-              <div class="flex items-center gap-2">${chHtml} <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[r.status]}">${r.status}</span></div>
-            </div>
-          </div>`;
-        l.innerHTML += `
-          <div class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer" onclick="window.location.href='${detailPage}'">
-            <div class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0"><svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-            <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-gray-900 truncate">${r.title}</p><p class="text-xs text-gray-400">${r.customer} · ${r.date}</p></div>
-            <div class="flex items-center gap-2">${chHtml}<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[r.status]}">${r.status}</span></div>
-          </div>`;
-      });
-
-      renderEngPagination('rem-pagination', remPage, total, REM_PER_PAGE, 'goRemPage');
-    }
-
-    function deleteReminder(id) {
-      const idx = reminders.findIndex(r => r.id === id);
-      if (idx !== -1) { reminders.splice(idx, 1); remPage = 1; renderReminders(); }
-    }
-
-    // ===================== RENDER GREETINGS =====================
-    function renderGreetings() {
-      const filtered = getFilteredGreetings();
-      const total = filtered.length;
-      const start = (greetPage - 1) * GREET_PER_PAGE;
-      const page = filtered.slice(start, start + GREET_PER_PAGE);
-      const g = document.getElementById('greetingsGrid');
-      const l = document.getElementById('greetingsList');
-      g.innerHTML = '';
-      l.innerHTML = '';
-
-      const typeEmoji = { Birthday: '🎂', Anniversary: '💍', Festival: '🎊' };
-
-      document.getElementById('greet-count').textContent = total + ' greeting' + (total !== 1 ? 's' : '');
-      if (total === 0) {
-        document.getElementById('greet-page-label').textContent = 'No greetings found';
-        g.innerHTML = `<div class="col-span-3 text-center py-14"><div class="w-12 h-12 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div><p class="text-sm font-semibold text-gray-500 mb-1">No greetings found</p><p class="text-xs text-gray-400">Try a different search term</p></div>`;
-        document.getElementById('greet-pagination').innerHTML = '';
-        return;
-      }
-
-      document.getElementById('greet-page-label').textContent = `Showing ${start + 1}–${Math.min(start + GREET_PER_PAGE, total)} of ${total}`;
-
-      page.forEach(gr => {
-        const chHtml = gr.channels.map(c => chIcon[c]).join('');
-        g.innerHTML += `
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md hover:border-pink-200 transition cursor-pointer" onclick="window.location.href='greeting-detail.html'">
-            <div class="relative h-36 overflow-hidden">
-              <img src="${gr.img}" alt="${gr.type}" class="w-full h-full object-cover">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-              <span class="absolute bottom-2 left-2 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/90 text-gray-800">${typeEmoji[gr.type] || '🎊'} ${gr.type}</span>
-              <button onclick="event.stopPropagation(); deleteGreeting(${gr.id})" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/80 flex items-center justify-center text-gray-400 hover:text-red-500"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-            </div>
-            <div class="p-4">
-              <p class="text-sm font-bold text-gray-900 mb-1">${gr.customer}</p>
-              <p class="text-xs text-gray-500 mb-3 line-clamp-2">${gr.message}</p>
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1 text-xs text-gray-400"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>${gr.date}</div>
-                <div class="flex items-center gap-1.5">${chHtml}<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[gr.status]}">${gr.status}</span></div>
-              </div>
-            </div>
-          </div>`;
-        l.innerHTML += `
-          <div class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer" onclick="window.location.href='greeting-detail.html'">
-            <div class="w-12 h-10 rounded-xl overflow-hidden flex-shrink-0"><img src="${gr.img}" class="w-full h-full object-cover"></div>
-            <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-gray-900 truncate">${gr.customer}</p><p class="text-xs text-gray-400">${typeEmoji[gr.type] || '🎊'} ${gr.type} · ${gr.date}</p></div>
-            <div class="flex items-center gap-2">${chHtml}<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[gr.status]}">${gr.status}</span></div>
-          </div>`;
-      });
-
-      renderEngPagination('greet-pagination', greetPage, total, GREET_PER_PAGE, 'goGreetPage');
-    }
-
-    function deleteGreeting(id) {
-      const idx = greetings.findIndex(g => g.id === id);
-      if (idx !== -1) { greetings.splice(idx, 1); greetPage = 1; renderGreetings(); }
-    }
-
-    // ===================== UI HELPERS =====================
+    // ============================================================
+    // roUI HELPERS — Tabs, Views, Modals, FAB
+    // ============================================================
     function switchTab(tab) {
-      ['reminders', 'greetings'].forEach(t => {
-        const panel = document.getElementById(`panel-${t}`);
-        const btn = document.getElementById(`tab-${t}`);
-        if (t === tab) { panel.classList.remove('hidden'); btn.classList.add('border-indigo-600', 'text-indigo-600'); btn.classList.remove('border-gray-200', 'text-gray-500'); }
-        else { panel.classList.add('hidden'); btn.classList.remove('border-indigo-600', 'text-indigo-600'); btn.classList.add('border-gray-200', 'text-gray-500'); }
-      });
-    }
 
+      localStorage.setItem("eng_active_tab", tab);
+
+      const remPanel = document.getElementById("panel-reminders");
+      const greetPanel = document.getElementById("panel-greetings");
+
+      const remTab = document.getElementById("tab-reminders");
+      const greetTab = document.getElementById("tab-greetings");
+
+      // Hide panels
+      remPanel.classList.add("hidden");
+      greetPanel.classList.add("hidden");
+
+      // Reset styles COMPLETELY
+      remTab.className = "flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 text-gray-500 text-sm font-semibold flex-shrink-0";
+      greetTab.className = "flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 text-gray-500 text-sm font-semibold flex-shrink-0";
+
+      if (tab === "reminders") {
+        remPanel.classList.remove("hidden");
+
+        remTab.classList.add("border-indigo-600", "text-indigo-600");
+      } else {
+        greetPanel.classList.remove("hidden");
+
+        greetTab.classList.add("border-pink-600", "text-pink-600");
+      }
+    }
     function setEngView(v) {
       engView = v;
       ['reminders', 'greetings'].forEach(t => {
         document.getElementById(t + 'Grid').classList.toggle('hidden', v !== 'card');
         document.getElementById(t + 'List').classList.toggle('hidden', v !== 'list');
       });
-      document.getElementById('ev-card').className = v === 'card' ? 'p-2 rounded-lg bg-indigo-50 text-indigo-600' : 'p-2 rounded-lg text-gray-400 hover:bg-gray-100';
-      document.getElementById('ev-list').className = v === 'list' ? 'p-2 rounded-lg bg-indigo-50 text-indigo-600' : 'p-2 rounded-lg text-gray-400 hover:bg-gray-100';
+      document.getElementById('ev-card').className = v === 'card'
+        ? 'p-2 rounded-lg bg-indigo-50 text-indigo-600'
+        : 'p-2 rounded-lg text-gray-400 hover:bg-gray-100';
+      document.getElementById('ev-list').className = v === 'list'
+        ? 'p-2 rounded-lg bg-indigo-50 text-indigo-600'
+        : 'p-2 rounded-lg text-gray-400 hover:bg-gray-100';
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -963,12 +1814,29 @@
       document.getElementById('fabIcon').style.transform = fabOpen ? 'rotate(45deg)' : 'rotate(0deg)';
     }
 
-    // ===================== REMINDER FORM =====================
+    function openMobileNav() {
+      document.getElementById('mobileNavDrawer').style.transform = 'translateX(0)';
+      document.getElementById('mobileNavBg').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileNav() {
+      document.getElementById('mobileNavDrawer').style.transform = 'translateX(-100%)';
+      document.getElementById('mobileNavBg').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+
+    // ============================================================
+    // roREMINDER FORM CONTROLS
+    // ============================================================
+
     function setRemType(t) {
       remType = t;
       const freq = document.getElementById('recurringFreqBox');
       const otBtn = document.getElementById('rt-onetime');
       const rcBtn = document.getElementById('rt-recurring');
+
       if (t === 'recurring') {
         freq.classList.remove('hidden');
         otBtn.className = 'flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-500 transition flex items-center justify-center gap-1.5';
@@ -992,17 +1860,25 @@
     function setAttachTab(t) {
       document.getElementById('attachPlansPanel').classList.toggle('hidden', t !== 'plan');
       document.getElementById('attachProductsPanel').classList.toggle('hidden', t !== 'product');
-      document.getElementById('at-plan').className = t === 'plan' ? 'flex-1 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition' : 'flex-1 py-2 rounded-lg text-xs font-semibold text-gray-500 transition';
-      document.getElementById('at-product').className = t === 'product' ? 'flex-1 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition' : 'flex-1 py-2 rounded-lg text-xs font-semibold text-gray-500 transition';
+      document.getElementById('at-plan').className = t === 'plan'
+        ? 'flex-1 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition'
+        : 'flex-1 py-2 rounded-lg text-xs font-semibold text-gray-500 transition';
+      document.getElementById('at-product').className = t === 'product'
+        ? 'flex-1 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition'
+        : 'flex-1 py-2 rounded-lg text-xs font-semibold text-gray-500 transition';
     }
 
     function selRemCh(ch) {
       activeRemCh = ch;
-      const map = { wa: 'bg-green-500', sms: 'bg-blue-500', em: 'bg-violet-500' };
-      ['wa', 'sms', 'em'].forEach(c => {
-        document.getElementById('rch-' + c).className = c === ch
-          ? `flex-1 py-2.5 rounded-full text-sm font-semibold ${map[c]} text-white transition`
-          : 'flex-1 py-2.5 rounded-full text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition';
+      const activeColors = { whatsapp: 'bg-green-500', sms: 'bg-blue-500', email: 'bg-violet-500' };
+      const idMap = { whatsapp: 'rch-wa', sms: 'rch-sms', email: 'rch-em' };
+
+      ['whatsapp', 'sms', 'email'].forEach(c => {
+        const btn = document.getElementById(idMap[c]);
+        if (!btn) return;
+        btn.className = c === ch
+          ? `flex-1 py-2.5 rounded-full text-sm font-semibold ${activeColors[c]} text-white transition shadow-sm`
+          : `flex-1 py-2.5 rounded-full text-sm font-semibold bg-gray-100 text-gray-600 hover:bg-gray-200 transition`;
       });
     }
 
@@ -1017,63 +1893,96 @@
       document.getElementById('remCC').textContent = m.length;
     }
 
-    function submitReminder(e) {
-      e.preventDefault();
-      const dateVal = document.getElementById('remDate').value;
-      const timeVal = document.getElementById('remTime').value;
-      const fmtDate = dateVal ? new Date(dateVal).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-      const fmtTime = timeVal || '09:00 am';
-      const chMap = { wa: 'wa', sms: 'phone', em: 'em' };
-      const newR = {
-        id: Date.now(),
-        title: document.getElementById('remTitle').value,
-        customer: document.getElementById('remCustomer').value || 'Customer',
-        message: document.getElementById('remMessage').value,
-        date: fmtDate,
-        time: fmtTime,
-        channels: [chMap[activeRemCh] || 'wa'],
-        status: 'Scheduled',
-        recurring: remType === 'recurring'
-      };
-      reminders.unshift(newR);
-      closeModal('createReminderModal');
-      e.target.reset();
-      remPage = 1;
-      remSearchTerm = '';
-      const si = document.getElementById('remSearch');
-      if (si) si.value = '';
-      document.getElementById('remCC').textContent = '0';
-      setRemType('onetime');
-      selRemCh('wa');
-      renderReminders();
-    }
+    // ============================================================
+    // Select the Customer with dropdown 
+    // ============================================================
+    function searchCustomers(query) {
+      const dropdown = document.getElementById("customerDropdown");
 
-    // ===================== GREETING FORM =====================
+      if (!query.trim()) {
+        dropdown.classList.add("hidden");
+        dropdown.innerHTML = "";
+        return;
+      }
+
+      const filtered = allCustomers.filter(c =>
+        c.name.toLowerCase().includes(query.toLowerCase()) ||
+        (c.mobile && c.mobile.includes(query))
+      );
+
+      if (filtered.length === 0) {
+        dropdown.innerHTML = `<div class="px-4 py-2 text-gray-400">No results</div>`;
+      } else {
+        dropdown.innerHTML = filtered.map(c => `
+      <div 
+        class="px-4 py-2 hover:bg-indigo-50 cursor-pointer flex justify-between"
+        onclick="selectCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')">
+        <span>${c.name}</span>
+        <span class="text-xs text-gray-400">${c.mobile || ''}</span>
+      </div>
+    `).join('');
+      }
+
+      dropdown.classList.remove("hidden");
+    }
+    function selectCustomer(id, name) {
+      document.getElementById("remCustomer").value = id;
+      document.getElementById("customerSearch").value = name;
+
+      document.getElementById("customerDropdown").classList.add("hidden");
+    }
+    let debounceTimer;
+    function searchCustomersDebounced(value) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        searchCustomers(value);
+      }, 400);
+    }
+    function updateCharCount(el) {
+      document.getElementById("remCC").textContent = el.value.length;
+    }
+    // ============================================================
+    // roGREETING FORM CONTROLS
+    // ============================================================
+
     function selGT(t) {
       document.getElementById('gtHidden').value = t;
-      const map = { birthday: 'gt-b', anniversary: 'gt-a', festival: 'gt-f' };
+      const map = { birthday: 'gt-b', anniversary: 'gt-a', others: 'gt-f' };
       Object.keys(map).forEach(k => {
         const b = document.getElementById(map[k]);
-        if (k === t) { b.classList.add('border-pink-400', 'bg-pink-50'); b.classList.remove('border-gray-200'); }
-        else { b.classList.remove('border-pink-400', 'bg-pink-50'); b.classList.add('border-gray-200'); }
+        if (k === t) {
+          b.classList.add('border-pink-400', 'bg-pink-50');
+          b.classList.remove('border-gray-200');
+        } else {
+          b.classList.remove('border-pink-400', 'bg-pink-50');
+          b.classList.add('border-gray-200');
+        }
       });
     }
 
     function selST(m) {
-      const indB = document.getElementById('st-ind'), grpB = document.getElementById('st-grp');
+      const indB = document.getElementById('st-ind');
+      const grpB = document.getElementById('st-grp');
+
+
+      const customerBox = document.getElementById('gtCustomerSearch').closest('.mb-3');
+      const groupBox = document.getElementById('gwGrp');
+
       if (m === 'ind') {
         indB.className = 'flex-1 py-2 rounded-xl text-sm font-medium bg-white text-rose-600 shadow-sm flex items-center justify-center gap-1.5 transition';
         grpB.className = 'flex-1 py-2 rounded-xl text-sm font-medium text-gray-500 flex items-center justify-center gap-1.5 transition';
-        document.getElementById('gwCust').classList.remove('hidden');
-        document.getElementById('gwGrp').classList.add('hidden');
+
+        customerBox.classList.remove('hidden');
+        groupBox.classList.add('hidden');
+
       } else {
         grpB.className = 'flex-1 py-2 rounded-xl text-sm font-medium bg-white text-rose-600 shadow-sm flex items-center justify-center gap-1.5 transition';
         indB.className = 'flex-1 py-2 rounded-xl text-sm font-medium text-gray-500 flex items-center justify-center gap-1.5 transition';
-        document.getElementById('gwCust').classList.add('hidden');
-        document.getElementById('gwGrp').classList.remove('hidden');
+
+        customerBox.classList.add('hidden');
+        groupBox.classList.remove('hidden');
       }
     }
-
     function selGtCh(ch) {
       activeGtCh = ch;
       const map = { wa: 'bg-green-500', sms: 'bg-blue-500', em: 'bg-violet-500' };
@@ -1089,25 +1998,31 @@
       const msgs = {
         birthday: '🎂 Wishing you a very Happy Birthday! May this special day bring you endless joy, good health, and happiness. With warm regards from Acme Financial Services.',
         anniversary: '💍 Congratulations on your Anniversary! May your journey together continue to be filled with love, laughter, and cherished memories. Best wishes!',
-        festival: '🎊 Wishing you and your family a joyful and prosperous festival! May this occasion bring happiness, good fortune, and wonderful memories.'
+        others: '🎊 Wishing you and your family a joyful and prosperous others! May this occasion bring happiness, good fortune, and wonderful memories.'
       };
       document.getElementById('gtMessage').value = msgs[t] || msgs.birthday;
     }
 
-    // ===================== IMAGE UPLOAD =====================
+
+    // ============================================================
+    // roIMAGE UPLOAD
+    // ============================================================
+
     function handleGreetingImgUpload(input) {
       const file = input.files[0];
       if (!file) return;
+
       if (file.size > 5 * 1024 * 1024) {
-        alert('Image must be less than 5MB. Please choose a smaller file.');
+        showToast('Image must be less than 5MB. Please choose a smaller file.');
         input.value = '';
         return;
       }
       if (!file.type.startsWith('image/')) {
-        alert('Please select a valid image file (PNG, JPG, etc.)');
+        showToast('Please select a valid image file (PNG, JPG, etc.)');
         input.value = '';
         return;
       }
+
       const reader = new FileReader();
       reader.onload = function (e) {
         greetingImgDataUrl = e.target.result;
@@ -1127,76 +2042,15 @@
       document.getElementById('gtImgLabel').classList.remove('hidden');
     }
 
-    function submitGreeting(e) {
-      e.preventDefault();
-      const gtTypeVal = document.getElementById('gtHidden').value;
-      const typeLabel = { birthday: 'Birthday', anniversary: 'Anniversary', festival: 'Festival' };
-      const typeEmoji = { Birthday: '🎂', Anniversary: '💍', Festival: '🎊' };
-      const isIndividual = !document.getElementById('gwCust').classList.contains('hidden');
-      const customerVal = isIndividual
-        ? (document.getElementById('gtCustomer').value || 'Customer')
-        : 'Customer Group';
-      const dateVal = document.getElementById('gtDate').value;
-      const fmtDate = dateVal ? new Date(dateVal).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-      const fallbackImgs = {
-        birthday: 'https://images.unsplash.com/photo-1664289597477-d5b2d266169d?w=400&q=80',
-        anniversary: 'https://images.unsplash.com/photo-1769050736767-bda81a15c397?w=400&q=80',
-        festival: 'https://images.unsplash.com/photo-1635842975205-d6c2f1c0e1fe?w=400&q=80'
-      };
-      const newG = {
-        id: Date.now(),
-        type: typeLabel[gtTypeVal] || 'Birthday',
-        customer: customerVal,
-        message: document.getElementById('gtMessage').value,
-        date: fmtDate,
-        channels: [activeGtCh || 'wa'],
-        status: 'Scheduled',
-        img: greetingImgDataUrl || fallbackImgs[gtTypeVal] || fallbackImgs.birthday
-      };
-      greetings.unshift(newG);
-      closeModal('sendGreetingModal');
-      e.target.reset();
-      greetPage = 1;
-      greetSearchTerm = '';
-      const si = document.getElementById('greetSearch');
-      if (si) si.value = '';
-      // Reset greeting form state
-      selGT('birthday');
-      selST('ind');
-      selGtCh('wa');
-      clearGreetingImg();
-      renderGreetings();
-    }
 
-    // ===================== INIT =====================
-    renderReminders();
-    renderGreetings();
+    document.addEventListener("click", function (e) {
+      const search = document.getElementById("customerSearch");
+      const dropdown = document.getElementById("customerDropdown");
 
-    function openMobileNav() {
-      document.getElementById('mobileNavDrawer').style.transform = 'translateX(0)';
-      document.getElementById('mobileNavBg').classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeMobileNav() {
-      document.getElementById('mobileNavDrawer').style.transform = 'translateX(-100%)';
-      document.getElementById('mobileNavBg').classList.add('hidden');
-      document.body.style.overflow = '';
-    }
-    function toggleSub(menuId) {
-      const subMenu = document.getElementById('sub-' + menuId);
-      const chevron = document.getElementById('ch-' + menuId);
-
-      if (subMenu) {
-        // Toggle the hidden class
-        const isCollapsed = subMenu.classList.toggle('hidden');
-
-        // Rotate chevron
-        if (chevron) {
-          chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
+      if (!search.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add("hidden");
       }
-    }
-
+    });
   </script>
 
 </body>
