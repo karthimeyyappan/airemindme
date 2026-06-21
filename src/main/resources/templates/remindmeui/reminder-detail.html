@@ -1620,7 +1620,7 @@
         : document.getElementById('msg-preview-content')
             .textContent;
       const link = document.getElementById('msg-preview-wa-link');
-      link.href = `https://wa.me/91${msgPreviewPhone}` +
+      link.href = `https://wa.me/${msgPreviewPhone}` +
         `?text=${encodeURIComponent(text)}`;
     }
 

@@ -1,5 +1,6 @@
 package com.server.realsync.repo;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,14 @@ import com.server.realsync.entity.Reminder;
 import com.server.realsync.entity.ScheduleEntryStatus;
 
 public interface ReminderRepository extends JpaRepository<Reminder, Integer> {
+
+        long countByAccountIdAndReminderDate(
+                        Integer accountId, 
+                        LocalDate date);
+
+        long countByAccountIdAndReminderPurposeIn(
+                        Integer accountId, 
+                        List<String> purposes);
 
         List<Reminder> findByAccountIdOrderByCreatedAtDesc(Integer accountId);
 
