@@ -201,34 +201,95 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg></button>
       </div>
+
+      <!-- Warning banner for past reminder -->
+      <div id="reminderPastWarning" class="hidden px-5 py-3 mx-5 mb-2 rounded-2xl border bg-amber-50 border-amber-200 text-amber-800 text-xs font-medium flex items-center gap-2">
+        <span>⚠️ This reminder's date has passed. It cannot be edited.</span>
+      </div>
+
       <form onsubmit="submitReminder(event)" class="px-5 pb-6 flex flex-col gap-4">
-        <div class="mb-3"><label class="text-sm font-medium text-gray-700 mb-1.5 block">Select Customer
-            <span class="text-red-500">*</span></label>
-          <div class="relative">
-            <div class="relative">
-              <input type="text" id="customerSearch" placeholder="Search customer (name / mobile)..."
-                class="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:ring-2 focus:ring-indigo-500"
-                oninput="searchCustomers(this.value)" autocomplete="off">
-
-              <div id="customerDropdown"
-                class="absolute w-full bg-white border border-gray-200 rounded-xl mt-1 max-h-60 overflow-y-auto shadow-lg hidden z-50">
+        <!-- Purpose of Reminder Selector -->
+        <div class="mb-2">
+          <label class="text-sm font-medium text-gray-700 mb-2 block">
+            Purpose of Reminder <span class="text-red-500">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="selRemPurpose('payment')" 
+              id="rp-payment"
+              class="flex items-center gap-2.5 px-3 py-3 rounded-2xl 
+              border-2 border-indigo-500 bg-indigo-50 text-left transition">
+              <span class="text-xl">💰</span>
+              <div>
+                <p class="text-xs font-bold text-gray-900">Payment</p>
+                <p class="text-[10px] text-gray-500">EMI, dues, collections</p>
               </div>
-            </div>
-          </div>
+            </button>
 
-          <input type="hidden" id="remCustomer" required>
-          <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
+            <button type="button" onclick="selRemPurpose('service')" 
+              id="rp-service"
+              class="flex items-center gap-2.5 px-3 py-3 rounded-2xl 
+              border-2 border-gray-200 text-left transition 
+              hover:border-gray-300">
+              <span class="text-xl">🔧</span>
+              <div>
+                <p class="text-xs font-bold text-gray-900">Service</p>
+                <p class="text-[10px] text-gray-500">Renewal, maintenance</p>
+              </div>
+            </button>
+
+            <button type="button" onclick="selRemPurpose('followup')" 
+              id="rp-followup"
+              class="flex items-center gap-2.5 px-3 py-3 rounded-2xl 
+              border-2 border-gray-200 text-left transition 
+              hover:border-gray-300">
+              <span class="text-xl">📞</span>
+              <div>
+                <p class="text-xs font-bold text-gray-900">Follow-up</p>
+                <p class="text-[10px] text-gray-500">Post call, meeting</p>
+              </div>
+            </button>
+
+            <button type="button" onclick="selRemPurpose('general')" 
+              id="rp-general"
+              class="flex items-center gap-2.5 px-3 py-3 rounded-2xl 
+              border-2 border-gray-200 text-left transition 
+              hover:border-gray-300">
+              <span class="text-xl">📝</span>
+              <div>
+                <p class="text-xs font-bold text-gray-900">General</p>
+                <p class="text-[10px] text-gray-500">Any other reminder</p>
+              </div>
+            </button>
+          </div>
+          <input type="hidden" id="remPurpose" value="payment">
         </div>
 
+        <!-- Customer autocomplete search -->
+        <div class="mb-3">
+          <label class="text-sm font-medium text-gray-700 mb-1.5 block">Select Customer <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <input type="hidden" id="remCustomer" required>
+            <input type="text" id="remCustomerSearch" 
+              placeholder="Search by name, mobile or customer ID..." 
+              required autocomplete="off"
+              class="w-full px-4 py-3 rounded-2xl border border-gray-200 
+              bg-white text-sm focus:outline-none 
+              focus:ring-2 focus:ring-indigo-500 placeholder-gray-400">
+            <div id="remCustomerSuggestions" 
+              class="hidden absolute left-0 right-0 mt-1 bg-white 
+              border border-gray-200 rounded-2xl shadow-xl 
+              max-h-60 overflow-y-auto z-50">
+            </div>
+          </div>
+        </div>
+
+        <!-- Reminder Title -->
         <div class="mb-2">
           <label class="text-sm font-medium text-gray-700 mb-1.5 block">Reminder Title <span
               class="text-red-500">*</span></label>
           <input type="text" id="remTitle" placeholder="e.g. Loan EMI Payment Due" required
             class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-400">
-          <div class="flex flex-wrap gap-1.5 mt-2">
+          <div id="remTitleChips" class="flex flex-wrap gap-1.5 mt-2">
             <button type="button" onclick="document.getElementById('remTitle').value='EMI Payment Due'"
               class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-medium hover:bg-indigo-100">EMI
               Payment Due</button>
@@ -239,9 +300,9 @@
               class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-medium hover:bg-indigo-100">Appointment</button>
           </div>
         </div>
+
         <div>
           <div class="space-y-2">
-
             <!-- Header -->
             <div class="flex items-center justify-between relative">
               <label class="text-sm font-semibold text-gray-700">
@@ -263,7 +324,6 @@
 
             <!-- Textarea wrapper -->
             <div class="relative">
-
               <textarea id="remMessage" placeholder="Type your Numenssage..." rows="4" required
                 oninput="updateCharCount(this)" class="w-full px-4 py-3 rounded-2xl border border-gray-200 
              bg-white text-sm leading-relaxed
@@ -275,13 +335,12 @@
               <div class="absolute bottom-2 right-3 text-xs text-gray-400">
                 <span id="remCC">0</span>
               </div>
-
             </div>
-
           </div>
         </div>
-        <!-- Reminder Type -->
-        <div>
+
+        <!-- Reminder Type Toggle wrapper -->
+        <div id="remTypeToggle">
           <label class="text-sm font-medium text-gray-700 mb-2 block">Reminder Type <span
               class="text-red-500">*</span></label>
           <div class="flex rounded-2xl border border-gray-200 p-1 bg-gray-50 gap-1">
@@ -302,6 +361,7 @@
               Recurring
             </button>
           </div>
+          <span id="remTypeLockLabel" class="hidden text-[10px] text-gray-400 mt-1 block">Cannot change type after creation</span>
         </div>
 
         <!-- Recurring Frequency (shown only when Recurring) -->
@@ -322,6 +382,10 @@
             <div><label class="text-xs font-medium text-gray-600 mb-1 block">Total Occurrences</label><input
                 type="number" id="remOccurrences" placeholder="e.g. 12" min="1" max="60"
                 class="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <p id="remOccurrencesNote" 
+                class="hidden text-[10px] text-gray-400 mt-1">
+                🔒 Cannot change after creation
+              </p>
             </div>
             <div><label class="text-xs font-medium text-gray-600 mb-1 block">Amount per Occurrence</label>
               <div class="flex gap-1"><span
@@ -333,20 +397,65 @@
           </div>
         </div>
 
+        <!-- Amount Due Section (Shown only for Payment purpose) -->
+        <div id="remAmountSection" class="hidden">
+          <label class="text-sm font-medium text-gray-700 mb-1.5 block">
+            Amount Due <span class="text-red-500">*</span>
+          </label>
+          <div class="flex items-center border border-gray-200 
+            rounded-2xl overflow-hidden focus-within:ring-2 
+            focus-within:ring-indigo-500">
+            <span class="px-3 py-3 bg-gray-50 border-r border-gray-200 
+              text-sm text-gray-600 font-medium">₹</span>
+            <input type="number" id="remAmountDue" placeholder="0.00" 
+              min="0" step="0.01"
+              class="flex-1 px-4 py-3 bg-white text-sm 
+              focus:outline-none">
+          </div>
+          <p id="remAmountHelperText" class="hidden text-[10px] 
+            text-amber-600 mt-1 flex items-center gap-1">
+            <svg class="w-3 h-3 flex-shrink-0" fill="none" 
+              stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" 
+                stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 
+                12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            New amount applies to all pending occurrences
+          </p>
+        </div>
+
         <!-- Date & Time -->
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Start Date <span
-                class="text-red-500">*</span></label><input type="date" id="remDate" required
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">Start Date <span
+                class="text-red-500">*</span></label>
+            <input type="date" id="remDate" required
               class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <span id="remDateLockLabel" class="hidden text-[10px] text-amber-600 mt-1 block">Original start date — locked after creation</span>
+            <p id="remDateHelperText" class="hidden text-[10px] 
+              text-amber-600 mt-1 flex items-center gap-1">
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" 
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" 
+                  stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 
+                  12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Changing date will update ALL pending occurrences
+            </p>
           </div>
-          <div><label class="text-sm font-medium text-gray-700 mb-1.5 block">Time</label><input type="time" id="remTime"
-              value="09:00"
-              class="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <div>
+            <label class="text-sm font-medium text-gray-700 mb-1.5 block">
+              Time <span class="text-red-500">*</span>
+            </label>
+            <div id="remTimeSelector">
+              <div class="flex flex-wrap gap-2" id="remTimeSlots"></div>
+              <input type="hidden" id="remTime" value="09:00">
+            </div>
           </div>
         </div>
 
-        <!-- Attach Plan / Product (MANDATORY) -->
-        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
+        <!-- Attach Plan / Product Section outer div -->
+        <div id="remAttachSection" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4">
           <label class="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
             <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -685,7 +794,7 @@
     // roCONSTANTS & CONFIG
     // ============================================================
     const API_BASE = "/api";
-    const ACCOUNT_ID = [[${ account.id }]];
+    const ACCOUNT_ID = /*[[${ account.id }]]*/ null;
 
     const REM_PER_PAGE = 6;
     const GREET_PER_PAGE = 6;
@@ -729,6 +838,8 @@
     let remSearchTerm = '';
     let greetSearchTerm = '';
     let greetingImgDataUrl = null;
+    let isEditMode = false;
+    let editingReminderId = null;
     const queryReminderId = new URLSearchParams(window.location.search).get("id");
 
 
@@ -737,6 +848,9 @@
 
     window.addEventListener("DOMContentLoaded", async () => {
       console.log("Initializing Dashboard...");
+      if (typeof initRemCustomerSearch === 'function') {
+        initRemCustomerSearch();
+      }
 
       try {
         await loadCustomers();
@@ -1047,28 +1161,72 @@
     async function submitReminder(event) {
       event.preventDefault();
 
-      const selectedItem = document.querySelector('input[name="attachedItem"]:checked');
-      if (!selectedItem) return showToast("Please select a Plan or Product to attach.");
-      const [itemType, itemId] = selectedItem.value.split('-');
+      const purpose = document.getElementById('remPurpose').value;
+      let attachedItemId = null;
+      let attachedItemType = null;
+
+      if (purpose === 'payment' || purpose === 'service') {
+        const selectedItem = document.querySelector('input[name="attachedItem"]:checked');
+        if (!selectedItem) return showToast("Please select a Plan or Product to attach.");
+        const [itemType, itemId] = selectedItem.value.split('-');
+        attachedItemId = parseInt(itemId);
+        attachedItemType = itemType;
+      }
+
       const customerId = document.getElementById("remCustomer").value;
       if (!customerId) {
         showToast("Please select a customer");
         return;
       }
+
+      if (purpose === 'payment') {
+        const amtVal = document.getElementById('remAmountDue').value;
+        if (!amtVal || parseFloat(amtVal) <= 0) {
+          showToast("Please enter a valid Amount Due");
+          return;
+        }
+      }
+
+      const freq = document.getElementById(
+        'remOccurrences')?.value;
+      const occ = parseInt(freq || 0);
+      const freqType = recurFreq; // daily/weekly/monthly/yearly
+
+      const maxOcc = {
+        daily: 50,
+        weekly: 50,
+        monthly: 24,
+        yearly: 5
+      };
+
+      if (remType === 'recurring' && occ > 0) {
+        const max = maxOcc[freqType] || 50;
+        if (occ > max) {
+          showToast(
+            `Max ${max} occurrences allowed for ${freqType}`,
+            'error'
+          );
+          return;
+        }
+      }
+
       const reminderPayload = {
         accountId: ACCOUNT_ID,
-        customerId: parseInt(document.getElementById("remCustomer").value),
+        customerId: parseInt(customerId),
         title: document.getElementById("remTitle").value,
         message: document.getElementById("remMessage").value,
         reminderDate: document.getElementById("remDate").value,
-        reminderTime: document.getElementById("remTime").value + ":00",
+        reminderTime: document.getElementById("remTime").value + (document.getElementById("remTime").value.length === 5 ? ":00" : ""),
         reminderType: remType,
         frequency: remType === 'recurring' ? recurFreq : null,
-        totalOccurrences: document.getElementById("remOccurrences")?.value || null,
-        amount: document.getElementById("remAmount")?.value || null,
+        totalOccurrences: remType === 'recurring' ? (document.getElementById("remOccurrences")?.value || null) : null,
+        amount: purpose === 'payment' 
+          ? parseFloat(document.getElementById('remAmountDue').value || 0) 
+          : null,
         channel: activeRemCh,
-        attachedItemId: parseInt(itemId),
-        attachedItemType: itemType,
+        attachedItemId: attachedItemId,
+        attachedItemType: attachedItemType,
+        reminderPurpose: purpose,
         status: "Scheduled"
       };
 
@@ -1083,10 +1241,19 @@
 
         const method = isEdit ? "PUT" : "POST";
 
+        const bodyPayload = isEdit ? {
+          message: document.getElementById('remMessage').value,
+          reminderTime: document.getElementById('remTime').value + (document.getElementById('remTime').value.length === 5 ? ":00" : ""),
+          amount: parseFloat(document.getElementById('remAmountDue')?.value || 0),
+          channel: activeRemCh,
+          attachedItemId: attachedItemId,
+          attachedItemType: attachedItemType
+        } : reminderPayload;
+
         const res = await fetch(url, {
           method: method,
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(reminderPayload)
+          body: JSON.stringify(bodyPayload)
         });
 
         if (res.ok) {
@@ -1099,7 +1266,14 @@
           window.editReminderId = null;
 
           loadReminders();
-          showToast("Reminder created successfully");
+          showToast(isEdit ? "Reminder updated successfully" : "Reminder created successfully");
+
+          // Reload the tracker table to show updated dates/amounts
+          if (window.location.href.includes('reminder-detail')) {
+            if (typeof loadTracker === 'function') {
+              loadTracker();
+            }
+          }
 
         } else {
           hideReminderLoader();
@@ -1241,47 +1415,319 @@
         e.target.reset();
         clearGreetingImg();
         loadGreetings();
-
       } catch (err) {
         console.error("❌ Error:", err);
         showToast("Something went wrong. Please try again.");
       }
     }
 
-    function openCreateReminder() {
+    function setReadonlyFields() {
+      // customer
+      const cs = document.getElementById('remCustomerSearch');
+      cs.readOnly = true;
+      cs.classList.add('bg-gray-50','cursor-not-allowed',
+        'text-gray-500');
+      document.getElementById('remCustomerSuggestions').style.pointerEvents = 'none';
+      
+      // title
+      const rt = document.getElementById('remTitle');
+      rt.readOnly = true;
+      rt.classList.add('bg-gray-50','cursor-not-allowed',
+        'text-gray-500');
+      document.getElementById('remTitleChips')
+        ?.classList.add('hidden');
 
+      // type toggle
+      const toggle = document.getElementById('remTypeToggle');
+      if (toggle) {
+        toggle.style.pointerEvents = 'none';
+        toggle.classList.add('opacity-60');
+      }
+      document.getElementById('remTypeLockLabel')?.classList.remove('hidden');
+
+      // Helper texts below date and amount
+      document.getElementById('remDateHelperText')
+        ?.classList.remove('hidden');
+      document.getElementById('remAmountHelperText')
+        ?.classList.remove('hidden');
+
+      // Purpose selector — lock all 4 buttons
+      document.querySelectorAll('[id^="rp-"]').forEach(btn => {
+        btn.style.pointerEvents = 'none';
+        btn.classList.add('opacity-60');
+      });
+
+      // Total Occurrences input
+      const occEl = document.getElementById('remOccurrences');
+      if (occEl) {
+        occEl.readOnly = true;
+        occEl.disabled = true;
+        occEl.classList.add('bg-gray-50','cursor-not-allowed',
+          'text-gray-500');
+      }
+
+      // Add lock note below occurrences:
+      const occNote = document.getElementById('remOccurrencesNote');
+      if (occNote) occNote.classList.remove('hidden');
+    }
+
+    function resetReadonlyFields() {
+      const cs = document.getElementById('remCustomerSearch');
+      cs.readOnly = false;
+      cs.classList.remove('bg-gray-50','cursor-not-allowed',
+        'text-gray-500');
+      document.getElementById('remCustomerSuggestions').style.pointerEvents = 'auto';
+
+      const rt = document.getElementById('remTitle');
+      rt.readOnly = false;
+      rt.classList.remove('bg-gray-50','cursor-not-allowed',
+        'text-gray-500');
+      document.getElementById('remTitleChips')
+        ?.classList.remove('hidden');
+
+      const toggle = document.getElementById('remTypeToggle');
+      if (toggle) {
+        toggle.style.pointerEvents = 'auto';
+        toggle.classList.remove('opacity-60');
+      }
+      document.getElementById('remTypeLockLabel')?.classList.add('hidden');
+
+      // Hide helper texts below date and amount
+      document.getElementById('remDateHelperText')
+        ?.classList.add('hidden');
+      document.getElementById('remAmountHelperText')
+        ?.classList.add('hidden');
+
+      // Unlock purpose buttons
+      document.querySelectorAll('[id^="rp-"]').forEach(btn => {
+        btn.style.pointerEvents = 'auto';
+        btn.classList.remove('opacity-60');
+      });
+
+      // Unlock occurrences
+      const occEl = document.getElementById('remOccurrences');
+      if (occEl) {
+        occEl.readOnly = false;
+        occEl.disabled = false;
+        occEl.classList.remove('bg-gray-50','cursor-not-allowed',
+          'text-gray-500');
+      }
+
+      const occNote = document.getElementById('remOccurrencesNote');
+      if (occNote) occNote.classList.add('hidden');
+    }
+
+    function renderTimeSlots(selectedValue) {
+      const container = document.getElementById('remTimeSlots');
+      container.innerHTML = '';
+
+      // Hours from 6 AM to 9 PM
+      const slots = [];
+      for (let h = 6; h <= 21; h++) {
+        slots.push(h);
+      }
+
+      slots.forEach(h => {
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const displayH = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+        const label = `${displayH} ${ampm}`;
+        const value = `${h.toString().padStart(2,'0')}:00`;
+        
+        const isSelected = value === (selectedValue || '09:00');
+        
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.timeValue = value;
+        btn.textContent = label;
+        btn.className = isSelected
+          ? 'time-slot-btn px-3 py-1.5 rounded-xl text-xs ' +
+            'font-semibold border-2 border-indigo-500 ' +
+            'bg-indigo-50 text-indigo-700 transition'
+          : 'time-slot-btn px-3 py-1.5 rounded-xl text-xs ' +
+            'font-medium border border-gray-200 text-gray-600 ' +
+            'hover:border-indigo-300 hover:text-indigo-600 ' +
+            'transition';
+
+        btn.onclick = () => {
+          document.querySelectorAll('.time-slot-btn')
+            .forEach(b => {
+              b.className = 'time-slot-btn px-3 py-1.5 ' +
+                'rounded-xl text-xs font-medium border ' +
+                'border-gray-200 text-gray-600 ' +
+                'hover:border-indigo-300 ' +
+                'hover:text-indigo-600 transition';
+            });
+          btn.className = 'time-slot-btn px-3 py-1.5 ' +
+            'rounded-xl text-xs font-semibold border-2 ' +
+            'border-indigo-500 bg-indigo-50 ' +
+            'text-indigo-700 transition';
+          document.getElementById('remTime').value = value;
+        };
+
+        container.appendChild(btn);
+      });
+    }
+
+    function openCreateReminder() {
       window.editReminderId = null;
       document.getElementById("reminderModalTitle").textContent = "Create Reminder";
 
-      document.querySelector("#createReminderModal button[type='submit']")
-        .textContent = "Create Reminder";
+      const submitBtn = document.querySelector("#createReminderModal button[type='submit']");
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create Reminder";
+        submitBtn.className = "w-full py-4 rounded-2xl bg-indigo-600 text-white font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 transition mt-1";
+      }
+
+      setFormDisabled(false);
+      const banner = document.getElementById('reminderPastWarning');
+      if (banner) banner.classList.add('hidden');
+
+      const warningBanner = document.getElementById('editWarningBanner');
+      if (warningBanner) warningBanner.classList.add('hidden');
+
+      resetReadonlyFields();
+      renderTimeSlots('09:00');
+
       document.querySelector("#createReminderModal form").reset();
-      document.getElementById("customerSearch").value = "";
+      document.getElementById("remCustomerSearch").value = "";
       document.getElementById("remCustomer").value = "";
+      document.getElementById("remCustomerSuggestions").classList.add("hidden");
+
+      selRemPurpose('payment');
 
       openModal('createReminderModal');
     }
-    function openEditReminder(id) {
+
+    function showEditWarningBanner() {
+      let banner = document.getElementById('editWarningBanner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'editWarningBanner';
+        banner.className = 
+          'mx-5 mb-3 px-4 py-3 bg-amber-50 border ' +
+          'border-amber-200 rounded-xl text-xs ' +
+          'text-amber-700 font-medium';
+        const form = document.querySelector(
+          '#createReminderModal form');
+        form.insertBefore(banner, form.firstChild);
+      }
+      banner.textContent = "⚠️ Changing date or amount will update ALL pending occurrences. Completed/paid rows are locked and will not be affected.";
+      banner.classList.remove('hidden');
+    }
+
+    async function openEditReminder(id) {
       const r = reminders.find(x => x.id === id);
       if (!r) return;
+
+      const isRecurring = r.recurring || (r.reminderType === 'recurring');
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      const warningBanner = document.getElementById('editWarningBanner');
+      if (warningBanner) warningBanner.classList.add('hidden');
+
+      if (isRecurring) {
+        try {
+          const res = await fetch(`/api/engagements/reminders/${id}/tracker`);
+          const entries = await res.json();
+          
+          // Check if ALL occurrences are completed
+          const allDone = entries.length > 0 && entries.every(e => e.status === 'COMPLETED');
+          
+          if (allDone) {
+            showToast('All occurrences completed — reminder cannot be edited', 'warning');
+            return; // block edit completely
+          }
+
+          // Find first PENDING entry
+          const firstPending = entries
+            .filter(e => e.status !== 'COMPLETED')
+            .sort((a,b) => new Date(a.occurrenceDate) - new Date(b.occurrenceDate))[0];
+
+          if (firstPending) {
+            // Show warning in modal that edit affects pending occurrences
+            showEditWarningBanner();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        // One-time reminder
+        const reminderDate = new Date(r.reminderDate);
+        if (reminderDate < today) {
+          showToast('Reminder date has passed — cannot edit', 'warning');
+          return; // block edit
+        }
+      }
+
       document.getElementById("reminderModalTitle").textContent = "Edit Reminder";
 
-      document.querySelector("#createReminderModal button[type='submit']")
-        .textContent = "Update Reminder";
+      const submitBtn = document.querySelector("#createReminderModal button[type='submit']");
+      if (submitBtn) {
+        submitBtn.textContent = "Update Reminder";
+      }
 
       openModal('createReminderModal');
 
+      // Set purpose
+      const purpose = r.reminderPurpose || 'general';
+      selRemPurpose(purpose);
+
+      // Set amount if payment
+      if (purpose === 'payment') {
+        const amtInput = document.getElementById('remAmountDue');
+        if (amtInput) amtInput.value = r.amount || '';
+      }
+
+      // Check if date is past
+      const reminderDate = new Date(r.reminderDate);
+      const isPast = !isRecurring && reminderDate < today;
+
+      if (isPast) {
+        setFormDisabled(true);
+        // Show banner
+        const banner = document.getElementById('reminderPastWarning');
+        if (banner) banner.classList.remove('hidden');
+        
+        // Change submit button
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Reminder date has passed — cannot edit";
+          submitBtn.className = "w-full py-4 rounded-2xl bg-gray-300 text-gray-500 font-semibold flex items-center justify-center gap-2 transition mt-1 cursor-not-allowed";
+        }
+      } else {
+        setFormDisabled(false);
+        const banner = document.getElementById('reminderPastWarning');
+        if (banner) banner.classList.add('hidden');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.className = "w-full py-4 rounded-2xl bg-indigo-600 text-white font-semibold flex items-center justify-center gap-2 hover:bg-indigo-700 transition mt-1";
+        }
+      }
+
       // basic fields
+      setReadonlyFields();
+      isEditMode = true;
+      editingReminderId = id;
+
       document.getElementById("remCustomer").value = r.customerId;
 
       document.getElementById("remTitle").value = r.title;
       document.getElementById("remMessage").value = r.message;
       document.getElementById("remDate").value = r.reminderDate;
-      document.getElementById("remTime").value = r.reminderTime?.slice(0, 5);
+      
+      const timeVal = r.reminderTime?.slice(0, 5) || '09:00';
+      document.getElementById("remTime").value = timeVal;
+      renderTimeSlots(timeVal);
+
       const customer = allCustomers.find(c => c.id === r.customerId);
       if (customer) {
-        document.getElementById("customerSearch").value = customer.name;
+        document.getElementById("remCustomerSearch").value = `${customer.name} (CUS-${customer.id})`;
+      } else {
+        document.getElementById("remCustomerSearch").value = "";
       }
+
       // ✅ IMPORTANT: SET STATE
       remType = r.reminderType || 'onetime';
       recurFreq = r.frequency || 'monthly';
@@ -1292,7 +1738,7 @@
         setFreq(recurFreq);
       }
 
-      // occurrences + amount
+      // occurrences
       document.getElementById("remOccurrences").value = r.totalOccurrences || '';
       document.getElementById("remAmount").value = r.amount || '';
 
@@ -1306,6 +1752,7 @@
       // edit id
       window.editReminderId = id;
     }
+
     // ============================================================
     // roDELETE
     // ============================================================
@@ -1804,7 +2251,21 @@
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function closeModal(id) { 
+      document.getElementById(id).classList.add('hidden'); 
+      if (id === 'createReminderModal') {
+        if (typeof selRemPurpose === 'function') selRemPurpose('payment');
+        const sInput = document.getElementById('remCustomerSearch');
+        if (sInput) sInput.value = '';
+        const hInput = document.getElementById('remCustomer');
+        if (hInput) hInput.value = '';
+        const sugg = document.getElementById('remCustomerSuggestions');
+        if (sugg) sugg.classList.add('hidden');
+        if (typeof setFormDisabled === 'function') setFormDisabled(false);
+        const banner = document.getElementById('reminderPastWarning');
+        if (banner) banner.classList.add('hidden');
+      }
+    }
 
     let fabOpen = false;
     function toggleFab() {
@@ -1836,9 +2297,14 @@
       const freq = document.getElementById('recurringFreqBox');
       const otBtn = document.getElementById('rt-onetime');
       const rcBtn = document.getElementById('rt-recurring');
+      const purpose = document.getElementById('remPurpose').value;
 
       if (t === 'recurring') {
-        freq.classList.remove('hidden');
+        if (purpose === 'payment' || purpose === 'general') {
+          freq.classList.remove('hidden');
+        } else {
+          freq.classList.add('hidden');
+        }
         otBtn.className = 'flex-1 py-2.5 rounded-xl text-sm font-semibold text-gray-500 transition flex items-center justify-center gap-1.5';
         rcBtn.className = 'flex-1 py-2.5 rounded-xl text-sm font-semibold bg-white text-indigo-600 shadow-sm transition flex items-center justify-center gap-1.5';
       } else {
@@ -1848,6 +2314,182 @@
       }
     }
 
+    function selRemPurpose(purpose) {
+      // Update hidden input
+      document.getElementById('remPurpose').value = purpose;
+      
+      // Update button styles
+      const purposes = ['payment','service','followup','general'];
+      purposes.forEach(p => {
+        const btn = document.getElementById('rp-' + p);
+        if (btn) {
+          if (p === purpose) {
+            btn.className = btn.className
+              .replace('border-gray-200', 'border-indigo-500')
+              + ' bg-indigo-50';
+            btn.classList.remove('border-gray-200');
+            btn.classList.add('border-indigo-500', 'bg-indigo-50');
+          } else {
+            btn.classList.remove('border-indigo-500', 'bg-indigo-50');
+            btn.classList.add('border-gray-200');
+          }
+        }
+      });
+
+      // Show/hide amount section
+      const amtSection = document.getElementById('remAmountSection');
+      if (amtSection) {
+        amtSection.classList.toggle('hidden', purpose !== 'payment');
+      }
+
+      // Show/hide attach plan/product section
+      const attachSection = document.getElementById('remAttachSection');
+      if (attachSection) {
+        const showAttach = purpose === 'payment' || purpose === 'service';
+        attachSection.classList.toggle('hidden', !showAttach);
+      }
+
+      // Handle recurring visibility for followup
+      const rtToggle = document.getElementById('remTypeToggle');
+      const freqBox = document.getElementById('recurringFreqBox');
+      if (purpose === 'followup') {
+        if (rtToggle) rtToggle.classList.add('hidden');
+        if (freqBox) freqBox.classList.add('hidden');
+        setRemType('onetime'); // force one-time
+      } else {
+        if (rtToggle) rtToggle.classList.remove('hidden');
+        setRemType(remType);
+      }
+
+      // Update title chips
+      const chipSets = {
+        payment: ['EMI Payment Due','Loan Installment',
+                  'Policy Premium Due','Invoice Payment'],
+        service: ['Policy Renewal','Service Maintenance',
+                  'Contract Renewal','Subscription Renewal'],
+        followup: ['Post Meeting Follow-up','Call Back',
+                   'Document Follow-up','Proposal Follow-up'],
+        general: ['Appointment Reminder','Meeting Reminder',
+                  'Task Reminder','Custom Reminder']
+      };
+      
+      const chipsContainer = document.getElementById('remTitleChips');
+      if (chipsContainer) {
+        chipsContainer.innerHTML = chipSets[purpose]
+          .map(chip => `
+            <button type="button" 
+              onclick="document.getElementById('remTitle').value='${chip}'"
+              class="px-3 py-1 rounded-full bg-indigo-50 
+              text-indigo-600 text-xs font-medium 
+              hover:bg-indigo-100 transition">
+              ${chip}
+            </button>`).join('');
+      }
+    }
+
+    function initRemCustomerSearch() {
+      const input = document.getElementById('remCustomerSearch');
+      const suggestions = document.getElementById('remCustomerSuggestions');
+      let timer;
+
+      if (!input || !suggestions) return;
+
+      input.addEventListener('focus', async () => {
+        if (!input.value.trim()) {
+          try {
+            const res = await fetch('/api/customers/my-customers');
+            if (res.ok) {
+              const data = await res.json();
+              renderRemCustomerSuggestions(data.slice(0, 10));
+            }
+          } catch (err) { console.error(err); }
+        }
+      });
+
+      input.addEventListener('input', () => {
+        const val = input.value.trim();
+        clearTimeout(timer);
+        if (!val) {
+          suggestions.classList.add('hidden');
+          document.getElementById('remCustomer').value = '';
+          return;
+        }
+        timer = setTimeout(async () => {
+          try {
+            const res = await fetch(
+              `/api/customers/search?query=${encodeURIComponent(val)}`
+            );
+            if (res.ok) {
+              const data = await res.json();
+              renderRemCustomerSuggestions(data);
+            }
+          } catch (err) { console.error(err); }
+        }, 300);
+      });
+
+      function renderRemCustomerSuggestions(list) {
+        suggestions.innerHTML = '';
+        if (!list || list.length === 0) {
+          suggestions.innerHTML = 
+            '<div class="px-4 py-3 text-xs text-gray-400">' +
+            'No customers found</div>';
+        } else {
+          list.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 
+              'px-4 py-2.5 hover:bg-indigo-50 cursor-pointer ' +
+              'text-xs border-b border-gray-50 last:border-0';
+            item.innerHTML = `
+              <div class="font-bold text-gray-900">${c.name}</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">
+                ID: CUS-${c.id} · ${c.mobile || 'No mobile'}
+              </div>`;
+            item.onclick = () => {
+              document.getElementById('remCustomer').value = c.id;
+              input.value = `${c.name} (CUS-${c.id})`;
+              suggestions.classList.add('hidden');
+            };
+            suggestions.appendChild(item);
+          });
+        }
+        suggestions.classList.remove('hidden');
+      }
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#remCustomerSearch') && 
+            !e.target.closest('#remCustomerSuggestions')) {
+          suggestions.classList.add('hidden');
+        }
+      });
+    }
+
+    function setFormDisabled(disabled) {
+      const form = document.querySelector("#createReminderModal form");
+      if (!form) return;
+      const elements = form.querySelectorAll("input, textarea, select, button");
+      elements.forEach(el => {
+        // Keep close modal buttons enabled
+        if (el.getAttribute("onclick")?.includes("closeModal") || el.closest('.modal-header')) {
+          return;
+        }
+        if (disabled) {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.readOnly = true;
+          } else {
+            el.disabled = true;
+          }
+          el.classList.add('opacity-70', 'pointer-events-none');
+        } else {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.readOnly = false;
+          } else {
+            el.disabled = false;
+          }
+          el.classList.remove('opacity-70', 'pointer-events-none');
+        }
+      });
+    }
+
     function setFreq(f) {
       recurFreq = f;
       ['daily', 'weekly', 'monthly', 'yearly'].forEach(x => {
@@ -1855,6 +2497,15 @@
           ? 'py-2.5 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-xs font-semibold text-indigo-700 transition'
           : 'py-2.5 rounded-xl border-2 border-gray-200 text-xs font-semibold text-gray-600 hover:border-indigo-300 transition';
       });
+
+      const maxMap = {
+        daily: 50, weekly: 50, monthly: 24, yearly: 5
+      };
+      const occInput = document.getElementById('remOccurrences');
+      if (occInput) {
+        occInput.max = maxMap[f] || 50;
+        occInput.placeholder = `Max ${maxMap[f] || 50}`;
+      }
     }
 
     function setAttachTab(t) {

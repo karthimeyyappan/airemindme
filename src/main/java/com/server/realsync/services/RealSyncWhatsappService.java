@@ -252,17 +252,7 @@ public class RealSyncWhatsappService {
                 "type", "text",
                 "value", businessMobile != null ? businessMobile : ""));
 
-        /*
-         * IMAGE HEADER TEMPLATE
-         *
-         * NOTE:
-         * MSG91 image templates sometimes require header_1,
-         * sometimes media/header object.
-         *
-         * First test without this block.
-         * If MSG91 says "header missing",
-         * paste response body and we'll map exact format.
-         */
+
 
         Map<String, Object> toAndComponents = new HashMap<>();
         toAndComponents.put("to", List.of(formattedMobile));

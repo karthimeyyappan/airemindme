@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -561,7 +561,7 @@ public class PromotionController {
     public ResponseEntity<Map<String, Object>> getPublicPromoLanding(@PathVariable Long promotionId,
             @RequestParam(value = "entry", required = false) Long entryId) {
         Promotion promo = promotionService.getById(promotionId).orElse(null);
-        if (promo == null || "PAUSED".equals(promo.getStatus()) || "DELETED".equals(promo.getStatus())) {
+        if (promo == null) {
             return ResponseEntity.notFound().build();
         }
 
@@ -770,95 +770,6 @@ public class PromotionController {
         summary.put("totalEmailClicks", totalEmailClicks);
 
         return ResponseEntity.ok(summary);
-    }
-
-    @PostMapping("/{id}/pause")
-    @Transactional
-    public ResponseEntity<?> pause(@PathVariable Long id) {
-        try {
-            Account account = SecurityUtil.getCurrentAccountId();
-            if (account == null || account.getId() == 0) {
-                return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
-            }
-            Promotion promo = promotionService.getById(id).orElse(null);
-            if (promo == null) {
-                return ResponseEntity.status(404).body(Map.of("message", "Promotion not found"));
-            }
-            if (!promo.getAccountId().equals(account.getId())) {
-                return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
-            }
-            if ("PAUSED".equals(promo.getStatus())) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Promotion is already paused"));
-            }
-            promo.setStatus("PAUSED");
-            promotionService.save(promo);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Promotion paused"));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", e.getMessage()));
-        }
-    }
-
-    @PostMapping("/{id}/resume")
-    @Transactional
-    public ResponseEntity<?> resume(@PathVariable Long id) {
-        try {
-            Account account = SecurityUtil.getCurrentAccountId();
-            if (account == null || account.getId() == 0) {
-                return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
-            }
-            Promotion promo = promotionService.getById(id).orElse(null);
-            if (promo == null) {
-                return ResponseEntity.status(404).body(Map.of("message", "Promotion not found"));
-            }
-            if (!promo.getAccountId().equals(account.getId())) {
-                return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
-            }
-            if (!"PAUSED".equals(promo.getStatus())) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Promotion is not paused"));
-            }
-            promo.setStatus("ACTIVE");
-            promotionService.save(promo);
-            return ResponseEntity.ok(Map.of("success", true, "message", "Promotion resumed"));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", e.getMessage()));
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    @Transactional
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-        try {
-            Account account = SecurityUtil.getCurrentAccountId();
-            if (account == null || account.getId() == 0) {
-                return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
-            }
-            Promotion promo = promotionService.getById(id).orElse(null);
-            if (promo == null) {
-                return ResponseEntity.status(404).body(Map.of("message", "Promotion not found"));
-            }
-            if (!promo.getAccountId().equals(account.getId())) {
-                return ResponseEntity.status(403).body(Map.of("message", "Forbidden"));
-            }
-
-            // Delete execution logs first (child of entries)
-            List<PromotionEntry> entries = entryService.getByPromotion(id);
-            for (PromotionEntry entry : entries) {
-                promotionExecutionLogRepository.deleteByPromotionEntryId(entry.getId());
-            }
-
-            // Delete entries
-            entryService.deleteByPromotionId(id);
-
-            // Delete promotion items
-            promotionItemRepository.deleteByPromotionId(id);
-
-            // Delete promotion itself
-            promotionService.deleteById(id);
-
-            return ResponseEntity.ok(Map.of("success", true, "message", "Promotion deleted"));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", e.getMessage()));
-        }
     }
 }
 
