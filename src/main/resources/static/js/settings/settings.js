@@ -265,7 +265,7 @@ async function updatePassword() {
 
 // Update existing switch function to include 'groups'
 function switchSettingsTab(t) {
-    ['general', 'gateways', 'catalog', 'users', 'groups'].forEach(x => {
+    ['general', 'users', 'groups', 'referrals'].forEach(x => {
         const p = document.getElementById('sp-' + x);
         const b = document.getElementById('st-' + x);
         if (!p || !b) return;
@@ -358,5 +358,10 @@ async function deleteGroup(id) {
     }
 }
 
-// Initial call when page loads
-document.addEventListener('DOMContentLoaded', renderGroups);
+// Init report templates grid on page load
+if (document.getElementById('rtGrid')) { renderRTGrid(); }
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderGroups();
+    switchSettingsTab('general');
+});

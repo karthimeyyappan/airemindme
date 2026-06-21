@@ -103,7 +103,26 @@ public class AccountService {
         account.setCountry(dto.getCountry());
         account.setCurrency(dto.getCurrency());
         account.setLanguage(dto.getDefaultLanguage());
+
+        // Handle referral code if user entered one
+        if (dto.getRefAccId() != null && !dto.getRefAccId().trim().isEmpty()) {
+            try {
+                String code = dto.getRefAccId().trim().toUpperCase();
+                if (code.startsWith("NUMEN-")) {
+                    Integer referrerId = Integer.parseInt(
+                            code.replace("NUMEN-", "").trim());
+                    account.setReferredBy(referrerId);
+                }
+            } catch (Exception e) {
+                // Invalid code - ignore
+            }
+        }
+
         Account savedAccount = repository.save(account);
+
+        // Auto-generate referral ID using the DB-assigned ID
+        savedAccount.setReferralId("NUMEN-" + savedAccount.getId());
+        repository.save(savedAccount);
 
         // Fetch/Create ROLE_USER Role
         Role userRole = roleRepository.findByName("ROLE_USER").orElseGet(() -> {
@@ -175,7 +194,6 @@ public class AccountService {
         if (dto.getBusinessName() == null || dto.getBusinessName().trim().isEmpty()) {
             throw new IllegalArgumentException("Business name is required.");
         }
-       
 
         String password = dto.getPassword();
         if (password == null || password.length() < 8 ||

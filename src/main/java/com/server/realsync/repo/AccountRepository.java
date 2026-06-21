@@ -10,6 +10,8 @@ import com.server.realsync.entity.Account;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Integer> {
-	Optional<Account> findByEmail(String email);
-	Optional<Account> findByMobile(String mobile);
+    Optional<Account> findByEmail(String email);
+    Optional<Account> findByMobile(String mobile);
+    List<Account> findByReferredBy(Integer referredBy);
+    Optional<Account> findByReferralId(String referralId); 
 }

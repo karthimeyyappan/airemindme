@@ -129,4 +129,9 @@ public class SignupRequestDto {
     public void setSelectedPlan(String selectedPlan) {
         this.selectedPlan = selectedPlan;
     }
+
+    private String refAccId;
+
+    public String getRefAccId() { return refAccId; }
+    public void setRefAccId(String refAccId) { this.refAccId = refAccId; }
 }
