@@ -1171,22 +1171,22 @@
     function closeUpgradeModal() { document.getElementById('upgradeModal').classList.add('hidden'); }
 
     // ── Settings main tabs (ALL FOUR panels) ────────────────────
-    function switchSettingsTab(t) {
-      ['general', 'catalog', 'users', 'groups', 'referrals'].forEach(x => {
-        const p = document.getElementById('sp-' + x);
-        const b = document.getElementById('st-' + x);
-        if (!p || !b) return;
-        if (x === t) {
-          p.classList.remove('hidden');
-          b.classList.add('border-indigo-600', 'text-indigo-600');
-          b.classList.remove('border-transparent', 'text-gray-500');
-        } else {
-          p.classList.add('hidden');
-          b.classList.remove('border-indigo-600', 'text-indigo-600');
-          b.classList.add('border-transparent', 'text-gray-500');
-        }
-      });
-    }
+    // function switchSettingsTab(t) {
+    //   ['general', 'users', 'groups', 'referrals'].forEach(x => {
+    //     const p = document.getElementById('sp-' + x);
+    //     const b = document.getElementById('st-' + x);
+    //     if (!p || !b) return;
+    //     if (x === t) {
+    //       p.classList.remove('hidden');
+    //       b.classList.add('border-indigo-600', 'text-indigo-600');
+    //       b.classList.remove('border-transparent', 'text-gray-500');
+    //     } else {
+    //       p.classList.add('hidden');
+    //       b.classList.remove('border-indigo-600', 'text-indigo-600');
+    //       b.classList.add('border-transparent', 'text-gray-500');
+    //     }
+    //   });
+    // }
 
     // ── Catalog sub-tabs ─────────────────────────────────────────
     function switchCatSubTab(t) {
