@@ -31,7 +31,7 @@ public class ReminderScheduler {
         this.logService = logService;
     }
 
-    // @Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 10000)
     public void loadDueSchedules() {
 
         List<ScheduleEntry> entries =

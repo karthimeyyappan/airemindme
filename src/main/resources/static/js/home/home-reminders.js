@@ -566,7 +566,7 @@ function rem_openMsgPreview(reminderId, phone, message) {
 
   const modal = document.getElementById('rem-msg-modal');
   document.getElementById('rem-msg-phone')
-    .textContent = '+91' + phone;
+    .textContent = '+' + phone;
   document.getElementById('rem-msg-content')
     .textContent = message;
   document.getElementById('rem-msg-edit').value = message;

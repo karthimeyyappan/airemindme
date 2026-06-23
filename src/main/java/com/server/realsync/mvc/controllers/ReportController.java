@@ -22,6 +22,54 @@ public class ReportController {
     @Autowired
     private com.server.realsync.repo.CustomerRepository customerRepository;
 
+    @Autowired
+    private com.server.realsync.repo.ReportRepository reportRepository;
+
+    @Autowired
+    private com.server.realsync.services.RealSyncWhatsappService realSyncWhatsappService;
+
+    @GetMapping("/public/report/{reportNumber}")
+    public ResponseEntity<?> getPublicReport(@PathVariable String reportNumber) {
+        Report report = reportRepository.findByReportNumber(reportNumber);
+        if (report == null) {
+            return ResponseEntity.status(404).body("Report not found");
+        }
+        return ResponseEntity.ok(report);
+    }
+
+    @PostMapping("/{id}/share-whatsapp")
+    public ResponseEntity<?> shareViaWhatsapp(
+            @PathVariable Integer id,
+            @RequestBody java.util.Map<String, String> payload) {
+        try {
+            Report report = reportRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+            report.setStatus("Shared");
+            reportRepository.save(report);
+
+            String mobile     = payload.get("mobile");
+            String custName   = payload.get("customerName");
+            String reportNum  = payload.get("reportNumber");
+            String publicUrl  = payload.get("publicUrl");
+            String tmplName   = payload.get("templateName");
+
+            realSyncWhatsappService.sendDocumentReadyTemplate(
+                mobile,
+                custName,
+                reportNum,
+                publicUrl,
+                tmplName,
+                ""
+            );
+
+            return ResponseEntity.ok("Sent");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Failed: " + e.getMessage());
+        }
+    }
+
     // CREATE REPORT
     @PostMapping
     public ResponseEntity<?> createReport(@RequestBody Report report) {

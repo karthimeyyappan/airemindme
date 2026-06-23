@@ -45,7 +45,7 @@ public class QueueWorker {
         this.logService = logService;
     }
 
-    // @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 5000)
     public void processQueue() {
 
         List<MessageQueue> jobs = queueService.fetchJobs(50);

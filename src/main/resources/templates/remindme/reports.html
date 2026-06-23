@@ -612,33 +612,87 @@
             parsedFields = JSON.parse(r.fields || '[]');
           } catch (e) { /* leave empty */ }
 
+          // Parse template data - it may come as nested object
+          // or the price may be directly on the report
+          let templateData = null;
+          try {
+            if (typeof r.templateData === 'string') {
+              templateData = JSON.parse(r.templateData);
+            } else if (r.templateData) {
+              templateData = r.templateData;
+            }
+          } catch(e) {}
+
+          // Get price from multiple possible sources
+         const price = r.templatePrice || templateData?.price || template?.price || 0;
+
+          // Get title from multiple possible sources
+          const title = r.templateName || templateData?.title || template?.title || 'Report';
+
+          // Get customer name - check parsedFields too
+          // DB shows fields has "Customer Name" field
+          let customerName = customer 
+            ? customer.name 
+            : `Patient #${r.patientId}`;
+
+          // Try to get from fields if customer not found
+          if (!customer && parsedFields.length > 0) {
+            const nameField = parsedFields.find(f => 
+              f.fieldName?.toLowerCase().includes('customer') ||
+              f.fieldName?.toLowerCase().includes('name') ||
+              f.fieldName?.toLowerCase() === 'patient name'
+            );
+            if (nameField?.value) customerName = nameField.value;
+          }
+
           return {
             id: r.id,
-            patientId: r.patientId,   // ← ADD THIS LINE
-            // Customer
-            customer: customer ? customer.name : `Patient #${r.patientId}`,
-            phone: customer?.mobile || '',
-
-            // Test
-            testName: template
-              ? template.title
-              : (parsedFields[0]?.name || 'Test'),
-
-            // Price
-            mrp: template ? template.price : 0,
-
-            // Status
+            patientId: r.patientId,
+            customer: customerName,
+            phone: customer?.mobile || r.phone || '',
+            testName: title,
+            mrp: Number(price) || 0,
             status: r.status,
             paid: r.status === 'Completed',
-
-            // Date
-            date: new Date(r.createdAt).toLocaleDateString('en-IN')
+            date: new Date(r.createdAt || r.date)
+              .toLocaleDateString('en-IN'),
+            reportNumber: r.reportNumber || r.id,
+            // Store raw fields for display
+            fields: parsedFields
           };
         });
 
         console.log('MAPPED REPORTS:', reports);
 
         renderReports();
+
+        // Populate customer filter dropdown
+        const custSelect = document.getElementById('custFilter');
+        if (custSelect) {
+          // Get unique patients
+          const uniquePatients = [];
+          const seen = new Set();
+          reports.forEach(r => {
+            if (!seen.has(r.patientId)) {
+              seen.add(r.patientId);
+              uniquePatients.push({
+                id: r.patientId,
+                name: r.customer
+              });
+            }
+          });
+          
+          // Sort by name
+          uniquePatients.sort((a, b) => 
+            a.name.localeCompare(b.name));
+          
+          // Rebuild options
+          custSelect.innerHTML = 
+            '<option value="">All Patients</option>' +
+            uniquePatients.map(p => 
+              `<option value="${p.id}">${p.name}</option>`
+            ).join('');
+        }
 
       } catch (err) {
         console.error('loadReports error:', err);
@@ -697,19 +751,23 @@
     function renderPagination(total) {
       const el = document.getElementById('pagination');
       if (!el) return;
-
+      
       const totalPages = Math.ceil(total / PER_PAGE);
       el.innerHTML = '';
-
+      
+      if (totalPages <= 1) return;
+      
       for (let i = 1; i <= totalPages; i++) {
-        const active = i === currentPage
-          ? 'background:#4f46e5; color:white;'
-          : '';
-        el.innerHTML +=
-          `<button onclick="goPage(${i})"
-        style="margin:2px; padding:5px; ${active}">
-        ${i}
-      </button>`;
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.onclick = () => goPage(i);
+        btn.className = i === currentPage
+          ? 'w-8 h-8 rounded-lg text-xs font-bold ' +
+            'bg-indigo-600 text-white'
+          : 'w-8 h-8 rounded-lg text-xs font-medium ' +
+            'border border-gray-200 text-gray-600 ' +
+            'hover:bg-gray-50';
+        el.appendChild(btn);
       }
     }
 
@@ -737,6 +795,21 @@
         No reports found
       </div>`;
         return;
+      }
+
+      const countEl = document.getElementById('filterCount');
+      if (countEl) countEl.textContent = 
+        filtered.length + ' report' + 
+        (filtered.length !== 1 ? 's' : '');
+
+      const pageLabel = document.getElementById('pageLabel');
+      if (pageLabel) {
+        const from = (currentPage - 1) * PER_PAGE + 1;
+        const to = Math.min(currentPage * PER_PAGE, filtered.length);
+        pageLabel.textContent = filtered.length === 0 
+          ? 'No reports'
+          : 'Showing ' + from + '–' + to + 
+            ' of ' + filtered.length;
       }
 
       container.innerHTML = paginated.map(r => {
