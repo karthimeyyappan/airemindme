@@ -1,5 +1,6 @@
 package com.server.realsync.config;
 
+import com.server.realsync.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -13,92 +14,104 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
-import com.server.realsync.services.UserService;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationSuccessHandler successHandler,
-			CustomAuthenticationFailureHandler failureHandler, CustomLogoutSuccessHandler customLogoutSuccessHandler,
-			CustomOAuth2SuccessHandler oauthSuccessHandler)
-			throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, 
+                                                   CustomAuthenticationSuccessHandler successHandler,
+                                                   CustomAuthenticationFailureHandler failureHandler, 
+                                                   CustomLogoutSuccessHandler customLogoutSuccessHandler,
+                                                   CustomOAuth2SuccessHandler oauthSuccessHandler, 
+                                                   ClientRegistrationRepository clientRegistrationRepository) throws Exception {
 
-		http.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/api/accounts/signup", "/api/accounts/check-email",
-								"/api/accounts/check-mobile", "/mweb/login", "/signup.html", "/register.html",
-								"/login", "/privacy",
-								"/terms", "/css/**", "/js/**", "/img/**", "/assets/**", "/realsync-assets/**",
-								"/promo/**", "/api/promotions/public/**",
-								"/api/public/invoices/**", "/i/**", "/invoice-view/**", "/oauth2/**",
-								"/login/oauth2/**", "/forgot-password.html", "/api/auth/forgot-password", "/no-account")
-						.permitAll().requestMatchers("/").permitAll()
-						.requestMatchers("/register").permitAll()
-						.requestMatchers("/register.html").permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/realsync-assets/**")).permitAll()
-						.requestMatchers("/realsync/**").permitAll().requestMatchers("/mweb/register").permitAll()
-						.requestMatchers("/mweb/terms").permitAll().requestMatchers("/api/auth/register").permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/**/invoice/**")).permitAll()
-						.requestMatchers(new AntPathRequestMatcher("/**/appointment/**")).permitAll()
-						.requestMatchers("/register").permitAll().anyRequest().authenticated())
-				.formLogin(form -> form
-						.loginPage("/login.html") // GET /login (login page)
-						.loginProcessingUrl("/login") // POST /login (handled by Spring Security)
-						.defaultSuccessUrl("/home.html", true)
-						.failureUrl("/login.html?error=true")
-						.permitAll())
-				.oauth2Login(oauth -> oauth
-						.loginPage("/login.html")
-						.successHandler(oauthSuccessHandler)
-						.failureHandler((request, response, exception) -> {
+        http.csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/api/accounts/signup", "/api/accounts/check-email", "/api/accounts/check-mobile", 
+                    "/mweb/login", "/signup.html", "/register.html", "/login", "/privacy", "/terms", 
+                    "/css/**", "/js/**", "/img/**", "/assets/**", "/realsync-assets/**", "/promo/**", 
+                    "/api/promotions/public/**", "/api/public/invoices/**", "/i/**", "/invoice-view/**", 
+                    "/oauth2/**", "/login/oauth2/**", "/forgot-password.html", "/api/auth/forgot-password", 
+                    "/no-account", "/", "/register", "/realsync/**", "/mweb/register", "/mweb/terms", 
+                    "/api/auth/register", "/r/**", "/api/reports/public/report/**"
+                ).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/**/invoice/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/**/appointment/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/realsync-assets/**")).permitAll()
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
+                .loginPage("/login.html")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/home.html", true)
+                .failureUrl("/login.html?error=true")
+                .permitAll()
+            )
+            .oauth2Login(oauth -> oauth
+                .loginPage("/login.html")
+                .authorizationEndpoint(authorization -> authorization
+                    .authorizationRequestResolver(promptSelectAccountResolver(clientRegistrationRepository)))
+                .successHandler(oauthSuccessHandler)
+                .failureHandler((request, response, exception) -> {
+                    System.out.println("FAILURE HANDLER HIT");
+                    exception.printStackTrace();
+                    response.sendRedirect("/login.html?oauthFailure");
+                })
+            )
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login.html?logout")
+                .permitAll()
+            )
+            .rememberMe(remember -> remember
+                .key("uniqueAndSecret")
+                .tokenValiditySeconds(60 * 60 * 24 * 14) // 14 days
+                .userDetailsService(userService)
+            )
+            .sessionManagement(session -> session
+                .sessionFixation().migrateSession()
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+            )
+            .userDetailsService(userService);
 
-							System.out.println("FAILURE HANDLER HIT");
+        return http.build();
+    }
 
-							exception.printStackTrace();
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-							response.sendRedirect("/login.html?oauthFailure");
-						}))
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
-				.logout(logout -> logout
-						.logoutUrl("/logout")
-						.logoutSuccessUrl("/login.html?logout")
-						.permitAll())
-				// ✅ Persistent login configuration
-				.rememberMe(remember -> remember.key("uniqueAndSecret") // A secret key used to sign cookies
-						.tokenValiditySeconds(60 * 60 * 24 * 14) // 14 days validity
-						.userDetailsService(userService))
-				.sessionManagement(session -> session.sessionFixation().migrateSession()
-						.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-				.userDetailsService(userService);
+    @Bean
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> cookieCustomizer() {
+        return factory -> factory.addContextCustomizers(context -> {
+            context.setSessionCookieName("JSESSIONID");
+            context.setUseHttpOnly(true);
+            context.setSessionTimeout(30); // minutes
+        });
+    }
 
-		return http.build();
-	}
-
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-		return config.getAuthenticationManager();
-	}
-
-	@Bean
-	public WebServerFactoryCustomizer<TomcatServletWebServerFactory> cookieCustomizer() {
-		return factory -> factory.addContextCustomizers(context -> {
-			context.setSessionCookieName("JSESSIONID");
-			context.setUseHttpOnly(true);
-			context.setSessionTimeout(30); // minutes
-		});
-	}
-
+    private OAuth2AuthorizationRequestResolver promptSelectAccountResolver(ClientRegistrationRepository repo) {
+        var resolver = new DefaultOAuth2AuthorizationRequestResolver(repo, "/oauth2/authorization");
+        resolver.setAuthorizationRequestCustomizer(customizer -> 
+            customizer.additionalParameters(params -> params.put("prompt", "select_account"))
+        );
+        return resolver;
+    }
 }

@@ -1,11 +1,8 @@
 package com.server.realsync.config;
 
-import com.server.realsync.entity.CustomUserDetails;
-import com.server.realsync.entity.User;
-import com.server.realsync.repo.UserRepository;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +15,13 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.Optional;
+import com.server.realsync.entity.CustomUserDetails;
+import com.server.realsync.entity.User;
+import com.server.realsync.repo.UserRepository;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
@@ -35,15 +37,13 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     public void onAuthenticationSuccess(
             HttpServletRequest request,
             HttpServletResponse response,
-            Authentication authentication
-    ) throws IOException, ServletException {
+            Authentication authentication) throws IOException, ServletException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
         if (email == null || email.trim().isEmpty()) {
             LOG.warn("OAuth login failed: email attribute is missing from Google principal");
-            SecurityContextHolder.clearContext();
             response.sendRedirect("/no-account");
             return;
         }
@@ -54,6 +54,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         if (!existingUser.isPresent()) {
             LOG.warn("No user record found for Google email: {}", email);
             SecurityContextHolder.clearContext();
+            request.getSession().invalidate();
             response.sendRedirect("/no-account");
             return;
         }
@@ -62,6 +63,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         if (user.getAccount() == null) {
             LOG.warn("No account linked for user: {}", email);
             SecurityContextHolder.clearContext();
+            request.getSession().invalidate();
             response.sendRedirect("/no-account");
             return;
         }
@@ -71,8 +73,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 customUserDetails,
                 null,
-                customUserDetails.getAuthorities()
-        );
+                customUserDetails.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(auth);
         securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
