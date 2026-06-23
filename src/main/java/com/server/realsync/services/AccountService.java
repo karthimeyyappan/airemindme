@@ -106,6 +106,20 @@ public class AccountService {
         account.setLanguage(dto.getDefaultLanguage());
         Account savedAccount = repository.save(account);
 
+        // Auto-generate this account's own referral code
+        savedAccount.setReferralCode("NUMEN-" + savedAccount.getId());
+
+        // If someone referred this new account, save referred_by
+        if (dto.getReferralCode() != null && !dto.getReferralCode().isEmpty()) {
+            repository.findByReferralCode(dto.getReferralCode())
+                    .ifPresent(referrer -> {
+                        savedAccount.setReferredBy(referrer.getId());
+                    });
+        }
+
+        // Save again with referral_code and referred_by
+        repository.save(savedAccount);
+
         // Fetch/Create ROLE_USER Role
         Role userRole = roleRepository.findByName("ROLE_USER").orElseGet(() -> {
             Role newRole = new Role();
@@ -176,7 +190,6 @@ public class AccountService {
         if (dto.getBusinessName() == null || dto.getBusinessName().trim().isEmpty()) {
             throw new IllegalArgumentException("Business name is required.");
         }
-       
 
         String password = dto.getPassword();
         if (password == null || password.length() < 8 ||

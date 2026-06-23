@@ -1,61 +1,57 @@
 package com.server.realsync.services;
 
-import com.server.realsync.entity.Referral;
-import com.server.realsync.repo.ReferralRepository;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+
+import com.server.realsync.entity.Account;
+import com.server.realsync.repo.AccountRepository;
 
 @Service
 public class ReferralService {
 
     @Autowired
-    private ReferralRepository referralRepository;
+    private AccountRepository accountRepository;
 
-    /**
-     * Get existing referral code for account, or create a new one
-     */
-    public String getOrCreateReferralCode(Long accountId) {
-        List<Referral> list = referralRepository.findByAccountId(accountId);
+    public Map<String, Object> getReferralInfo(Integer accountId) {
 
-        // Find master code row (no referred account linked yet = the owner's code row)
-        Optional<Referral> master = list.stream()
-            .filter(r -> r.getReferredAccountId() == null)
-            .findFirst();
+        // Find the logged-in account
+        Account account = accountRepository.findById(accountId)
+            .orElseThrow(() -> new RuntimeException("Account not found"));
 
-        if (master.isPresent()) {
-            return master.get().getReferralCode();
+        // Auto-generate referral code if missing
+        if (account.getReferralCode() == null) {
+            account.setReferralCode("NUMEN-" + accountId);
+            accountRepository.save(account);
         }
 
-        // Create a brand new referral code for this account
-        Referral r = new Referral();
-        r.setAccountId(accountId);
-        r.setReferralCode("NUMEN-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase());
-        referralRepository.save(r);
-        return r.getReferralCode();
-    }
+        // Find all accounts who were referred by this account
+        List<Account> referredAccounts =
+            accountRepository.findByReferredBy(accountId);
 
-    /**
-     * Get list of people who signed up using this account's referral code
-     */
-    public List<Referral> getReferralHistory(Long accountId) {
-        return referralRepository.findByAccountId(accountId)
-            .stream()
-            .filter(r -> r.getReferredAccountId() != null)
-            .toList();
-    }
+        // Build history list
+        DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("dd MMM yyyy");
 
-    public long getTotalReferrals(Long accountId) {
-        return referralRepository.countReferrals(accountId);
-    }
+        List<Map<String, String>> history = new ArrayList<>();
+        for (Account a : referredAccounts) {
+            Map<String, String> item = new HashMap<>();
+            item.put("name", a.getName());
+            item.put("joinedDate", a.getCreatedDate() != null
+                ? a.getCreatedDate().format(formatter) : "-");
+            history.add(item);
+        }
 
-    public long getCreditedReferrals(Long accountId) {
-        return referralRepository.countCredited(accountId);
-    }
+        // Build final response
+        Map<String, Object> response = new HashMap<>();
+        response.put("referralCode", account.getReferralCode());
+        response.put("history", history);
 
-    public double getTotalCredits(Long accountId) {
-        return referralRepository.sumCredits(accountId);
+        return response;
     }
 }

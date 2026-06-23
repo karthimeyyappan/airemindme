@@ -16,6 +16,7 @@ public class SignupRequestDto {
     private String currency;
     private String defaultLanguage;
     private String selectedPlan;
+    private String referralCode;
 
     // Getters and Setters
     public String getName() {
@@ -128,5 +129,13 @@ public class SignupRequestDto {
 
     public void setSelectedPlan(String selectedPlan) {
         this.selectedPlan = selectedPlan;
+    }
+
+    public String getReferralCode() {
+        return referralCode;
+    }
+
+    public void setReferralCode(String referralCode) {
+        this.referralCode = referralCode;
     }
 }

@@ -92,6 +92,12 @@ public class Account {
 	@Column(name = "customer_field_5_name", length = 100)
 	private String customerField5Name;
 
+	@Column(name = "referral_code", length = 50, unique = true)
+	private String referralCode;
+
+	@Column(name = "referred_by")
+	private Integer referredBy;
+
 	// Getters and Setters
 	public Integer getId() {
 		return id;
@@ -286,6 +292,22 @@ public class Account {
 
 	public void setCustomerField5Name(String customerField5Name) {
 		this.customerField5Name = customerField5Name;
+	}
+
+	public String getReferralCode() {
+		return referralCode;
+	}
+
+	public void setReferralCode(String referralCode) {
+		this.referralCode = referralCode;
+	}
+
+	public Integer getReferredBy() {
+		return referredBy;
+	}
+
+	public void setReferredBy(Integer referredBy) {
+		this.referredBy = referredBy;
 	}
 
 }
