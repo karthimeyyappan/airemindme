@@ -300,6 +300,17 @@
     </div>
   </div>
 
+  <!-- Custom Customer Information Card -->
+  <div id="customCustomerInfoCard" class="hidden bg-white border-b border-slate-100 px-4 py-4 md:px-6">
+    <div class="max-w-4xl mx-auto">
+      <h3 class="text-slate-900 text-sm font-bold mb-3">Customer Additional Information</h3>
+      <div id="customCustomerInfoGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <!-- Dynamic fields go here -->
+      </div>
+    </div>
+  </div>
+
+
   <!-- Stats Row -->
   <div class="px-4 py-4 md:px-6">
     <div class="max-w-4xl mx-auto grid grid-cols-2 lg:grid-cols-3 gap-3">
@@ -812,6 +823,13 @@
         });
 
     }
+  </script>
+  <script th:src="@{/js/customers/customerfunc.js}"></script>
+  <script th:inline="javascript">
+    const customerData = /*[[${customer}]]*/ {};
+    window.addEventListener("DOMContentLoaded", () => {
+        loadCustomerFields(customerData);
+    });
   </script>
   <script th:src="@{/js/theme.js}"></script>
 

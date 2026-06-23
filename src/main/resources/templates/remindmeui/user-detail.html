@@ -543,6 +543,22 @@
       setTimeout(() => t.classList.add('hidden'), 3000);
     }
   </script>
+  <script>
+  function toggleSub(menuId) {
+      const subMenu = document.getElementById('sub-' + menuId);
+      const chevron = document.getElementById('ch-' + menuId);
+
+      if (subMenu) {
+        // Toggle the hidden class
+        const isCollapsed = subMenu.classList.toggle('hidden');
+
+        // Rotate chevron
+        if (chevron) {
+          chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+        }
+      }
+    }
+</script>
 </body>
 
 </html>

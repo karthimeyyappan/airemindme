@@ -80,6 +80,24 @@ public class ScheduleEntry {
 	@Column(name = "message_content", columnDefinition = "TEXT")
 	private String messageContent;
 
+	@Column(name = "paid_amount", precision = 10, scale = 2)
+	private BigDecimal paidAmount = BigDecimal.ZERO;
+
+	@Column(name = "balance_amount", precision = 10, scale = 2)  
+	private BigDecimal balanceAmount = BigDecimal.ZERO;
+
+	@Column(name = "payment_mode", length = 50)
+	private String paymentMode;
+
+	@Column(name = "payment_date")
+	private java.time.LocalDate paymentDate;
+
+	@Column(name = "reference_no", length = 255)
+	private String referenceNo;
+
+	@Column(name = "payment_notes", length = 1000)
+	private String paymentNotes;
+
 	@PrePersist
 	protected void onCreate() {
 		createdAt = LocalDateTime.now();
@@ -232,5 +250,53 @@ public class ScheduleEntry {
 
 	public void setAccountId(Integer accountId) {
 		this.accountId = accountId;
+	}
+
+	public BigDecimal getPaidAmount() {
+		return paidAmount;
+	}
+
+	public void setPaidAmount(BigDecimal paidAmount) {
+		this.paidAmount = paidAmount;
+	}
+
+	public BigDecimal getBalanceAmount() {
+		return balanceAmount;
+	}
+
+	public void setBalanceAmount(BigDecimal balanceAmount) {
+		this.balanceAmount = balanceAmount;
+	}
+
+	public String getPaymentMode() {
+		return paymentMode;
+	}
+
+	public void setPaymentMode(String paymentMode) {
+		this.paymentMode = paymentMode;
+	}
+
+	public java.time.LocalDate getPaymentDate() {
+		return paymentDate;
+	}
+
+	public void setPaymentDate(java.time.LocalDate paymentDate) {
+		this.paymentDate = paymentDate;
+	}
+
+	public String getReferenceNo() {
+		return referenceNo;
+	}
+
+	public void setReferenceNo(String referenceNo) {
+		this.referenceNo = referenceNo;
+	}
+
+	public String getPaymentNotes() {
+		return paymentNotes;
+	}
+
+	public void setPaymentNotes(String paymentNotes) {
+		this.paymentNotes = paymentNotes;
 	}
 }

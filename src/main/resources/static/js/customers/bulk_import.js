@@ -122,7 +122,12 @@ function parseCSV() {
                 dob: cols[6] || '',
                 weddingDate: cols[7] || '',
                 gstNo: cols[8] || '',
-                whatsAppOptIn: cols[9] || ''
+                whatsAppOptIn: cols[9] || '',
+                customerField1: cols[10] || '',
+                customerField2: cols[11] || '',
+                customerField3: cols[12] || '',
+                customerField4: cols[13] || '',
+                customerField5: cols[14] || ''
             });
         });
 
@@ -222,9 +227,10 @@ function renderPreviewTable() {
     tbody.innerHTML = '';
 
     if (paginatedItems.length === 0) {
+        const colCount = 5 + (window.importCustomFields ? window.importCustomFields.length : 0);
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+                <td colspan="${colCount}" class="px-4 py-8 text-center text-gray-400">
                     No records found matching filter.
                 </td>
             </tr>
@@ -240,12 +246,21 @@ function renderPreviewTable() {
     };
 
     paginatedItems.forEach(r => {
+        let customCells = '';
+        if (window.importCustomFields) {
+            window.importCustomFields.forEach(cf => {
+                const rawVal = r.rawData ? (r.rawData[cf.key] || '') : '';
+                customCells += `<td class="px-4 py-3 text-gray-500">${escapeHtml(rawVal || '—')}</td>`;
+            });
+        }
+
         tbody.innerHTML += `
             <tr class="hover:bg-gray-50/50 transition border-b border-gray-100">
                 <td class="px-4 py-3 font-semibold text-gray-800">${escapeHtml(r.name)}</td>
                 <td class="px-4 py-3 text-gray-600">${escapeHtml(r.mobile)}</td>
                 <td class="px-4 py-3 text-gray-500">${escapeHtml(r.email || '—')}</td>
                 <td class="px-4 py-3 text-gray-500">${escapeHtml(r.customerGroup)}</td>
+                ${customCells}
                 <td class="px-4 py-3">
                     <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${badgeClasses[r.status]}">
                         ${r.status}
@@ -421,3 +436,45 @@ function escapeHtml(str) {
          .replace(/"/g, "&quot;")
          .replace(/'/g, "&#039;");
 }
+
+window.importCustomFields = [];
+
+async function loadImportSettings() {
+    try {
+        const response = await fetch('/api/settings/customer-fields');
+        if (!response.ok) throw new Error('Failed to load settings');
+        const settings = await response.json();
+        
+        window.importCustomFields = [];
+        for (let i = 1; i <= 5; i++) {
+            const fieldName = settings[`field${i}Name`] || '';
+            if (fieldName.trim() !== '') {
+                window.importCustomFields.push({
+                    key: `customerField${i}`,
+                    name: fieldName.trim()
+                });
+            }
+        }
+        
+        const headerRow = document.getElementById('previewTableHeaderRow');
+        if (headerRow) {
+            let html = `
+                <th class="px-4 py-3 font-semibold text-gray-500">Name</th>
+                <th class="px-4 py-3 font-semibold text-gray-500">Phone</th>
+                <th class="px-4 py-3 font-semibold text-gray-500">Email</th>
+                <th class="px-4 py-3 font-semibold text-gray-500">Mapped Group</th>
+            `;
+            window.importCustomFields.forEach(cf => {
+                html += `<th class="px-4 py-3 font-semibold text-gray-500">${escapeHtml(cf.name)}</th>`;
+            });
+            html += `<th class="px-4 py-3 font-semibold text-gray-500">Status</th>`;
+            headerRow.innerHTML = html;
+        }
+    } catch (err) {
+        console.error('Error loading import settings:', err);
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    loadImportSettings();
+});

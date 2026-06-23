@@ -38,6 +38,9 @@ public class SecurityUtil {
         User user = null;
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+         System.out.println("AUTH = " + authentication);
+    System.out.println("PRINCIPAL CLASS = "
+            + authentication.getPrincipal().getClass());
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
             CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
             user = customUserDetails.getUser();

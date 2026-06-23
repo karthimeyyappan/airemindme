@@ -19,4 +19,5 @@ public interface PromotionEntryRepository extends JpaRepository<PromotionEntry, 
 
     List<PromotionEntry> findByPromotionIdAndSentWhatsappFalse(Long promotionId);
 
+    void deleteByPromotionId(Long promotionId);
 }

@@ -54,4 +54,18 @@ public interface ScheduleEntryRepository extends JpaRepository<ScheduleEntry, Lo
     @Transactional
     void deleteBySourceIdAndSourceType(Long sourceId, String sourceType);
 
+    List<ScheduleEntry> findByAccountIdAndOccurrenceDateBetween(
+        Integer accountId, 
+        LocalDateTime start, 
+        LocalDateTime end);
+
+    List<ScheduleEntry> findByAccountIdAndOccurrenceDateBeforeAndStatusNot(
+        Integer accountId, 
+        LocalDateTime date, 
+        ScheduleEntryStatus status);
+
+    long countByAccountIdAndStatus(
+        Integer accountId, 
+        ScheduleEntryStatus status);
+
 }

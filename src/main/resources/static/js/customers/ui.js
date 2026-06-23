@@ -147,6 +147,9 @@ function showAddCustomerModal() {
     document.getElementById("modalTitle").innerText = "Add Customer";
     document.getElementById("saveCustomerBtn").innerText = "Add Customer";
 
+    // ✅ Load dynamic custom fields empty inputs
+    loadCustomerFields();
+
     // ✅ Show modal first
     document.getElementById("addCustomerModal").classList.remove("hidden");
 }
@@ -156,7 +159,7 @@ function hideAddCustomerModal() {
 }
 
 
-function openEditCustomer(id, name, phone, email, dob, weddingDate, groupIds, channel, gstNo, address, city, state, country) {
+function openEditCustomer(id, name, phone, email, dob, weddingDate, groupIds, channel, gstNo, address, city, state, country, field1, field2, field3, field4, field5) {
     resetGroupUI(); // Clear previous highlights
     resetCustomerWizard();
 
@@ -204,6 +207,16 @@ function openEditCustomer(id, name, phone, email, dob, weddingDate, groupIds, ch
     // Handle Channels
     selectedChannels = channel ? channel.toString().split(",").map(Number) : [];
     updateChannelButtons();
+
+    // Populate custom fields dynamically
+    const customerData = {
+        customerField1: field1 || "",
+        customerField2: field2 || "",
+        customerField3: field3 || "",
+        customerField4: field4 || "",
+        customerField5: field5 || ""
+    };
+    loadCustomerFields(customerData);
 
     document.getElementById("modalTitle").innerText = "Edit Customer";
     document.getElementById("saveCustomerBtn").innerText = "Update Customer";

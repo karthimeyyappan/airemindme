@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.server.realsync.config.AccountNotFoundException;
 import com.server.realsync.dto.SignupRequestDto;
 import com.server.realsync.entity.Account;
 import com.server.realsync.entity.Role;
@@ -61,7 +62,7 @@ public class AccountService {
 
     public Account getById(int id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
     }
 
     public void deleteById(Integer id) {

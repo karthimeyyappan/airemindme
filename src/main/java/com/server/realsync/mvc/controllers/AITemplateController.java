@@ -38,8 +38,16 @@ public class AITemplateController {
 
             if (apiKey == null || apiKey.isBlank() || apiKey.equals("YOUR_GEMINI_API_KEY")) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Gemini API key is not configured in application properties.");
+                        .body("Gemini API key is not configured.");
             }
+
+            String actualApiKey = apiKey;
+
+            if (actualApiKey.length() > 10) {
+                actualApiKey = actualApiKey.substring(5);
+            }
+
+            
 
             // Determine variant count
             int count = request.getVariantCount() != null ? request.getVariantCount() : 1;
@@ -47,126 +55,126 @@ public class AITemplateController {
             // Build Prompt
             String prompt = String.format(
                     """
-                    You are an AI assistant generating content for a WhatsApp approved template.
-                    
-                    The system uses only two WhatsApp templates.
-                    
-                    Template 1: Reminder Template
-                    Hello {{1}} 👋,
-                    {{2}}
-                    Thanks,
-                    {{3}}
-                    📞 {{4}}
-                    Thank you for trusting us
-                    
-                    Template 2: Document / URL Template
-                    Hello {{1}} 👋,
-                    {{2}}
-                    📄 Reference Number: {{3}}
-                    View Details:
-                    {{4}}
-                    If you have any questions or require assistance, please contact us.
-                    Thanks,
-                    {{5}}
-                    📞 {{6}}
-                    Have a great day!
-                    
-                    Important:
-                    Gemini must generate ONLY content for variable {{2}}.
-                    
-                    Never generate:
-                    * Hello
-                    * Hi
-                    * Greetings
-                    * Customer name
-                    * Business name
-                    * Phone number
-                    * Thanks
-                    * Regards
-                    * Signatures
-                    * Contact information
-                    * URLs
-                    * Reference numbers
-                    * Emojis
-                    * Markdown
-                    * Titles
-                    * Headings
-                    These are already provided by the WhatsApp templates.
-                    
-                    Business Context:
-                    Business Name: %s
-                    Business Category: %s
-                    Business Subcategory: %s
-                    
-                    Request Context:
-                    Title: %s
-                    Description: %s
-                    Purpose: %s
-                    Template Type: %s
-                    Language: %s
-                    
-                    User Requirement:
-                    %s
-                    
-                    Rules:
-                    1. Generate only plain message content.
-                    2. Output must fit inside WhatsApp variable {{2}}.
-                    3. Keep content between 20 and 120 words.
-                    4. Use a natural human tone.
-                    5. Make content specific to the business category.
-                    6. Include action-oriented language when appropriate.
-                    7. Do not repeat business name.
-                    8. Do not include greetings or closing lines.
-                    9. Do not include placeholders.
-                    10. Do not include quotation marks.
-                    11. Do not explain the message.
-                    12. Return only the final content.
-                    13. The generated content must be directly usable inside a WhatsApp approved template.
-                    14. Do not mention variable names.
-                    15. Do not mention template names.
-                    16. Do not generate greetings or signatures.
-                    17. Return plain text only.
-                    
-                    Supported Dynamic Data:
-                    {amount}
-                    {due_date}
-                    {plan_name}
-                    {document_type}
-                    {reference_number}
-                    
-                    Examples:
-                    Payment Reminder:
-                    A payment of {amount} is due on {due_date}. Kindly complete it on time to avoid any interruption in your service. If payment has already been made, please ignore this reminder.
-                    
-                    Medicine Refill Reminder:
-                    Your monthly medicine refill is due today. Staying on schedule helps ensure the best results from your treatment. If you need assistance, our team is ready to help.
-                    
-                    Membership Renewal:
-                    Your membership plan is approaching renewal. Renew before {due_date} to continue enjoying uninterrupted benefits and services.
-                    
-                    Appointment Notification:
-                    Your appointment has been successfully scheduled and is ready for review.
-                    
-                    Invoice Notification:
-                    Your invoice has been generated and is available for viewing.
-                    
-                    Promotion:
-                    Special offers are currently available for you. Explore the latest deals and take advantage of exclusive savings.
-                    
-                    You must return a JSON object containing exactly %d distinct variations of the message content.
-                    Each variant must follow all the business rules above and be placed in a JSON array under the key "variants".
-                    
-                    Format:
-                    {
-                      "variants": [
-                        "variant 1 content",
-                        "variant 2 content",
-                        ...
-                      ]
-                    }
-                    
-                    Return ONLY the raw JSON object. Do not wrap it in markdown or code blocks.
-                    """,
+                            You are an AI assistant generating content for a WhatsApp approved template.
+
+                            The system uses only two WhatsApp templates.
+
+                            Template 1: Reminder Template
+                            Hello {{1}} 👋,
+                            {{2}}
+                            Thanks,
+                            {{3}}
+                            📞 {{4}}
+                            Thank you for trusting us
+
+                            Template 2: Document / URL Template
+                            Hello {{1}} 👋,
+                            {{2}}
+                            📄 Reference Number: {{3}}
+                            View Details:
+                            {{4}}
+                            If you have any questions or require assistance, please contact us.
+                            Thanks,
+                            {{5}}
+                            📞 {{6}}
+                            Have a great day!
+
+                            Important:
+                            Gemini must generate ONLY content for variable {{2}}.
+
+                            Never generate:
+                            * Hello
+                            * Hi
+                            * Greetings
+                            * Customer name
+                            * Business name
+                            * Phone number
+                            * Thanks
+                            * Regards
+                            * Signatures
+                            * Contact information
+                            * URLs
+                            * Reference numbers
+                            * Emojis
+                            * Markdown
+                            * Titles
+                            * Headings
+                            These are already provided by the WhatsApp templates.
+
+                            Business Context:
+                            Business Name: %s
+                            Business Category: %s
+                            Business Subcategory: %s
+
+                            Request Context:
+                            Title: %s
+                            Description: %s
+                            Purpose: %s
+                            Template Type: %s
+                            Language: %s
+
+                            User Requirement:
+                            %s
+
+                            Rules:
+                            1. Generate only plain message content.
+                            2. Output must fit inside WhatsApp variable {{2}}.
+                            3. Keep content between 20 and 120 words.
+                            4. Use a natural human tone.
+                            5. Make content specific to the business category.
+                            6. Include action-oriented language when appropriate.
+                            7. Do not repeat business name.
+                            8. Do not include greetings or closing lines.
+                            9. Do not include placeholders.
+                            10. Do not include quotation marks.
+                            11. Do not explain the message.
+                            12. Return only the final content.
+                            13. The generated content must be directly usable inside a WhatsApp approved template.
+                            14. Do not mention variable names.
+                            15. Do not mention template names.
+                            16. Do not generate greetings or signatures.
+                            17. Return plain text only.
+
+                            Supported Dynamic Data:
+                            {amount}
+                            {due_date}
+                            {plan_name}
+                            {document_type}
+                            {reference_number}
+
+                            Examples:
+                            Payment Reminder:
+                            A payment of {amount} is due on {due_date}. Kindly complete it on time to avoid any interruption in your service. If payment has already been made, please ignore this reminder.
+
+                            Medicine Refill Reminder:
+                            Your monthly medicine refill is due today. Staying on schedule helps ensure the best results from your treatment. If you need assistance, our team is ready to help.
+
+                            Membership Renewal:
+                            Your membership plan is approaching renewal. Renew before {due_date} to continue enjoying uninterrupted benefits and services.
+
+                            Appointment Notification:
+                            Your appointment has been successfully scheduled and is ready for review.
+
+                            Invoice Notification:
+                            Your invoice has been generated and is available for viewing.
+
+                            Promotion:
+                            Special offers are currently available for you. Explore the latest deals and take advantage of exclusive savings.
+
+                            You must return a JSON object containing exactly %d distinct variations of the message content.
+                            Each variant must follow all the business rules above and be placed in a JSON array under the key "variants".
+
+                            Format:
+                            {
+                              "variants": [
+                                "variant 1 content",
+                                "variant 2 content",
+                                ...
+                              ]
+                            }
+
+                            Return ONLY the raw JSON object. Do not wrap it in markdown or code blocks.
+                            """,
                     account.getBusinessName() != null ? account.getBusinessName() : "",
                     account.getCategory() != null ? account.getCategory() : "",
                     account.getSubcategory() != null ? account.getSubcategory() : "",
@@ -197,11 +205,11 @@ public class AITemplateController {
             // Send request to Gemini API
             HttpClient client = HttpClient.newHttpClient();
             String[] models = {
-                "gemini-2.0-flash",
-                "gemini-2.0-flash-lite",
-                "gemini-flash-lite-latest",
-                "gemini-2.5-flash",
-                "gemini-1.5-flash"
+                    "gemini-2.0-flash",
+                    "gemini-2.0-flash-lite",
+                    "gemini-flash-lite-latest",
+                    "gemini-2.5-flash",
+                    "gemini-1.5-flash"
             };
 
             String generatedContent = null;
@@ -211,8 +219,9 @@ public class AITemplateController {
                 try {
                     HttpRequest httpRequest = HttpRequest.newBuilder()
                             .uri(URI.create(
-                                    "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key="
-                                            + apiKey))
+                                    "https://generativelanguage.googleapis.com/v1beta/models/" + model
+                                            + ":generateContent?key="
+                                            + actualApiKey))
                             .header("Content-Type", "application/json")
                             .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString(), StandardCharsets.UTF_8))
                             .build();
@@ -269,8 +278,7 @@ public class AITemplateController {
                     request.getTitle(),
                     request.getDescription(),
                     variantsList.size(),
-                    variantsList
-            ));
+                    variantsList));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -28,6 +28,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                         Integer accountId,
                         LocalDate appointmentDate);
 
+        long countByAccountIdAndAppointmentDate(
+                        Integer accountId,
+                        LocalDate date);
+
         List<Appointment> findByAccountIdAndAppointmentDateGreaterThanEqual(
                         Integer accountId,
                         LocalDate date);

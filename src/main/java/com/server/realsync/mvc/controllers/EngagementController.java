@@ -23,6 +23,7 @@ import com.server.realsync.entity.ExecutionStatus;
 import com.server.realsync.entity.Reminder;
 
 import com.server.realsync.repo.ScheduleEntryRepository;
+import com.server.realsync.repo.ReminderRepository;
 import com.server.realsync.entity.Customer;
 import com.server.realsync.services.CustomerService;
 import com.server.realsync.entity.Greeting;
@@ -41,7 +42,6 @@ public class EngagementController {
     @Autowired
     private ReminderService reminderService;
 
-    
     @Autowired
     private FileStorageService fileStorageService;
 
@@ -52,6 +52,9 @@ public class EngagementController {
     private ScheduleEntryRepository scheduleEntryRepository;
 
     @Autowired
+    private ReminderRepository reminderRepository;
+
+    @Autowired
     private CustomerService customerService;
 
     // 1. REMINDER APIS
@@ -59,6 +62,47 @@ public class EngagementController {
     @GetMapping("/reminders/account/{accountId}")
     public List<Reminder> getAllReminders(@PathVariable Integer accountId) {
         return reminderService.getByAccountId(accountId);
+    }
+
+    @GetMapping("/reminders/account/{accountId}/list")
+    public ResponseEntity<?> getAllRemindersWithCustomer(
+            @PathVariable Integer accountId) {
+
+        List<Reminder> reminders = reminderService.getByAccountId(accountId);
+
+        List<Map<String, Object>> result = reminders.stream()
+                .map(r -> {
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("id", r.getId());
+                    map.put("title", r.getTitle());
+                    map.put("message", r.getMessage());
+                    map.put("reminderPurpose", r.getReminderPurpose());
+                    map.put("reminderType", r.getReminderType());
+                    map.put("recurring", r.getRecurring());
+                    map.put("frequency", r.getFrequency());
+                    map.put("totalOccurrences", r.getTotalOccurrences());
+                    map.put("amount", r.getAmount());
+                    map.put("reminderDate", r.getReminderDate());
+                    map.put("reminderTime", r.getReminderTime());
+                    map.put("channel", r.getChannel());
+                    map.put("status", r.getStatus());
+                    map.put("createdAt", r.getCreatedAt());
+                    map.put("customerId", r.getCustomerId());
+
+                    // Fetch customer details
+                    if (r.getCustomerId() != null) {
+                        customerService.getById(
+                                accountId, r.getCustomerId())
+                                .ifPresent(c -> {
+                                    map.put("customerName", c.getName());
+                                    map.put("customerMobile", c.getMobile());
+                                });
+                    }
+                    return map;
+                })
+                .collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/reminders/{id}")
@@ -92,23 +136,85 @@ public class EngagementController {
 
         Reminder existing = optionalReminder.get();
 
-        existing.setTitle(updatedReminder.getTitle());
+        // Ignore these fields on update — locked after creation
+        // existing.setTotalOccurrences(...) → DO NOT call
+        // existing.setReminderType(...) → DO NOT call
+        // existing.setFrequency(...) → DO NOT call
+        // existing.setCustomerId(...) → DO NOT call
+        // existing.setTitle(...) → DO NOT call
+        // existing.setReminderPurpose(...) → DO NOT call
+        // existing.setReminderDate(...) → DO NOT call
+
+        // Only update these fields on PUT:
         existing.setMessage(updatedReminder.getMessage());
-        existing.setReminderDate(updatedReminder.getReminderDate());
         existing.setReminderTime(updatedReminder.getReminderTime());
-        existing.setCustomerId(updatedReminder.getCustomerId());
+        existing.setAmount(updatedReminder.getAmount());
         existing.setChannel(updatedReminder.getChannel());
         existing.setStatus(updatedReminder.getStatus());
-
-        existing.setReminderType(updatedReminder.getReminderType());
-        existing.setFrequency(updatedReminder.getFrequency());
-        existing.setTotalOccurrences(updatedReminder.getTotalOccurrences());
-        existing.setAmount(updatedReminder.getAmount());
-
+        // attached item can be updated
         existing.setAttachedItemId(updatedReminder.getAttachedItemId());
         existing.setAttachedItemType(updatedReminder.getAttachedItemType());
 
-        Reminder saved = reminderService.save(existing);
+        Reminder saved = reminderRepository.save(existing);
+
+        List<ScheduleEntry> allEntries = scheduleEntryRepository
+                .findByReminderIdOrderByOccurrenceDateAsc(
+                        existing.getId().longValue());
+
+        for (ScheduleEntry entry : allEntries) {
+
+            // RULE 1: Never touch COMPLETED entries
+            if (entry.getStatus() == ScheduleEntryStatus.COMPLETED) {
+                continue;
+            }
+
+            // RULE 2: Never touch entries where sentWhatsapp=true
+            // (reminder already sent)
+            if (Boolean.TRUE.equals(entry.getSentWhatsapp())) {
+                continue;
+            }
+
+            // RULE 3: For pending entries — update allowed fields
+
+            // Update message only
+            if (updatedReminder.getMessage() != null) {
+                entry.setMessageContent(updatedReminder.getMessage());
+            }
+
+            // Update time only (keep same date, just change hour)
+            if (updatedReminder.getReminderTime() != null
+                    && entry.getOccurrenceDate() != null) {
+                entry.setOccurrenceDate(
+                        entry.getOccurrenceDate()
+                                .withHour(updatedReminder.getReminderTime().getHour())
+                                .withMinute(0)
+                                .withSecond(0));
+            }
+
+            // Update amount only
+            // BUT: if entry has paidAmount > 0,
+            // recalculate balance only — do NOT touch paidAmount
+            if (updatedReminder.getAmount() != null) {
+                java.math.BigDecimal newAmt = java.math.BigDecimal.valueOf(
+                        updatedReminder.getAmount());
+                entry.setAmount(newAmt);
+
+                java.math.BigDecimal paid = entry.getPaidAmount();
+                if (paid != null && paid.compareTo(
+                        java.math.BigDecimal.ZERO) > 0) {
+                    // Partially paid — recalculate balance only
+                    java.math.BigDecimal newBal = newAmt.subtract(paid);
+                    entry.setBalanceAmount(
+                            newBal.compareTo(java.math.BigDecimal.ZERO) < 0
+                                    ? java.math.BigDecimal.ZERO
+                                    : newBal);
+                }
+                // If not paid yet — balance stays 0
+                // (collected on payment)
+            }
+
+            scheduleEntryRepository.save(entry);
+        }
 
         return ResponseEntity.ok(saved);
     }
@@ -150,6 +256,112 @@ public class EngagementController {
         scheduleEntryRepository.save(entry);
 
         return ResponseEntity.ok(Map.of("message", "Marked as paid"));
+    }
+
+    @PostMapping("/schedule-entry/{id}/collect")
+    @Transactional
+    public ResponseEntity<?> collectPayment(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+
+        try {
+            ScheduleEntry entry = scheduleEntryRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Entry not found"));
+
+            double amountCollected = Double.parseDouble(
+                    body.get("amountCollected").toString());
+            String paymentMode = (String) body.get("paymentMode");
+            String paymentDate = (String) body.get("paymentDate");
+            String referenceNo = (String) body.getOrDefault("referenceNo", "");
+            String notes = (String) body.getOrDefault("notes", "");
+
+            double originalAmount = entry.getAmount() != null
+                    ? entry.getAmount().doubleValue()
+                    : 0;
+            double alreadyPaid = entry.getPaidAmount() != null
+                    ? entry.getPaidAmount().doubleValue()
+                    : 0;
+
+            double newTotalPaid = alreadyPaid + amountCollected;
+            double newBalance = originalAmount - newTotalPaid;
+
+            // Validation
+            if (amountCollected <= 0) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Amount must be greater than 0"));
+            }
+            if (newTotalPaid > originalAmount) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error",
+                                "Total paid ₹" + newTotalPaid +
+                                        " exceeds amount ₹" + originalAmount));
+            }
+
+            // Find if this is last entry for this reminder
+            List<ScheduleEntry> allEntries = scheduleEntryRepository
+                    .findByReminderIdOrderByOccurrenceDateAsc(entry.getReminderId());
+            boolean isLastEntry = allEntries.get(allEntries.size() - 1)
+                    .getId().equals(id);
+
+            // Last entry rule: must pay full amount
+            if (isLastEntry && newBalance > 0) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Last installment — full amount required"));
+            }
+
+            // Update this entry
+            entry.setPaidAmount(
+                    java.math.BigDecimal.valueOf(newTotalPaid));
+            entry.setBalanceAmount(
+                    java.math.BigDecimal.valueOf(Math.max(0, newBalance)));
+            entry.setPaymentMode(paymentMode);
+            entry.setPaymentDate(java.time.LocalDate.parse(paymentDate));
+            entry.setReferenceNo(referenceNo);
+            entry.setPaymentNotes(notes);
+
+            if (newBalance <= 0) {
+                entry.setStatus(ScheduleEntryStatus.COMPLETED);
+            } else {
+                entry.setStatus(ScheduleEntryStatus.PENDING);
+            }
+
+            scheduleEntryRepository.save(entry);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "amountCollected", amountCollected,
+                    "balance", Math.max(0, newBalance),
+                    "status", entry.getStatus().name()));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/schedule-entry/{id}/message")
+    public ResponseEntity<?> updateEntryMessage(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        ScheduleEntry entry = scheduleEntryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+        entry.setMessageContent(body.get("message"));
+        scheduleEntryRepository.save(entry);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/schedule-entry/{id}/send-now")
+    public ResponseEntity<?> sendEntryNow(@PathVariable Long id) {
+        // For now just mark sentWhatsapp = true and status = COMPLETED
+        // Real send will be added later via QueueWorker
+        ScheduleEntry entry = scheduleEntryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Entry not found"));
+        entry.setSentWhatsapp(true);
+        entry.setExecutionStatus(ExecutionStatus.SUCCESS);
+        entry.setStatus(ScheduleEntryStatus.COMPLETED);
+        scheduleEntryRepository.save(entry);
+        return ResponseEntity.ok(Map.of("success", true,
+                "message", "Reminder sent successfully"));
     }
 
     @GetMapping("/reminders/{id}/history")
@@ -270,35 +482,34 @@ public class EngagementController {
     }
 
     @GetMapping("/public/greeting/{greetingId}")
-public ResponseEntity<InputStreamResource> getPublicGreetingImage(
-        @PathVariable Integer greetingId) {
+    public ResponseEntity<InputStreamResource> getPublicGreetingImage(
+            @PathVariable Integer greetingId) {
 
-    try {
+        try {
 
-        Greeting greeting = greetingService
-                .getById(greetingId, null)
-                .orElseThrow(() -> new RuntimeException("Greeting not found"));
+            Greeting greeting = greetingService
+                    .getById(greetingId, null)
+                    .orElseThrow(() -> new RuntimeException("Greeting not found"));
 
-        String imagePath = greeting.getImageUrl();
+            String imagePath = greeting.getImageUrl();
 
-        int lastSlash = imagePath.lastIndexOf('/');
+            int lastSlash = imagePath.lastIndexOf('/');
 
-        String dir = imagePath.substring(0, lastSlash + 1);
-        String fileName = imagePath.substring(lastSlash + 1);
+            String dir = imagePath.substring(0, lastSlash + 1);
+            String fileName = imagePath.substring(lastSlash + 1);
 
-        InputStream inputStream =
-                fileStorageService.downloadFile(dir, fileName);
+            InputStream inputStream = fileStorageService.downloadFile(dir, fileName);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
-                .header(HttpHeaders.CACHE_CONTROL, "public,max-age=86400")
-                .body(new InputStreamResource(inputStream));
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "image/jpeg")
+                    .header(HttpHeaders.CACHE_CONTROL, "public,max-age=86400")
+                    .body(new InputStreamResource(inputStream));
 
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.notFound().build();
+        }
     }
-}
 
     @GetMapping("/greetings/{id}")
     public ResponseEntity<?> getGreetingById(

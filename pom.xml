@@ -132,7 +132,6 @@
 		<!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
 		<!--
 		https://mvnrepository.com/artifact/com.microsoft.azure.cognitiveservices/azure-cognitiveservices-faceapi -->
-
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-rekognition</artifactId>

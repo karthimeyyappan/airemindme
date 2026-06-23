@@ -64,6 +64,60 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long>, JpaSpec
     """)
     List<RecentInvoiceDTO> findRecentInvoices(@Param("accountId") Integer accountId, Pageable pageable);
 
+    @Query("""
+        SELECT COALESCE(SUM(i.balanceAmount), 0)
+        FROM Invoice i
+        WHERE i.customerId IN (SELECT CAST(c.id AS long) FROM Customer c WHERE c.accountId = :accountId)
+        AND i.status NOT IN (com.server.realsync.entity.InvoiceStatus.PAID, com.server.realsync.entity.InvoiceStatus.CANCELLED, com.server.realsync.entity.InvoiceStatus.DRAFT)
+        AND (:startDate IS NULL OR i.invoiceDate >= :startDate)
+        AND (:endDate IS NULL OR i.invoiceDate <= :endDate)
+    """)
+    java.math.BigDecimal getOutstandingBalance(@Param("accountId") Integer accountId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("""
+        SELECT COALESCE(SUM(i.balanceAmount), 0)
+        FROM Invoice i
+        WHERE i.customerId IN (SELECT CAST(c.id AS long) FROM Customer c WHERE c.accountId = :accountId)
+        AND i.status NOT IN (com.server.realsync.entity.InvoiceStatus.PAID, com.server.realsync.entity.InvoiceStatus.CANCELLED, com.server.realsync.entity.InvoiceStatus.DRAFT)
+        AND i.dueDate < :today
+        AND (:startDate IS NULL OR i.invoiceDate >= :startDate)
+        AND (:endDate IS NULL OR i.invoiceDate <= :endDate)
+    """)
+    java.math.BigDecimal getOverdueBalance(@Param("accountId") Integer accountId, @Param("today") LocalDate today, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("""
+        SELECT COUNT(i)
+        FROM Invoice i
+        WHERE i.customerId IN (SELECT CAST(c.id AS long) FROM Customer c WHERE c.accountId = :accountId)
+        AND i.status NOT IN (com.server.realsync.entity.InvoiceStatus.PAID, com.server.realsync.entity.InvoiceStatus.CANCELLED, com.server.realsync.entity.InvoiceStatus.DRAFT)
+        AND i.dueDate < :today
+        AND (:startDate IS NULL OR i.invoiceDate >= :startDate)
+        AND (:endDate IS NULL OR i.invoiceDate <= :endDate)
+    """)
+    long getOverdueCount(@Param("accountId") Integer accountId, @Param("today") LocalDate today, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("""
+        SELECT COALESCE(SUM(i.balanceAmount), 0)
+        FROM Invoice i
+        WHERE i.customerId IN (SELECT CAST(c.id AS long) FROM Customer c WHERE c.accountId = :accountId)
+        AND i.status NOT IN (com.server.realsync.entity.InvoiceStatus.PAID, com.server.realsync.entity.InvoiceStatus.CANCELLED, com.server.realsync.entity.InvoiceStatus.DRAFT)
+        AND i.dueDate = :today
+        AND (:startDate IS NULL OR i.invoiceDate >= :startDate)
+        AND (:endDate IS NULL OR i.invoiceDate <= :endDate)
+    """)
+    java.math.BigDecimal getDueTodayBalance(@Param("accountId") Integer accountId, @Param("today") LocalDate today, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("""
+        SELECT COUNT(i)
+        FROM Invoice i
+        WHERE i.customerId IN (SELECT CAST(c.id AS long) FROM Customer c WHERE c.accountId = :accountId)
+        AND i.status NOT IN (com.server.realsync.entity.InvoiceStatus.PAID, com.server.realsync.entity.InvoiceStatus.CANCELLED, com.server.realsync.entity.InvoiceStatus.DRAFT)
+        AND i.dueDate = :today
+        AND (:startDate IS NULL OR i.invoiceDate >= :startDate)
+        AND (:endDate IS NULL OR i.invoiceDate <= :endDate)
+    """)
+    long getDueTodayCount(@Param("accountId") Integer accountId, @Param("today") LocalDate today, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
     List<Invoice> findByCustomerId(Long customerId);
 
     @Query(value = "SELECT invoice_number FROM invoices ORDER BY id DESC LIMIT 1", nativeQuery = true)

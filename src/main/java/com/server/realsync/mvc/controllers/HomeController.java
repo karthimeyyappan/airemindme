@@ -75,6 +75,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 public class HomeController {
 
+	private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(HomeController.class);
+
 	@Autowired
 	private UserService userService;
 
@@ -144,6 +146,11 @@ public class HomeController {
 		// return "realsync/index";
 	}
 
+	@GetMapping({ "/forgot-password.html" })
+	public String getForgotPassword() {
+		return "remindmeui/forgot-password";
+	}
+
 	@GetMapping({ "/signup.html", "/register.html" })
 	public String getRegister(
 			@RequestParam(value = "refAccId", required = false) String refAccId,
@@ -154,10 +161,22 @@ public class HomeController {
 		return "remindmeui/register";
 	}
 
+	@GetMapping({ "/no-account" })
+	public String getNoAccount() {
+		return "remindmeui/no-account";
+	}
+
 	@GetMapping("/home.html")
 	public String getAdminDashboard(Model model) {
-		Account loggedIn = SecurityUtil.getCurrentAccountId();
-		Account account = accountService.getById(loggedIn.getId());
+		com.server.realsync.entity.User currentUser = SecurityUtil.getLoggedInUser();
+		if (currentUser == null) {
+			return "redirect:/login.html";
+		}
+		if (currentUser.getAccount() == null) {
+			LOG.warn("No account linked for user: {}", currentUser.getUsername());
+			return "redirect:/no-account";
+		}
+		Account account = accountService.getById(currentUser.getAccount().getId());
 
 		List<Reminder> upcoming = reminderService.getTop3UpcomingByAccountId(account.getId());
 		List<Integer> customerIds = upcoming.stream()

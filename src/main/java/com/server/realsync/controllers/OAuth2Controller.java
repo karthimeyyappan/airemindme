@@ -25,16 +25,23 @@ public class OAuth2Controller {
     }
 
     @GetMapping("/login/oauth2/code/{provider}")
-    public RedirectView loginSuccess(@PathVariable String provider, OAuth2AuthenticationToken authenticationToken) {
+    public RedirectView loginSuccess(
+            @PathVariable String provider,
+            OAuth2AuthenticationToken authenticationToken) {
+
+        System.out.println("=== OAUTH CALLBACK ===");
+
         OAuth2AuthorizedClient client = clientService.loadAuthorizedClient(
                 authenticationToken.getAuthorizedClientRegistrationId(),
-                authenticationToken.getName()
-        );
-        //String userEmail = (String) client. getPrincipalAttributes().get("email");
-        String userEmail =  client.getPrincipalName();
+                authenticationToken.getName());
+
+        String userEmail = client.getPrincipalName();
+
+        System.out.println("EMAIL = " + userEmail);
+
         Optional<User> existingUser = userRepository.findByUsername(userEmail);
-        // Handle storing the user information and token, then redirect to a successful login page
-        // For example, store user details in your database and generate a JWT token for further authentication.
+
+        System.out.println("USER FOUND = " + existingUser.isPresent());
 
         return new RedirectView("/login-success");
     }

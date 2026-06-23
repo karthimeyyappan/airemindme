@@ -26,6 +26,11 @@ import com.server.realsync.entity.User;
 import com.server.realsync.services.AccountService;
 import com.server.realsync.services.UserService;
 
+import jakarta.servlet.http.HttpSession;
+import java.util.HashMap;
+import java.util.Map;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 @RestController
 @RequestMapping("/api/accounts")
 public class AccountController {
@@ -164,4 +169,47 @@ public class AccountController {
 
     
 
+}
+@RestController
+class CurrentAccountApiController {
+
+  @Autowired
+  private AccountService accountService;
+
+  @GetMapping("/api/account/current")
+  @ResponseBody
+  public ResponseEntity<?> getCurrentAccount() {
+    try {
+      Authentication authentication = SecurityContextHolder
+        .getContext().getAuthentication();
+      
+      if (authentication == null || 
+          !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+        return ResponseEntity.status(401)
+          .body(Map.of("error", "Not logged in"));
+      }
+
+      CustomUserDetails userDetails = 
+        (CustomUserDetails) authentication.getPrincipal();
+      int accountId = userDetails.getAccountId();
+
+      Account account = accountService.findById(accountId).orElse(null);
+
+      if (account == null) {
+        return ResponseEntity.status(404)
+          .body(Map.of("error", "Account not found"));
+      }
+
+      Map<String, Object> result = new HashMap<>();
+      result.put("id", account.getId());
+      result.put("name", account.getName());
+      result.put("email", account.getEmail());
+      result.put("businessName", account.getBusinessName());
+      return ResponseEntity.ok(result);
+
+    } catch (Exception e) {
+      return ResponseEntity.status(500)
+        .body(Map.of("error", e.getMessage()));
+    }
+  }
 }

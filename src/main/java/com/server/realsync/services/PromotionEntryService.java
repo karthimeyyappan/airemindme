@@ -44,4 +44,8 @@ public class PromotionEntryService {
     public void delete(Long id) {
         promotionEntryRepository.deleteById(id);
     }
+
+    public void deleteByPromotionId(Long promotionId) {
+        promotionEntryRepository.deleteByPromotionId(promotionId);
+    }
 }
