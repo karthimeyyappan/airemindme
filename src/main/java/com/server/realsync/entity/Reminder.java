@@ -69,6 +69,9 @@ public class Reminder {
     @Column(name = "attached_item_type", length = 20)
     private String attachedItemType; // "plan" or "product"
 
+    @Column(name = "reminder_purpose", length = 50)
+    private String reminderPurpose; // "payment", "service", "followup", "general"
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -210,5 +213,13 @@ public class Reminder {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getReminderPurpose() {
+        return reminderPurpose;
+    }
+
+    public void setReminderPurpose(String reminderPurpose) {
+        this.reminderPurpose = reminderPurpose;
     }
 }

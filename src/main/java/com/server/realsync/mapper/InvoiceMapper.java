@@ -20,6 +20,8 @@ public class InvoiceMapper {
         dto.setStatus(invoice.getStatus());
         dto.setCreatedAt(invoice.getCreatedAt());
         dto.setDueDate(invoice.getDueDate());
+        dto.setCustomerPhone(invoice.getCustomerPhone());
+        dto.setPaidAmount(invoice.getPaidAmount());
         return dto;
     }
 

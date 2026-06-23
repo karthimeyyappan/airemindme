@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dashboard - Numen</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<!-- <link rel="stylesheet" href="/css/theme.css"> -->
+</head>
+
+<body class="bg-gray-50">
+
+	<!-- Sidebar -->
+	<div th:replace="~{remindmeui/fragments/layout :: sidebar(activePage='home')}"></div>
+
+	<!-- Mobile nav -->
+	<div th:replace="~{remindmeui/fragments/layout :: mobileNav(activePage='home')}"></div>
+
+
+	<!-- Main Content -->
+	<div class="md:ml-56 min-h-screen pt-14 md:pt-0">
+		<!-- Top Header -->
+		<div
+			class="dash-header bg-white border-b border-gray-100 px-4 md:px-6 py-4 flex items-center justify-between sticky top-14 md:top-0 z-20">
+			<div>
+				<p class="text-sm text-gray-500">Good morning 👋</p>
+				<h1 class="text-xl font-bold text-gray-900" th:text="${account.businessName}">My Business</h1>
+			</div>
+			<div class="flex items-center gap-3">
+				<button
+					class="relative w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition">
+					<svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+					</svg>
+					<span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+				</button>
+				<div class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center">
+					<span class="text-white text-sm font-bold"
+						th:text="${account.businessName != null and !#strings.isEmpty(account.businessName) ? #strings.toUpperCase(#strings.substring(account.businessName,0,1)) : 'A'}">
+						A
+					</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Page Body -->
+		<div class="p-4 md:p-6">
+			<div class="max-w-6xl mx-auto">
+
+				<!-- Stats Row — gradient cards -->
+				<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+					<!-- Customers -->
+					<div class="stat-card-1 rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer"
+						onclick="window.location.href='customers.html'">
+						<div class="flex items-center justify-between mb-3">
+							<div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+								<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
+									viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+								</svg>
+							</div>
+							<!-- <span
+								class="stat-badge-green text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium">+12%</span> -->
+						</div>
+						<p id="stat-customers" class="stat-number text-2xl font-bold text-gray-900">
+							0
+						</p>
+						<p class="text-xs text-gray-500 mt-0.5">Customers</p>
+					</div>
+					<!-- Scheduled Activities -->
+					<div class="stat-card-2 rounded-2xl p-4 border border-gray-100 shadow-sm">
+						<div class="flex items-center justify-between mb-3">
+							<div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+								<svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor"
+									viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+								</svg>
+							</div>
+						</div>
+						<p id="stat-scheduled-activities" class="stat-number text-2xl font-bold text-gray-900">
+							0
+						</p>
+						<p class="text-xs text-gray-500 mt-0.5">Scheduled Activities</p>
+					</div>
+					<!-- Promotions -->
+					<div class="stat-card-3 rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer"
+						onclick="window.location.href='promotions.html'">
+						<div class="flex items-center justify-between mb-3">
+							<div class="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center">
+								<svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor"
+									viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M13 10V3L4 14h7v7l9-11h-7z" />
+								</svg>
+							</div>
+						</div>
+						<p id="stat-promotions" class="stat-number text-2xl font-bold text-gray-900">
+							0
+						</p>
+						<p class="text-xs text-gray-500 mt-0.5">Promotions</p>
+					</div>
+					<!-- Upcoming Reminders -->
+					<div class="stat-card-4 rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer"
+						onclick="window.location.href='engagement.html'">
+						<div class="flex items-center justify-between mb-3">
+							<div class="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center">
+								<svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor"
+									viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+										d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+								</svg>
+							</div>
+						</div>
+						<p id="stat-reminders" class="stat-number text-2xl font-bold text-gray-900">
+							0
+						</p>
+						<p class="text-xs text-gray-500 mt-0.5">Upcoming Reminders</p>
+					</div>
+				</div>
+
+				<!-- Two Column Layout -->
+				<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+					<!-- Left Col -->
+					<div class="lg:col-span-2 space-y-5">
+						<!-- Chart -->
+						<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+							<div class="flex items-center justify-between mb-4">
+								<div>
+									<h3 class="text-sm font-semibold text-gray-900">Customer Engagement Activity</h3>
+									<p id="chart-subtitle" class="text-xs text-gray-400 mt-0.5">0 customer interactions
+										recorded in the last 7 days</p>
+								</div>
+								<div class="flex items-center gap-4 text-xs text-gray-500">
+									<span class="flex items-center gap-1.5"><span
+											class="legend-dot w-2.5 h-2.5 rounded-full bg-indigo-600 inline-block"></span>Interactions</span>
+								</div>
+							</div>
+							<div id="chartWrapper" style="position:relative; height:200px; width:100%">
+								<canvas id="msgChart"></canvas>
+							</div>
+						</div>
+
+						<!-- Recent Activities -->
+						<div class="bg-white rounded-2xl border border-gray-100 shadow-sm">
+							<div class="flex items-center justify-between px-5 pt-4 pb-3">
+								<h3 class="text-sm font-semibold text-gray-900">Recent Activities</h3>
+								<a href="engagement.html"
+									class="text-xs text-indigo-600 font-medium flex items-center gap-1 hover:text-indigo-700">View
+									all <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M9 5l7 7-7 7" />
+									</svg></a>
+							</div>
+							<div id="recentMsgList" class="divide-y divide-gray-50"></div>
+						</div>
+					</div>
+
+					<!-- Right Col -->
+					<div class="space-y-5">
+
+						<!-- Upcoming -->
+						<div class="bg-white rounded-2xl border border-gray-100 shadow-sm">
+							<div class="flex items-center justify-between px-4 pt-4 pb-3">
+								<h3 class="text-sm font-semibold text-gray-900">Upcoming</h3>
+								<a href="engagement.html"
+									class="text-xs text-indigo-600 font-medium flex items-center gap-1 hover:text-indigo-700">See
+									all <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+											d="M9 5l7 7-7 7" />
+									</svg></a>
+							</div>
+							<div class="divide-y divide-gray-50 min-h-[180px]">
+
+								<!-- No reminders -->
+								<div th:if="${#lists.isEmpty(upcomingReminders)}"
+									class="px-4 py-8 text-center text-gray-500">
+									<svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor"
+										viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+											d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+										</path>
+									</svg>
+									<p class="text-sm font-medium text-gray-900">No upcoming reminders</p>
+									<p class="text-xs text-gray-400 mt-1">Scheduled reminders will appear here.</p>
+								</div>
+
+								<!-- Dynamic reminders -->
+								<div th:each="reminder : ${upcomingReminders}"
+									class="upcoming-item flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition cursor-pointer"
+									th:onclick="'window.location.href=\'reminder-detail.html?id=' + ${reminder.id} + '\''">
+									<div
+										class="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+										<svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor"
+											viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+										</svg>
+									</div>
+									<div class="flex-1 min-w-0">
+										<p class="text-sm font-medium text-gray-800 truncate"
+											th:text="${reminder.title}">Reminder</p>
+										<p class="text-xs text-gray-400 truncate"
+											th:text="${'Customer: ' + reminder.customerName}">Customer Name</p>
+									</div>
+									<div class="text-right flex-shrink-0">
+										<p class="text-xs font-semibold text-gray-700"
+											th:text="${reminder.reminderDate}">Date</p>
+										<p class="text-[10px] text-gray-400" th:text="${reminder.reminderTime}">Time</p>
+									</div>
+								</div>
+
+							</div>
+						</div>
+
+						<!-- Quick Actions -->
+						<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+							<h3 class="text-sm font-semibold text-gray-900 mb-3">Quick Actions</h3>
+							<div class="grid grid-cols-2 gap-2">
+								<a href="customers.html"
+									class="quick-action-card flex items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+									<div
+										class="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+										<svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor"
+											viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+										</svg>
+									</div>
+									<span class="text-sm font-medium text-gray-700">Customers</span>
+								</a>
+								<a href="promotions.html"
+									class="quick-action-card flex items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+									<div
+										class="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+										<svg class="w-3.5 h-3.5 text-orange-600" fill="none" stroke="currentColor"
+											viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+										</svg>
+									</div>
+									<span class="text-sm font-medium text-gray-700">Promotions</span>
+								</a>
+								<a href="engagement.html"
+									class="quick-action-card flex items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+									<div
+										class="w-7 h-7 rounded-lg bg-violet-100 flex items-center justify-center flex-shrink-0">
+										<svg class="w-3.5 h-3.5 text-violet-600" fill="none" stroke="currentColor"
+											viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												d="M13 10V3L4 14h7v7l9-11h-7z" />
+										</svg>
+									</div>
+									<span class="text-sm font-medium text-gray-700">Engagement</span>
+								</a>
+								<a href="engagement.html"
+									class="quick-action-card flex items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+									<div
+										class="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
+										<svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor"
+											viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+												d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+										</svg>
+									</div>
+									<span class="text-sm font-medium text-gray-700">Schedule</span>
+								</a>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+	</div>
+	</div>
+	</div>
+
+	<!-- Bottom Nav Mobile -->
+	<div th:replace="~{remindmeui/fragments/layout :: bottomNav(activePage='home')}"></div>
+
+	<script th:src="@{/js/theme.js}"></script>
+	<script>
+		// ── THEME TOGGLE ──
+		function toggleTheme() {
+			var cur = document.documentElement.getAttribute('data-theme') || 'light';
+			var next = cur === 'dark' ? 'light' : 'dark';
+			document.documentElement.setAttribute('data-theme', next);
+			localStorage.setItem('rm_theme', next);
+			syncIcons(next);
+			if (typeof updateChartTheme === 'function') {
+				updateChartTheme(next);
+			}
+		}
+		function syncIcons(theme) {
+			document.querySelectorAll('.icon-sun').forEach(function (el) { el.style.display = theme === 'dark' ? 'block' : 'none'; });
+			document.querySelectorAll('.icon-moon').forEach(function (el) { el.style.display = theme === 'dark' ? 'none' : 'block'; });
+		}
+		(function () { syncIcons(localStorage.getItem('rm_theme') || 'light'); })();
+
+		// ── MOBILE NAV ──
+		function openMobileNav() { document.getElementById('mobileNavDrawer').style.transform = 'translateX(0)'; document.getElementById('mobileNavBg').classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+		function closeMobileNav() { document.getElementById('mobileNavDrawer').style.transform = 'translateX(-100%)'; document.getElementById('mobileNavBg').classList.add('hidden'); document.body.style.overflow = ''; }
+	</script>
+
+	<script>
+		function toggleSub(menuId) {
+			const subMenu = document.getElementById('sub-' + menuId);
+			const chevron = document.getElementById('ch-' + menuId);
+
+			if (subMenu) {
+				// Toggle the hidden class
+				const isCollapsed = subMenu.classList.toggle('hidden');
+
+				// Rotate chevron
+				if (chevron) {
+					chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+				}
+			}
+		}
+
+		// Logic to keep it open if on the reports page
+		window.addEventListener('DOMContentLoaded', () => {
+			// You can set this logic based on your activePage variable
+			const activePage = "[[${activePage}]]";
+			if (activePage === 'reports') {
+				toggleSub('reports');
+			}
+		});
+	</script>
+	<script th:src="@{/js/dashboard.js}"></script>
+
+</body>
+
+</html>

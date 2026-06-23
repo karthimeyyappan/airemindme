@@ -16,6 +16,8 @@ public class InvoiceListResponseDTO {
     private LocalDateTime createdAt;
     private String customerName;
     private LocalDate dueDate;
+    private String customerPhone;
+    private BigDecimal paidAmount;
 
     public InvoiceListResponseDTO() {
     }
@@ -86,5 +88,17 @@ public class InvoiceListResponseDTO {
     }
     public void setDueDate(LocalDate dueDate) {
         this.dueDate = dueDate;
+    }
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
+    public BigDecimal getPaidAmount() {
+        return paidAmount;
+    }
+    public void setPaidAmount(BigDecimal paidAmount) {
+        this.paidAmount = paidAmount;
     }
 }

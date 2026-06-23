@@ -149,10 +149,7 @@ public ResponseEntity<?> recordPayment(@PathVariable Integer id, @RequestBody In
 
         invoiceService.save(inv);
 
-        return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", "Payment recorded successfully",
-                "paymentId", saved.getId()));
+        return ResponseEntity.ok(com.server.realsync.mapper.InvoiceMapper.toDetailDTO(inv));
 
     } catch (Exception e) {
         e.printStackTrace();

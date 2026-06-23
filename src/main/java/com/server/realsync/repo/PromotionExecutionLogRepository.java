@@ -18,4 +18,5 @@ public interface PromotionExecutionLogRepository extends JpaRepository<Promotion
 
     List<PromotionExecutionLog> findByPromotionEntryId(Long promotionEntryId);
 
+    void deleteByPromotionEntryId(Long promotionEntryId);
 }
