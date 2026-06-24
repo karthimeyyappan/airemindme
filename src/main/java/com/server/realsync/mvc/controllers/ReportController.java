@@ -60,7 +60,8 @@ public class ReportController {
                 reportNum,
                 publicUrl,
                 tmplName,
-                ""
+                "",
+                "Report"
             );
 
             return ResponseEntity.ok("Sent");
