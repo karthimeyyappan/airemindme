@@ -37,7 +37,7 @@ public class PasswordResetService {
         userRepository.save(user);
 
         // Send email
-        String resetLink = "http://localhost:8080/reset-password.html?token=" + token;
+        String resetLink = "http://localhost:8080/remindmeui/reset-password.html?token=" + token;
 
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setFrom("mindfullmoneyoffical@gmail.com");

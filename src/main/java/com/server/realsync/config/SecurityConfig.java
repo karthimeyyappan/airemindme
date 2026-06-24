@@ -43,7 +43,7 @@ public class SecurityConfig {
                     "/css/**", "/js/**", "/img/**", "/assets/**", "/realsync-assets/**", "/promo/**", 
                     "/api/promotions/public/**", "/api/public/invoices/**", "/i/**", "/invoice-view/**", 
                     "/oauth2/**", "/login/oauth2/**", "/forgot-password.html", "/api/auth/forgot-password",
-                    "/reset-password.html", "/api/auth/reset-password",
+                    "/reset-password.html", "/remindmeui/reset-password.html", "/api/auth/reset-password",
                     "/no-account", "/", "/register", "/realsync/**", "/mweb/register", "/mweb/terms", 
                     "/api/auth/register", "/r/**", "/api/reports/public/report/**"
                 ).permitAll()
