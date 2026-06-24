@@ -10,5 +10,5 @@ public interface ReportRepository extends JpaRepository<Report, Integer> {
 
     List<Report> findByAccountIdOrderByCreatedAtDesc(Integer accountId);
 
-    
+    Report findByReportNumber(String reportNumber);
 }

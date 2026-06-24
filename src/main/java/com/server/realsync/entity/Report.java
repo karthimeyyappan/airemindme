@@ -34,6 +34,28 @@ public class Report {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    @Transient
+    private String customerName;
+
+    @Transient
+    private String mobile;
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
     @PrePersist
     public void onCreate() {
         createdAt = LocalDateTime.now();

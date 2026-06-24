@@ -12,39 +12,62 @@ import jakarta.persistence.Transient;
 @Entity
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String username;//mobile number
-    
-    @Column(nullable = false)
-    private String password;
-    
-    @Column(nullable = true)
-    private String otp;
-    
-    @Column(nullable = true)
-    private String email;
-    
-    @Column(nullable = false)
-    private String fullName;
+	@Column(nullable = false, unique = true)
+	private String username;// mobile number
 
-    @Column(nullable = false)
-    private String mobile;
+	@Column(nullable = false)
+	private String password;
 
-    @ManyToOne
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
-    
-    @ManyToOne
-    @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
+	@Column(nullable = true)
+	private String otp;
 
-    @Transient
-    private String code;
-    
+	@Column(nullable = true)
+	private String email;
+
+	@Column(nullable = false)
+	private String fullName;
+
+	@Column(nullable = false)
+	private String mobile;
+
+	@ManyToOne
+	@JoinColumn(name = "account_id", nullable = false)
+	private Account account;
+
+	@ManyToOne
+	@JoinColumn(name = "role_id", nullable = false)
+	private Role role;
+
+	@Transient
+	private String code;
+
+	@Column(nullable = true)
+	private String resetToken;
+
+	@Column(nullable = true)
+	private java.time.LocalDateTime resetTokenExpiry;
+
+	// Getter & Setter
+	public String getResetToken() {
+		return resetToken;
+	}
+
+	public void setResetToken(String resetToken) {
+		this.resetToken = resetToken;
+	}
+
+	public java.time.LocalDateTime getResetTokenExpiry() {
+		return resetTokenExpiry;
+	}
+
+	public void setResetTokenExpiry(java.time.LocalDateTime resetTokenExpiry) {
+		this.resetTokenExpiry = resetTokenExpiry;
+	}
+
 	public Long getId() {
 		return id;
 	}
@@ -117,41 +140,39 @@ public class User {
 		this.mobile = mobile;
 	}
 
-	// ✅ Dynamic Role-based Code
-    public String getCode() {
-        if (id == null || role == null || role.getName() == null) {
-            return "N/A";
-        }
+	// Dynamic Role-based Code
+	public String getCode() {
+		if (id == null || role == null || role.getName() == null) {
+			return "N/A";
+		}
 
-        String prefix;
-        switch (role.getName().toUpperCase()) {
-            case "ADMIN":
-                prefix = "AD";
-                break;
-            case "LEAD PROVIDER":
-                prefix = "LP";
-                break;
-            case "MANAGER":
-                prefix = "MG";
-                break;
-            case "CHANNEL PARTNER":
-                prefix = "CP";
-                break;
-            case "BROKER":
-                prefix = "BK";
-                break;
-            default:
-                prefix = "US";
-        }
+		String prefix;
+		switch (role.getName().toUpperCase()) {
+			case "ADMIN":
+				prefix = "AD";
+				break;
+			case "LEAD PROVIDER":
+				prefix = "LP";
+				break;
+			case "MANAGER":
+				prefix = "MG";
+				break;
+			case "CHANNEL PARTNER":
+				prefix = "CP";
+				break;
+			case "BROKER":
+				prefix = "BK";
+				break;
+			default:
+				prefix = "US";
+		}
 
-        // Zero-pad ID (e.g., 1 -> 0001)
-        return String.format("%s%04d", prefix, id);
-    }
+		// Zero-pad ID (e.g., 1 -> 0001)
+		return String.format("%s%04d", prefix, id);
+	}
 
 	public void setCode(String code) {
 		this.code = code;
 	}
 
 }
-
-

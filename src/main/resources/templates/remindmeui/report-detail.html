@@ -444,7 +444,7 @@
         const valStatus = getNormalStatus(f, f.value);
         tbody.innerHTML += `
           <tr>
-            <td class="px-5 py-3 font-medium text-gray-700">${f.name}</td>
+            <td class="px-5 py-3 font-medium text-gray-700">${f.fieldName || f.name || '—'}</td>
             <td class="px-5 py-3 font-semibold text-gray-900">${f.value || '—'}</td>
             <td class="px-5 py-3 text-gray-400">${f.range || '—'}</td>
             <td class="px-5 py-3">${f.status || valStatus}</td>
@@ -465,7 +465,7 @@
       report.fields.forEach((f, i) => {
         tbody.innerHTML += `
           <tr>
-            <td class="px-5 py-3 text-gray-700 font-medium text-sm">${f.name}</td>
+            <td class="px-5 py-3 text-gray-700 font-medium text-sm">${f.fieldName || f.name || '—'}</td>
             <td class="px-5 py-3">
               <input type="text" id="ef-${i}"
                 value="${f.value || ''}"
@@ -610,18 +610,56 @@
     }
 
     function shareWhatsApp() {
-      const msg = encodeURIComponent(`Hello ${report.customerName || 'Customer'}, your report is ready. View: ${window.location.origin}/view-report.html?id=${report.id}`);
-      window.open(`https://wa.me/?text=${msg}`, '_blank');
-      changeStatus('Shared');
+      const publicUrl = `${window.location.origin}/r/${report.reportNumber}`;
+      const mobile = report.mobile?.replace(/\D/g, '');
+
+      const message = `Hello ${report.customerName || 'Customer'} 👋,
+
+Your *${report.reportName || report.templateName || 'Report'}* is ready.
+📄 Reference Number: ${report.reportNumber}
+
+You can view the details using the link below:
+${publicUrl}
+
+If you have any questions or require assistance, please contact us.
+
+Thanks,
+Numen
+📞 ${mobile || ''}
+Have a great day!`;
+
+      // Auto mark as Shared
+      changeStatus('Shared').then(async () => {
+          // Send via MSG91 WhatsApp
+          try {
+              const res = await fetch(`/api/reports/${report.id}/share-whatsapp`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      mobile: mobile,
+                      customerName: report.customerName,
+                      reportNumber: report.reportNumber,
+                      publicUrl: publicUrl,
+                      templateName: report.reportName || report.templateName
+                  })
+              });
+              if (!res.ok) throw new Error("Failed");
+              showToast('Report sent via WhatsApp ✅');
+          } catch(e) {
+              // Fallback to wa.me
+              window.open(`https://wa.me/${mobile}?text=${encodeURIComponent(message)}`, '_blank');
+              showToast('Opened WhatsApp ✅');
+          }
+      });
     }
 
     function shareEmail() {
-      window.open(`mailto:?subject=Your Report is Ready&body=Hello ${report.customerName || 'Customer'}, view your report: ${window.location.origin}/view-report.html?id=${report.id}`, '_blank');
+      window.open(`mailto:?subject=Your Report is Ready&body=Hello ${report.customerName || 'Customer'}, view your report: ${window.location.origin}/r/${report.reportNumber}`, '_blank');
       showToast('Email opened');
     }
 
     function copyLink() {
-      const link = `${window.location.origin}/view-report.html?id=${report.id}`;
+      const link = `${window.location.origin}/r/${report.reportNumber}`;
       navigator.clipboard.writeText(link).catch(() => {
         const e = document.createElement('input');
         e.value = link;
@@ -630,7 +668,7 @@
         document.execCommand('copy');
         document.body.removeChild(e);
       });
-      showToast('Secure link copied to clipboard!');
+      showToast('Public link copied! 🔗');
     }
 
     function confirmDelete() { openModal('deleteModal'); }
