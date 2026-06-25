@@ -12,4 +12,5 @@ public interface PlanRepository extends JpaRepository<Plan, Integer> {
     Optional<Plan> findByNameIgnoreCase(String name);
     Optional<Plan> findByIsTrial(Boolean isTrial);
     List<Plan> findByIsActiveTrueOrderByPriceInrAsc();
+    List<Plan> findByIsActiveTrueAndIsTrialFalseOrderByPriceInrAsc();
 }

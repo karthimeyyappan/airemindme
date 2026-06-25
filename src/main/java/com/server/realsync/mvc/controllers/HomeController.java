@@ -41,6 +41,7 @@ import com.server.realsync.services.CustomerService;
 import com.server.realsync.services.ReminderService;
 import com.server.realsync.services.GreetingService;
 import com.server.realsync.services.InventoryTransactionService;
+import com.server.realsync.entity.CreditTransaction;
 import com.server.realsync.services.PromotionService;
 import com.server.realsync.services.CustomerGroupService;
 import com.server.realsync.services.CatalogProductService;
@@ -121,6 +122,8 @@ public class HomeController {
 	private GreetingRepository greetingRepository;
 	@Autowired
 	private PromotionRepository promotionRepository;
+	@Autowired
+	private CreditTransactionRepository creditTransactionRepository;
 	@Autowired
 	private AppointmentRepository appointmentRepository;
 	@Autowired
@@ -789,6 +792,57 @@ public class HomeController {
 		return "remindmeui/productdetail";
 	}
 
+	@GetMapping("/credit-history.html")
+	public String getCreditHistory(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(required = false) String type,
+			@RequestParam(required = false) String fromDate,
+			@RequestParam(required = false) String toDate,
+			Model model) {
+
+		Account loggedIn = SecurityUtil.getCurrentAccountId();
+		Account account = accountService.getById(loggedIn.getId());
+
+		Pageable pageable = PageRequest.of(page, 16, Sort.by(Sort.Direction.DESC, "createdDate"));
+
+		Page<CreditTransaction> transactions;
+
+		// Build query based on filters
+		if ((type != null && !type.isBlank()) || (fromDate != null && !fromDate.isBlank())) {
+			LocalDateTime from = fromDate != null && !fromDate.isBlank()
+					? LocalDate.parse(fromDate).atStartOfDay() : LocalDateTime.of(2020, 1, 1, 0, 0);
+			LocalDateTime to = toDate != null && !toDate.isBlank()
+					? LocalDate.parse(toDate).atTime(23, 59, 59) : LocalDateTime.now();
+
+			if (type != null && !type.isBlank()) {
+				transactions = creditTransactionRepository
+						.findByAccountIdAndTypeContainingIgnoreCaseAndCreatedDateBetween(
+								account.getId(), type, from, to, pageable);
+			} else {
+				transactions = creditTransactionRepository
+						.findByAccountIdAndCreatedDateBetween(account.getId(), from, to, pageable);
+			}
+		} else {
+			transactions = creditTransactionRepository
+					.findByAccountId(account.getId(), pageable);
+		}
+
+		// Get current balance
+		AccountPlan accountPlan = accountPlanService.getAccountPlanUsage(account.getId()).orElse(null);
+
+		model.addAttribute("account", account);
+		model.addAttribute("transactions", transactions.getContent());
+		model.addAttribute("currentPage", page);
+		model.addAttribute("totalPages", transactions.getTotalPages());
+		model.addAttribute("totalElements", transactions.getTotalElements());
+		model.addAttribute("accountPlan", accountPlan);
+		model.addAttribute("selectedType", type);
+		model.addAttribute("fromDate", fromDate);
+		model.addAttribute("toDate", toDate);
+
+		return "remindmeui/credit-history";
+	}
+
 	@GetMapping("/engagement.html")
 	public String engagement(Model model) {
 		Account loggedIn = SecurityUtil.getCurrentAccountId();
@@ -941,5 +995,6 @@ public class HomeController {
 
 		return "remindme/index.html";
 	}
+	
 
 }

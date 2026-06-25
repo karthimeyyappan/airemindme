@@ -133,7 +133,7 @@ function resetCustomerWizard() {
     currentCustomerStep = 1;
 }
 
-function showAddCustomerModal() {
+async function showAddCustomerModal() {
     document.getElementById("cId").value = "";
     document.getElementById("cName").value = "";
     document.getElementById("cPhone").value = "";
@@ -147,11 +147,27 @@ function showAddCustomerModal() {
     document.getElementById("modalTitle").innerText = "Add Customer";
     document.getElementById("saveCustomerBtn").innerText = "Add Customer";
 
+    // Show modal first
+    document.getElementById('addCustomerModal').classList.remove('hidden');
+    document.getElementById('customerLimitOverlay').classList.add('hidden');
+
+    // Check limit status
+    try {
+        const res = await fetch('/api/customers/limit-status');
+        const data = await res.json();
+
+        if (data.limitReached) {
+            // Show lock overlay
+            document.getElementById('customerLimitOverlay').classList.remove('hidden');
+            document.getElementById('limitStatusText').textContent =
+                `You've used ${data.current} of ${data.limit} customer slots.`;
+        }
+    } catch (e) {
+        console.error('Limit check failed', e);
+    }
+
     // ✅ Load dynamic custom fields empty inputs
     loadCustomerFields();
-
-    // ✅ Show modal first
-    document.getElementById("addCustomerModal").classList.remove("hidden");
 }
 
 function hideAddCustomerModal() {

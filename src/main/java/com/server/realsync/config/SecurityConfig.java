@@ -1,6 +1,5 @@
 package com.server.realsync.config;
 
-import com.server.realsync.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -20,6 +19,8 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import com.server.realsync.services.UserService;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -38,13 +39,14 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/accounts/signup", "/api/accounts/check-email", "/api/accounts/check-mobile", 
-                    "/mweb/login", "/signup.html", "/register.html", "/login", "/privacy", "/terms", 
-                    "/css/**", "/js/**", "/img/**", "/assets/**", "/realsync-assets/**", "/promo/**", 
-                    "/api/promotions/public/**", "/api/public/invoices/**", "/i/**", "/invoice-view/**", 
+                    "/api/accounts/signup", "/api/accounts/check-email", "/api/accounts/check-mobile",
+                    "/api/accounts/check-referral","/doc/view/greeting",
+                    "/mweb/login", "/signup.html", "/register.html", "/login", "/privacy", "/terms",
+                    "/css/**", "/js/**", "/img/**", "/assets/**", "/realsync-assets/**", "/promo/**",
+                    "/api/promotions/public/**", "/api/public/invoices/**", "/i/**", "/invoice-view/**",
                     "/oauth2/**", "/login/oauth2/**", "/forgot-password.html", "/api/auth/forgot-password",
                     "/reset-password.html", "/remindmeui/reset-password.html", "/api/auth/reset-password",
-                    "/no-account", "/", "/register", "/realsync/**", "/mweb/register", "/mweb/terms", 
+                    "/no-account", "/", "/register", "/realsync/**", "/mweb/register", "/mweb/terms",
                     "/api/auth/register", "/r/**", "/api/reports/public/report/**"
                 ).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/**/invoice/**")).permitAll()

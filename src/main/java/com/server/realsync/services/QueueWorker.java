@@ -1,17 +1,34 @@
 package com.server.realsync.services;
 
-import java.util.List;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.server.realsync.entity.*;
-import kong.unirest.HttpResponse;
-import org.json.JSONObject;
+import com.server.realsync.entity.Account;
+import com.server.realsync.entity.AccountPlan;
+import com.server.realsync.entity.Appointment;
+import com.server.realsync.entity.Channel;
+import com.server.realsync.entity.CreditTransaction;
+import com.server.realsync.entity.Customer;
+import com.server.realsync.entity.EntityType;
+import com.server.realsync.entity.ExecutionResult;
+import com.server.realsync.entity.ExecutionStatus;
+import com.server.realsync.entity.MessageQueue;
+import com.server.realsync.entity.QueueChannel;
+import com.server.realsync.entity.QueueStatus;
+import com.server.realsync.entity.ScheduleEntry;
+import com.server.realsync.entity.ScheduleEntryStatus;
+import com.server.realsync.entity.ScheduleExecutionLog;
+import com.server.realsync.repo.AccountPlanRepository;
+import com.server.realsync.repo.CreditTransactionRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import kong.unirest.HttpResponse;
 
 @Component
 public class QueueWorker {
@@ -22,6 +39,15 @@ public class QueueWorker {
     private final AccountService accountService;
     private final RealSyncWhatsappService realSyncWhatsappService;
     private final ScheduleExecutionLogService logService;
+
+    @Autowired
+    private AccountPlanRepository accountPlanRepository;
+
+    @Autowired
+    private CreditTransactionRepository creditTransactionRepository;
+
+    @Autowired
+    private com.server.realsync.repo.GreetingRepository greetingRepository;
 
     @Autowired
     private AppointmentService appointmentService;
@@ -92,12 +118,17 @@ public class QueueWorker {
                     }
 
                     String customerName = customer.getName();
-                    String content = entry.getMessageContent() != null && !entry.getMessageContent().isBlank() ? entry.getMessageContent() : entry.getRemarks();
-                    String businessName = account.getBusinessName() != null ? account.getBusinessName() : account.getName();
-                    String businessMobile = account.getBusinessPhone() != null ? account.getBusinessPhone() : account.getMobile();
+                    String content = entry.getMessageContent() != null && !entry.getMessageContent().isBlank()
+                            ? entry.getMessageContent()
+                            : entry.getRemarks();
+                    String businessName = account.getBusinessName() != null ? account.getBusinessName()
+                            : account.getName();
+                    String businessMobile = account.getBusinessPhone() != null ? account.getBusinessPhone()
+                            : account.getMobile();
 
                     if ("APPOINTMENT".equalsIgnoreCase(entry.getSourceType())) {
-                        Appointment appt = appointmentService.getById(entry.getSourceId(), customer.getAccountId()).orElse(null);
+                        Appointment appt = appointmentService.getById(entry.getSourceId(), customer.getAccountId())
+                                .orElse(null);
                         if (appt == null) {
                             throw new RuntimeException("Appointment not found for ID: " + entry.getSourceId());
                         }
@@ -113,12 +144,14 @@ public class QueueWorker {
                             queueService.save(job);
 
                             createExecutionLog(entry.getId(), ExecutionResult.FAILED, "APPOINTMENT_REMINDER_CANCELLED");
-                            System.out.println("APPOINTMENT_REMINDER_CANCELLED | scheduleEntryId=" + entry.getId() + " | reason=Appointment is " + status);
+                            System.out.println("APPOINTMENT_REMINDER_CANCELLED | scheduleEntryId=" + entry.getId()
+                                    + " | reason=Appointment is " + status);
                             continue;
                         }
 
                         String rawName = (account != null && account.getBusinessName() != null)
-                                ? account.getBusinessName() : (account != null ? account.getName() : "business");
+                                ? account.getBusinessName()
+                                : (account != null ? account.getName() : "business");
                         String slug = toSlug(rawName);
                         String publicUrl = publicBaseUrl + "/" + slug + "/appointment/" + appt.getPublicToken();
 
@@ -126,23 +159,51 @@ public class QueueWorker {
                         String timeStr = appt.getAppointmentTime() != null ? appt.getAppointmentTime().toString() : "";
 
                         String dynamicContent = String.format(
-                            "Reminder for your upcoming appointment.\n\nService: %s\nDate: %s\nTime: %s\n\nPlease confirm your appointment using:\n%s",
-                            appt.getServiceName() != null ? appt.getServiceName() : "Appointment",
-                            dateStr,
-                            timeStr,
-                            publicUrl
-                        );
+                                "Reminder for your upcoming appointment.\n\nService: %s\nDate: %s\nTime: %s\n\nPlease confirm your appointment using:\n%s",
+                                appt.getServiceName() != null ? appt.getServiceName() : "Appointment",
+                                dateStr,
+                                timeStr,
+                                publicUrl);
 
                         createExecutionLog(entry.getId(), ExecutionResult.SENDING, "APPOINTMENT_REMINDER_QUEUED");
                         System.out.println("APPOINTMENT_REMINDER_QUEUED | scheduleEntryId=" + entry.getId());
+
+                        // Credit check before sending WhatsApp
+                        if (!deductWhatsAppCredit(account, entry, customer)) {
+                            // No credits — mark as failed
+                            job.setStatus(QueueStatus.FAILED);
+                            job.setFailedReason("Insufficient WhatsApp credits");
+                            queueService.save(job);
+
+                            entry.setExecutionStatus(ExecutionStatus.FAILED);
+                            scheduleEntryService.save(entry);
+
+                            // Log failed credit transaction
+                            CreditTransaction ct = new CreditTransaction();
+                            ct.setAccountId(account.getId());
+                            // Get active plan id if available
+                            accountPlanRepository.findByAccountIdAndStatus(
+                                    account.getId(), AccountPlan.PlanStatus.active)
+                                    .ifPresent(ap -> ct.setAccountPlanId(ap.getId()));
+                            ct.setType("WHATSAPP_FAILED_NO_CREDIT");
+                            ct.setCredits(0.0);
+                            ct.setBalanceAfter(0.0);
+                            ct.setRemarks("Send failed - no credits for scheduleEntry #" + entry.getId());
+                            creditTransactionRepository.save(ct);
+
+                            createExecutionLog(entry.getId(), ExecutionResult.FAILED,
+                                    "WhatsApp not sent - insufficient credits (balance=0)");
+                            System.out.println("WA_BLOCKED_NO_CREDIT | scheduleEntryId=" + entry.getId()
+                                    + " | accountId=" + account.getId());
+                            continue;
+                        }
 
                         HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
                                 mobile,
                                 customerName,
                                 dynamicContent,
                                 businessName,
-                                businessMobile
-                        );
+                                businessMobile);
 
                         String responseBody = response.getBody();
                         String messageId = null;
@@ -175,24 +236,83 @@ public class QueueWorker {
                             createExecutionLog(entry.getId(), ExecutionResult.SENT, "APPOINTMENT_REMINDER_SENT");
                             System.out.println("APPOINTMENT_REMINDER_SENT | scheduleEntryId=" + entry.getId());
                         } else {
-                            throw new RuntimeException("MSG91 API error status " + response.getStatus() + ": " + responseBody);
+                            throw new RuntimeException(
+                                    "MSG91 API error status " + response.getStatus() + ": " + responseBody);
                         }
                     } else {
                         // Create log: SENDING
                         createExecutionLog(entry.getId(), ExecutionResult.SENDING, "WhatsApp delivery started");
                         System.out.println(String.format(
                                 "WA_SENDING | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=%s | retryCount=%d | queueStatus=%s",
-                                entry.getId(), custIdStr, mobile, job.getMessageId() != null ? job.getMessageId() : "N/A", job.getRetryCount(), job.getStatus()
-                        ));
+                                entry.getId(), custIdStr, mobile,
+                                job.getMessageId() != null ? job.getMessageId() : "N/A", job.getRetryCount(),
+                                job.getStatus()));
 
                         // Call MSG91 outbound API via RealSyncWhatsappService
-                        HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
-                                mobile,
-                                customerName,
-                                content,
-                                businessName,
-                                businessMobile
-                        );
+
+                        // Credit check before sending WhatsApp
+                        if (!deductWhatsAppCredit(account, entry, customer)) {
+                            // No credits — mark as failed
+                            job.setStatus(QueueStatus.FAILED);
+                            job.setFailedReason("Insufficient WhatsApp credits");
+                            queueService.save(job);
+
+                            entry.setExecutionStatus(ExecutionStatus.FAILED);
+                            scheduleEntryService.save(entry);
+
+                            // Log failed credit transaction
+                            CreditTransaction ct = new CreditTransaction();
+                            ct.setAccountId(account.getId());
+                            // Get active plan id if available
+                            accountPlanRepository.findByAccountIdAndStatus(
+                                    account.getId(), AccountPlan.PlanStatus.active)
+                                    .ifPresent(ap -> ct.setAccountPlanId(ap.getId()));
+                            ct.setType("WHATSAPP_FAILED_NO_CREDIT");
+                            ct.setCredits(0.0);
+                            ct.setBalanceAfter(0.0);
+                            ct.setRemarks("Send failed - no credits for scheduleEntry #" + entry.getId());
+                            creditTransactionRepository.save(ct);
+
+                            createExecutionLog(entry.getId(), ExecutionResult.FAILED,
+                                    "WhatsApp not sent - insufficient credits (balance=0)");
+                            System.out.println("WA_BLOCKED_NO_CREDIT | scheduleEntryId=" + entry.getId()
+                                    + " | accountId=" + account.getId());
+                            continue;
+                        }
+
+                        HttpResponse<String> response;
+
+                        // Check if GREETING with image
+                        if ("GREETING".equalsIgnoreCase(entry.getSourceType()) && entry.getSourceId() != null) {
+                            com.server.realsync.entity.Greeting greeting = greetingRepository.findById(entry.getSourceId().intValue()).orElse(null);
+                            
+                            if (greeting != null && greeting.getImageUrl() != null && !greeting.getImageUrl().isBlank()) {
+                                // Build full public URL
+                                String imagePublicUrl = publicBaseUrl + "/doc/view/greeting?path=" 
+                                    + java.net.URLEncoder.encode(greeting.getImageUrl(), java.nio.charset.StandardCharsets.UTF_8);
+                                
+                                System.out.println("GREETING_WITH_IMAGE | url=" + imagePublicUrl);
+                                
+                                response = realSyncWhatsappService.sendReminderImageTemplate(
+                                    mobile,
+                                    customerName,
+                                    content,
+                                    businessName,
+                                    businessMobile,
+                                    imagePublicUrl
+                                );
+                            } else {
+                                // Greeting without image — use normal template
+                                response = realSyncWhatsappService.sendReminderTemplate(
+                                    mobile, customerName, content, businessName, businessMobile
+                                );
+                            }
+                        } else {
+                            // Normal reminder — use normal template
+                            response = realSyncWhatsappService.sendReminderTemplate(
+                                mobile, customerName, content, businessName, businessMobile
+                            );
+                        }
 
                         String responseBody = response.getBody();
                         String messageId = null;
@@ -229,14 +349,16 @@ public class QueueWorker {
 
                             System.out.println(String.format(
                                     "WA_SENT | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=%s | retryCount=%d | queueStatus=%s",
-                                    entry.getId(), custIdStr, mobile, messageId != null ? messageId : "N/A", job.getRetryCount(), "SENT"
-                            ));
+                                    entry.getId(), custIdStr, mobile, messageId != null ? messageId : "N/A",
+                                    job.getRetryCount(), "SENT"));
                         } else {
-                            throw new RuntimeException("MSG91 API error status " + response.getStatus() + ": " + responseBody);
+                            throw new RuntimeException(
+                                    "MSG91 API error status " + response.getStatus() + ": " + responseBody);
                         }
                     }
                 } else {
-                    // Mark other non-WhatsApp channels as done since we only enable WhatsApp delivery
+                    // Mark other non-WhatsApp channels as done since we only enable WhatsApp
+                    // delivery
                     queueService.markDone(job);
                 }
 
@@ -253,11 +375,12 @@ public class QueueWorker {
                     queueService.save(job);
 
                     if (entry != null) {
-                        createExecutionLog(entry.getId(), ExecutionResult.RETRY, "Retry attempt " + retryCount + " of 3: " + ex.getMessage());
+                        createExecutionLog(entry.getId(), ExecutionResult.RETRY,
+                                "Retry attempt " + retryCount + " of 3: " + ex.getMessage());
                         System.out.println(String.format(
                                 "WA_RETRY | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=%s | retryCount=%d | queueStatus=%s",
-                                entry.getId(), custIdStr, mobile, job.getMessageId() != null ? job.getMessageId() : "N/A", retryCount, "PENDING"
-                        ));
+                                entry.getId(), custIdStr, mobile,
+                                job.getMessageId() != null ? job.getMessageId() : "N/A", retryCount, "PENDING"));
                     }
                 } else {
                     // Maximum retries reached -> FAILED
@@ -271,8 +394,8 @@ public class QueueWorker {
                         createExecutionLog(entry.getId(), ExecutionResult.FAILED, "Final failure: " + ex.getMessage());
                         System.out.println(String.format(
                                 "WA_FAILED | scheduleEntryId=%d | customerId=%s | mobile=%s | messageId=%s | retryCount=%d | queueStatus=%s",
-                                entry.getId(), custIdStr, mobile, job.getMessageId() != null ? job.getMessageId() : "N/A", retryCount, "FAILED"
-                        ));
+                                entry.getId(), custIdStr, mobile,
+                                job.getMessageId() != null ? job.getMessageId() : "N/A", retryCount, "FAILED"));
                     }
                 }
             }
@@ -292,8 +415,63 @@ public class QueueWorker {
         }
     }
 
+   private boolean deductWhatsAppCredit(Account account, ScheduleEntry entry, Customer customer) {
+    try {
+        // Get active plan
+        Optional<AccountPlan> planOpt = accountPlanRepository
+                .findByAccountIdAndStatus(account.getId(), AccountPlan.PlanStatus.active);
+
+        if (planOpt.isEmpty()) {
+            System.out.println("CREDIT_CHECK_FAILED | No active plan for accountId=" + account.getId());
+            return false;
+        }
+
+        AccountPlan accountPlan = planOpt.get();
+
+        // Check balance
+        if (accountPlan.getBalance() <= 0) {
+            System.out.println("CREDIT_EXHAUSTED | accountId=" + account.getId() + " | balance=0");
+            return false;
+        }
+
+        // Deduct 1 credit
+        double newBalance = accountPlan.getBalance() - 1;
+        accountPlan.setBalance(newBalance);
+        accountPlanRepository.save(accountPlan);
+
+        // Build readable remarks
+        String customerName = customer != null ? customer.getName() : "Customer";
+        String sourceType = entry.getSourceType() != null ? entry.getSourceType() : "Message";
+        String title = entry.getMessageContent() != null
+                ? entry.getMessageContent().substring(0, Math.min(30, entry.getMessageContent().length()))
+                : "Message";
+        String dateStr = entry.getOccurrenceDate() != null
+                ? entry.getOccurrenceDate().toLocalDate().toString()
+                : "";
+
+        // Log credit transaction
+        CreditTransaction ct = new CreditTransaction();
+        ct.setAccountId(account.getId());
+        ct.setAccountPlanId(accountPlan.getId());
+        ct.setType("WHATSAPP_SENT");
+        ct.setCredits(-1.0);
+        ct.setBalanceAfter(newBalance);
+        ct.setRemarks(sourceType + ": " + title + " → " + customerName + " (" + dateStr + ")");
+        creditTransactionRepository.save(ct);
+
+        System.out.println("CREDIT_DEDUCTED | accountId=" + account.getId()
+                + " | newBalance=" + newBalance);
+        return true;
+
+    } catch (Exception e) {
+        System.err.println("Credit deduction failed: " + e.getMessage());
+        return false;
+    }
+}
+
     private static String toSlug(String name) {
-        if (name == null) return "shop";
+        if (name == null)
+            return "shop";
         return name.trim()
                 .toLowerCase()
                 .replaceAll("[^a-z0-9]+", "-")

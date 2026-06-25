@@ -1,16 +1,10 @@
-/**
- * 
- */
 package com.server.realsync.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-/**
- * 
- */
 @Entity
 @Table(name = "plan")
 public class Plan {
@@ -34,8 +28,8 @@ public class Plan {
     @Column(name = "trial_days")
     private Integer trialDays;
 
-    @Column(name = "billing_cycle", nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(name = "billing_cycle", nullable = false)
     private BillingCycle billingCycle;
 
     @Column(name = "price_inr")
@@ -51,7 +45,9 @@ public class Plan {
     private LocalDateTime updatedDate;
 
     public enum BillingCycle {
-        trial, half_yearly, yearly
+        trial,
+        half_yearly,
+        yearly
     }
 
     @PrePersist
@@ -60,7 +56,8 @@ public class Plan {
         updatedDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
     }
 
-    // Getters and Setters
+    // ---------------- GETTERS & SETTERS ----------------
+
     public Integer getId() {
         return id;
     }

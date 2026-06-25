@@ -149,13 +149,13 @@ public class Account {
 
 	@PreUpdate
 	protected void onUpdate() {
-		updatedDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+		updatedDate = LocalDateTime.now(ZoneId.of("UTC"));
 	}
 
 	@PrePersist
 	protected void onCreate() {
-		createdDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
-		updatedDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+		createdDate = LocalDateTime.now(ZoneId.of("UTC"));
+		updatedDate = LocalDateTime.now(ZoneId.of("UTC"));
 	}
 
 	public String getAddress() {

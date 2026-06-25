@@ -126,33 +126,50 @@ function saveCustomer(e) {
     const url = id ? "/api/customers/" + id : "/api/customers";
     const method = id ? "PUT" : "POST";
 
-    fetch(url, {
-        method: method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(customer)
-    })
-        .then(async res => {
-            if (!res.ok) {
+   fetch(url, {
+    method: method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(customer)
+})
+    .then(async res => {
+        if (!res.ok) {
+            let errorMsg = "Save failed";
+            try {
                 const errorData = await res.json();
-                throw new Error(errorData.message || "Save failed");
+                if (res.status === 403 && errorData.code === 'CUSTOMER_LIMIT_REACHED') {
+                    document.getElementById('customerLimitOverlay').classList.remove('hidden');
+                    document.getElementById('limitStatusText').textContent = errorData.message;
+                    return;
+                }
+                errorMsg = errorData.message || errorMsg;
+            } catch (e) {
+                // response was not JSON — read as text
+                errorMsg = await res.text().catch(() => "Save failed");
+                // Clean up duplicate entry message for user
+                if (errorMsg.includes("Duplicate entry")) {
+                    errorMsg = "Customer with this mobile number already exists in your account";
+                }
             }
-            return res.json();
-        })
-        .then(() => {
-            showToast(
-                id
-                    ? "Customer updated successfully"
-                    : "Customer added successfully"
-            );
-            setTimeout(() => {
-                const url = new URL(window.location.href);
-                url.searchParams.delete("editId");
-                window.location.href = url.pathname + url.search;
-            }, 1200);
-        })
-        .catch(err => {
-            showToast(err.message, "error");
-        });
+            throw new Error(errorMsg);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (!data) return; // limit reached case returns undefined
+        showToast(
+            id
+                ? "Customer updated successfully"
+                : "Customer added successfully"
+        );
+        setTimeout(() => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("editId");
+            window.location.href = url.pathname + url.search;
+        }, 1200);
+    })
+    .catch(err => {
+        showToast(err.message, "error");
+    });
 }
 
 

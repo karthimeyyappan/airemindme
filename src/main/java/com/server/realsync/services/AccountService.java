@@ -79,6 +79,10 @@ public class AccountService {
         return userRepository.findByUsername(mobile).isPresent();
     }
 
+    public Optional<Account> findByReferralCode(String code) {
+        return repository.findByReferralCode(code);
+    }
+
     @Transactional
     public void registerAccount(SignupRequestDto dto) {
         validateSignupRequest(dto);
@@ -104,22 +108,6 @@ public class AccountService {
         account.setCountry(dto.getCountry());
         account.setCurrency(dto.getCurrency());
         account.setLanguage(dto.getDefaultLanguage());
-<<<<<<< HEAD
-        Account savedAccount = repository.save(account);
-
-        // Auto-generate this account's own referral code
-        savedAccount.setReferralCode("NUMEN-" + savedAccount.getId());
-
-        // If someone referred this new account, save referred_by
-        if (dto.getReferralCode() != null && !dto.getReferralCode().isEmpty()) {
-            repository.findByReferralCode(dto.getReferralCode())
-                    .ifPresent(referrer -> {
-                        savedAccount.setReferredBy(referrer.getId());
-                    });
-        }
-
-        // Save again with referral_code and referred_by
-=======
 
         if (dto.getRefAccId() != null && !dto.getRefAccId().trim().isEmpty()) {
             try {
@@ -137,8 +125,7 @@ public class AccountService {
         Account savedAccount = repository.save(account);
 
         // Auto-generate referral ID
-        savedAccount.setReferralId("NUMEN-" + savedAccount.getId());
->>>>>>> 5ac4df241cf1277df1e653972e41b3578048dbd1
+        savedAccount.setReferralCode("NUMEN-" + savedAccount.getId());
         repository.save(savedAccount);
 
         // 2. Assign Role

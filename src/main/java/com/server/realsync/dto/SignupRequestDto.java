@@ -17,6 +17,16 @@ public class SignupRequestDto {
     private String defaultLanguage;
     private String selectedPlan;
     private String referralCode;
+    private String refAccId;
+    
+
+    public String getRefAccId() {
+        return refAccId;
+    }
+
+    public void setRefAccId(String refAccId) {
+        this.refAccId = refAccId;
+    }
 
     // Getters and Setters
     public String getName() {

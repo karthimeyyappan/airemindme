@@ -20,10 +20,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import com.server.realsync.entity.Account;
+import com.server.realsync.entity.AccountPlan;
 import com.server.realsync.entity.Customer;
+import com.server.realsync.repo.AccountPlanRepository;
 import com.server.realsync.services.CustomerService;
 import com.server.realsync.services.AccountService;
 import com.server.realsync.util.SecurityUtil;
+import com.server.realsync.config.CustomerLimitExceededException;
 
 @RestController
 public class CustomerController {
@@ -34,10 +37,37 @@ public class CustomerController {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private AccountPlanRepository accountPlanRepository;
+
+    // ===============================
+    // LIMIT STATUS API
+    // ===============================
+    @GetMapping("/api/customers/limit-status")
+    public ResponseEntity<?> getLimitStatus() {
+        Account account = SecurityUtil.getCurrentAccountId();
+        long currentCount = customerService.getTotalCustomers(account.getId());
+        
+        Optional<AccountPlan> accountPlan = accountPlanRepository.findByAccountIdAndStatus(
+                account.getId(), AccountPlan.PlanStatus.active);
+        
+        if (accountPlan.isEmpty()) {
+            return ResponseEntity.ok(Map.of("limitReached", false, "current", currentCount, "limit", -1));
+        }
+        
+        Integer limit = accountPlan.get().getPlan().getCustomerLimit();
+        boolean limitReached = limit != null && currentCount >= limit;
+        
+        return ResponseEntity.ok(Map.of(
+            "limitReached", limitReached,
+            "current", currentCount,
+            "limit", limit != null ? limit : -1
+        ));
+    }
+
     // ===============================
     // CREATE CUSTOMER API
     // ===============================
-
     @PostMapping("/api/customers")
     @ResponseBody
     public ResponseEntity<?> createCustomer(@RequestBody Customer customer) {
@@ -45,16 +75,33 @@ public class CustomerController {
         Account account = SecurityUtil.getCurrentAccountId();
         customer.setAccountId(account.getId());
 
-        Optional<Customer> existing = customerService.findByMobile(account.getId(), customer.getMobile());
+        // Check customer limit
+        Optional<AccountPlan> accountPlan = accountPlanRepository.findByAccountIdAndStatus(
+                account.getId(),
+                AccountPlan.PlanStatus.active);
 
+        if (accountPlan.isPresent()) {
+
+            Integer limit = accountPlan.get().getPlan().getCustomerLimit();
+
+            if (limit != null) {
+
+                long count = customerService.getTotalCustomers(account.getId());
+
+                if (count >= limit) {
+                    throw new CustomerLimitExceededException(
+                            "Customer limit reached (" + limit + "). Please upgrade your plan.");
+                }
+            }
+        }
+
+        Optional<Customer> existing = customerService.findByMobile(account.getId(), customer.getMobile());
         if (existing.isPresent()) {
-            return ResponseEntity
-                    .badRequest()
+            return ResponseEntity.badRequest()
                     .body(Map.of("message", "Customer with this mobile already exists"));
         }
 
         Customer saved = customerService.save(customer);
-
         return ResponseEntity.ok(saved);
     }
 
@@ -178,8 +225,10 @@ public class CustomerController {
         Account account = SecurityUtil.getCurrentAccountId();
         Account fullAccount = accountService.getById(account.getId());
 
-        StringBuilder headers = new StringBuilder("name,phone,email,segment,city,address,birthday,anniversary,gstNo,whatsAppOptIn");
-        StringBuilder sample = new StringBuilder("Rajesh Kumar,+919876543210,rajesh@gmail.com,VIP,Chennai,123 Main St,1995-06-15,2020-01-10,22AAAAA1111A1Z1,Yes");
+        StringBuilder headers = new StringBuilder(
+                "name,phone,email,segment,city,address,birthday,anniversary,gstNo,whatsAppOptIn");
+        StringBuilder sample = new StringBuilder(
+                "Rajesh Kumar,+919876543210,rajesh@gmail.com,VIP,Chennai,123 Main St,1995-06-15,2020-01-10,22AAAAA1111A1Z1,Yes");
 
         if (fullAccount.getCustomerField1Name() != null && !fullAccount.getCustomerField1Name().trim().isEmpty()) {
             headers.append(",").append(fullAccount.getCustomerField1Name().trim());
@@ -229,4 +278,5 @@ public class CustomerController {
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(resource);
     }
+
 }
