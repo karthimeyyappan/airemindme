@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.server.realsync.dto.PasswordResetDto;
@@ -40,6 +41,9 @@ public class AccountController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private com.server.realsync.repo.AccountPlanRepository accountPlanRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -162,54 +166,125 @@ public class AccountController {
     public ResponseEntity<Boolean> checkEmail(String email) {
         return ResponseEntity.ok(service.emailExists(email));
     }
+
     @GetMapping("/check-mobile")
     public ResponseEntity<Boolean> checkMobile(String mobile) {
         return ResponseEntity.ok(service.mobileExists(mobile));
     }
 
-    
+    @GetMapping("/check-referral")
+    @ResponseBody
+    public ResponseEntity<?> checkReferral(@RequestParam String code) {
+        String cleaned = code.trim().toUpperCase();
+        if (!cleaned.startsWith("NUMEN-")) {
+            return ResponseEntity.ok(Map.of("valid", false, "message", "Invalid referral code format"));
+        }
+        try {
+            Integer referrerId = Integer.parseInt(cleaned.replace("NUMEN-", "").trim());
+            Optional<Account> account = service.findById(referrerId);
+            if (account.isPresent()) {
+                return ResponseEntity.ok(Map.of(
+                        "valid", true,
+                        "message", "Referral code accepted — " + account.get().getName()));
+            } else {
+                return ResponseEntity.ok(Map.of("valid", false, "message", "Referral code not found"));
+            }
+        } catch (NumberFormatException e) {
+            return ResponseEntity.ok(Map.of("valid", false, "message", "Invalid referral code"));
+        }
+    }
 
+    @GetMapping("/credit-status")
+    @ResponseBody
+    public ResponseEntity<?> getCreditStatus() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not logged in"));
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        int accountId = userDetails.getAccountId();
+        
+        Optional<com.server.realsync.entity.AccountPlan> planOpt = accountPlanRepository
+            .findByAccountIdAndStatus(accountId, com.server.realsync.entity.AccountPlan.PlanStatus.active);
+        
+        if (planOpt.isEmpty()) {
+            return ResponseEntity.ok(Map.of(
+                "hasActivePlan", false,
+                "balance", 0,
+                "planExpired", true
+            ));
+        }
+        
+        com.server.realsync.entity.AccountPlan plan = planOpt.get();
+        boolean expired = plan.getEndDate() != null && 
+                          plan.getEndDate().isBefore(java.time.LocalDate.now());
+        
+        return ResponseEntity.ok(Map.of(
+            "hasActivePlan", true,
+            "balance", plan.getBalance(),
+            "planExpired", expired,
+            "planName", plan.getPlan().getName()
+        ));
+    }
+
+    @GetMapping("/wallet-balance")
+    @ResponseBody
+    public ResponseEntity<?> getWalletBalance() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not logged in"));
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        int accountId = userDetails.getAccountId();
+        Account fullAccount = service.findById(accountId).orElse(null);
+        if (fullAccount == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Account not found"));
+        }
+        return ResponseEntity.ok(Map.of(
+            "walletBalance", fullAccount.getWalletBalance() != null ? fullAccount.getWalletBalance() : 0.0
+        ));
+    }
 }
+
 @RestController
 class CurrentAccountApiController {
 
-  @Autowired
-  private AccountService accountService;
+    @Autowired
+    private AccountService accountService;
 
-  @GetMapping("/api/account/current")
-  @ResponseBody
-  public ResponseEntity<?> getCurrentAccount() {
-    try {
-      Authentication authentication = SecurityContextHolder
-        .getContext().getAuthentication();
-      
-      if (authentication == null || 
-          !(authentication.getPrincipal() instanceof CustomUserDetails)) {
-        return ResponseEntity.status(401)
-          .body(Map.of("error", "Not logged in"));
-      }
+    @GetMapping("/api/account/current")
+    @ResponseBody
+    public ResponseEntity<?> getCurrentAccount() {
+        try {
+            Authentication authentication = SecurityContextHolder
+                    .getContext().getAuthentication();
 
-      CustomUserDetails userDetails = 
-        (CustomUserDetails) authentication.getPrincipal();
-      int accountId = userDetails.getAccountId();
+            if (authentication == null ||
+                    !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+                return ResponseEntity.status(401)
+                        .body(Map.of("error", "Not logged in"));
+            }
 
-      Account account = accountService.findById(accountId).orElse(null);
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            int accountId = userDetails.getAccountId();
 
-      if (account == null) {
-        return ResponseEntity.status(404)
-          .body(Map.of("error", "Account not found"));
-      }
+            Account account = accountService.findById(accountId).orElse(null);
 
-      Map<String, Object> result = new HashMap<>();
-      result.put("id", account.getId());
-      result.put("name", account.getName());
-      result.put("email", account.getEmail());
-      result.put("businessName", account.getBusinessName());
-      return ResponseEntity.ok(result);
+            if (account == null) {
+                return ResponseEntity.status(404)
+                        .body(Map.of("error", "Account not found"));
+            }
 
-    } catch (Exception e) {
-      return ResponseEntity.status(500)
-        .body(Map.of("error", e.getMessage()));
+            Map<String, Object> result = new HashMap<>();
+            result.put("id", account.getId());
+            result.put("name", account.getName());
+            result.put("email", account.getEmail());
+            result.put("businessName", account.getBusinessName());
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
-  }
 }

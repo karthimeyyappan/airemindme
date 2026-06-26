@@ -9,5 +9,9 @@ import com.server.realsync.entity.AccountPlan;
 
 @Repository
 public interface AccountPlanRepository extends JpaRepository<AccountPlan, Integer> {
-	 Optional<AccountPlan> findByAccountId(Integer accountId);
+	Optional<AccountPlan> findByAccountId(Integer accountId);
+
+	Optional<AccountPlan> findByAccountIdAndStatus(Integer accountId, AccountPlan.PlanStatus status);
+
+	
 }

@@ -82,8 +82,13 @@ public class InvoiceController {
     }
 
     @PostMapping("/{id}/send")
-    public ResponseEntity<Map<String, String>> sendInvoice(@PathVariable Long id) {
-        String result = invoiceService.sendInvoiceWhatsApp(id);
-        return ResponseEntity.ok(Map.of("message", result));
+    public ResponseEntity<?> sendInvoice(@PathVariable Long id) {
+        try {
+            String result = invoiceService.sendInvoiceWhatsApp(id);
+            return ResponseEntity.ok(Map.of("message", result));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(500)
+                .body(Map.of("message", e.getMessage()));
+        }
     }
 }

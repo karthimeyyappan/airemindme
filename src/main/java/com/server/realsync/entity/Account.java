@@ -92,19 +92,14 @@ public class Account {
 	@Column(name = "customer_field_5_name", length = 100)
 	private String customerField5Name;
 
-	@Column(name = "referral_id", length = 50)
-    private String referralId;
+	@Column(name = "referral_code", length = 50, unique = true)
+	private String referralCode;
 
 	@Column(name = "referred_by")
-private Integer referredBy;
+	private Integer referredBy;
 
-public Integer getReferredBy() {
-    return referredBy;
-}
-
-public void setReferredBy(Integer referredBy) {
-    this.referredBy = referredBy;
-}
+	@Column(name = "wallet_balance")
+	private Double walletBalance = 0.00;
 
 	// Getters and Setters
 	public Integer getId() {
@@ -157,13 +152,13 @@ public void setReferredBy(Integer referredBy) {
 
 	@PreUpdate
 	protected void onUpdate() {
-		updatedDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+		updatedDate = LocalDateTime.now(ZoneId.of("UTC"));
 	}
 
 	@PrePersist
 	protected void onCreate() {
-		createdDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
-		updatedDate = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+		createdDate = LocalDateTime.now(ZoneId.of("UTC"));
+		updatedDate = LocalDateTime.now(ZoneId.of("UTC"));
 	}
 
 	public String getAddress() {
@@ -302,12 +297,28 @@ public void setReferredBy(Integer referredBy) {
 		this.customerField5Name = customerField5Name;
 	}
 
-	public String getReferralId() {
-        return referralId;
-    }
+	public String getReferralCode() {
+		return referralCode;
+	}
 
-    public void setReferralId(String referralId) {
-        this.referralId = referralId;
-    }
+	public void setReferralCode(String referralCode) {
+		this.referralCode = referralCode;
+	}
+
+	public Integer getReferredBy() {
+		return referredBy;
+	}
+
+	public void setReferredBy(Integer referredBy) {
+		this.referredBy = referredBy;
+	}
+
+	public Double getWalletBalance() {
+		return walletBalance;
+	}
+
+	public void setWalletBalance(Double walletBalance) {
+		this.walletBalance = walletBalance;
+	}
 
 }

@@ -890,14 +890,36 @@
       transition: color .2s;
       z-index: 10;
     }
+
     .input-wrap .toggle-pwd:hover {
       color: var(--blue);
     }
+
     .input-wrap.has-toggle .status-icon {
       right: 2.2rem;
     }
+
     .input-wrap.has-toggle input {
       padding-right: 3.2rem;
+    }
+
+    .cat-option {
+      padding: .65rem 1rem;
+      font-size: .85rem;
+      color: #334155;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .cat-option:hover,
+    .cat-option.highlighted {
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .cat-option.no-result {
+      color: #94a3b8;
+      cursor: default;
     }
   </style>
 </head>
@@ -919,7 +941,7 @@
 
     <!-- Badges -->
     <div class="badges-row">
-      <span class="badge-chip"><i class="fas fa-check"></i> 21-Day Free Trial</span>
+      <span class="badge-chip"><i class="fas fa-check"></i> 7-Day Free Trial</span>
       <span class="badge-chip"><i class="fas fa-lock"></i> Secure Registration</span>
       <span class="badge-chip"><i class="fas fa-credit-card"></i> No Credit Card</span>
     </div>
@@ -1012,6 +1034,25 @@
             <div class="field-error">Passwords do not match</div>
           </div>
 
+          <div class="field" id="f-referralCode">
+            <label>Referral Code <span class="opt">(optional)</span></label>
+            <div class="input-wrap">
+              <i class="fas fa-gift il"></i>
+              <input type="text" id="referralCode" placeholder="Enter referral code (e.g. NUMEN-1)"
+                style="text-transform:uppercase;"
+                oninput="this.value=this.value.toUpperCase(); onReferralInput(this.value)"
+                onblur="validateReferralCode()">
+              <i class="fas fa-circle-notch fa-spin status-icon" id="referralSpinner"
+                style="display:none;color:#94a3b8;"></i>
+              <i class="fas fa-check-circle status-icon ok"></i>
+              <i class="fas fa-exclamation-circle status-icon err"></i>
+            </div>
+            <div class="field-error" id="referralError">Invalid referral code</div>
+            <div id="referralSuccess" style="font-size:.72rem;color:#16a34a;margin-top:.28rem;display:none;">
+              <i class="fas fa-check-circle"></i> <span id="referralSuccessMsg"></span>
+            </div>
+          </div>
+
         </div>
         <div class="btn-row">
           <button class="btn-next" style="flex:1" onclick="goStep(2)">
@@ -1061,34 +1102,29 @@
 
           <div class="field" id="f-bizCategory">
             <label>Business Category</label>
-            <div class="input-wrap">
+            <div class="input-wrap" style="position:relative;">
               <i class="fas fa-tags il"></i>
-              <select id="businessCategory" required>
-                <option value="" disabled selected>Select Business Category</option>
-                <option value="Car Service Center">Car Service Center</option>
-                <option value="Bike Service Center">Bike Service Center</option>
-                <option value="Car Wash">Car Wash</option>
-                <option value="Salon">Salon</option>
-                <option value="Beauty Parlour">Beauty Parlour</option>
-                <option value="Spa">Spa</option>
-                <option value="Dental Clinic">Dental Clinic</option>
-                <option value="Medical Clinic">Medical Clinic</option>
-                <option value="Hospital">Hospital</option>
-                <option value="Gym">Gym</option>
-                <option value="Fitness Center">Fitness Center</option>
-                <option value="AC Service">AC Service</option>
-                <option value="RO Service">RO Service</option>
-                <option value="Electronics Service">Electronics Service</option>
-                <option value="Mobile Service">Mobile Service</option>
-                <option value="Computer Service">Computer Service</option>
-                <option value="Real Estate">Real Estate</option>
-                <option value="Education">Education</option>
-                <option value="Other">Other</option>
-              </select>
-              <i class="fas fa-chevron-down select-arrow"></i>
+              <input type="text" id="bizCategoryInput" placeholder="Type to search category..." autocomplete="off"
+                oninput="filterCategories(this.value)" onfocus="showCategoryDropdown()" style="padding-right:2.5rem;">
+              <i class="fas fa-chevron-down select-arrow" style="pointer-events:none;"></i>
               <i class="fas fa-check-circle status-icon ok"></i>
               <i class="fas fa-exclamation-circle status-icon err"></i>
+              <!-- hidden actual value -->
+              <input type="hidden" id="businessCategory">
             </div>
+            <div id="categoryDropdown" style="
+    display:none;
+    position:absolute;
+    z-index:100;
+    background:white;
+    border:1.5px solid #e2e8f0;
+    border-radius:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,.1);
+    max-height:200px;
+    overflow-y:auto;
+    width:100%;
+    margin-top:4px;
+  "></div>
             <div class="field-error">Please select a category</div>
           </div>
 
@@ -1163,110 +1199,93 @@
 
       <!-- STEP 3: PLAN SELECTION -->
       <div class="step-panel" id="panel3">
-        <div class="panel-title">Choose Plan</div>
-        <div class="panel-sub">Select the plan that fits your business scaling needs</div>
+        <div class="panel-title">Choose Your Plan</div>
+        <div class="panel-sub">You'll start with a 7-day free trial — no payment needed now</div>
 
         <!-- Trial Badge Banner -->
         <div class="trial-badge-banner">
-          <span>🎉 Includes 21-Day Free Trial (No Credit Card Required)</span>
+          <span>🎉 7-Day Free Trial · 40 WhatsApp Credits · 20 Customers · No Credit Card Required</span>
         </div>
 
         <div class="field-group">
-          <!-- Plan Selection -->
-          <div>
-            <div class="plans-grid">
+          <div class="plans-grid">
 
-              <!-- Starter Plan -->
-              <div class="plan-card" id="plan-starter" onclick="selectPlan('starter')">
-                <div class="plan-top">
-                  <div>
-                    <div class="plan-name-row"><span class="plan-name">Starter</span></div>
-                    <div class="plan-desc">Best for: Small Businesses</div>
+            <!-- Silver -->
+            <div class="plan-card selected" id="plan-silver" onclick="selectPlan('silver')">
+              <div class="plan-top">
+                <div>
+                  <div class="plan-name-row">
+                    <span class="plan-name">Silver</span>
+                    <span class="popular-pill">POPULAR</span>
                   </div>
-                  <div class="plan-radio"></div>
+                  <div class="plan-desc">Best for: Growing Businesses</div>
                 </div>
-                <div class="plan-price-row">
-                  <span class="plan-price-amount">₹399</span><span class="plan-price-period">/month</span>
-                </div>
-                <div class="feat-row">
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 500 Customers</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Unlimited Reminders & Greetings</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Unlimited Invoices & Appointments</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 25 AI Template Generations</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 50 Free WhatsApp Credits</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Single User & Email Support</span>
-                </div>
+                <div class="plan-radio"></div>
               </div>
-
-              <!-- Growth Plan -->
-              <div class="plan-card selected" id="plan-growth" onclick="selectPlan('growth')">
-                <div class="plan-top">
-                  <div>
-                    <div class="plan-name-row">
-                      <span class="plan-name">Growth</span>
-                      <span class="popular-pill">MOST POPULAR</span>
-                    </div>
-                    <div class="plan-desc">Best for: Growing Businesses</div>
-                  </div>
-                  <div class="plan-radio"></div>
-                </div>
-                <div class="plan-price-row">
-                  <span class="plan-price-amount">₹699</span><span class="plan-price-period">/month</span>
-                </div>
-                <div class="feat-row">
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 2500 Customers</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Everything in Starter</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 75 AI Template Generations</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 150 Free WhatsApp Credits</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 3 Staff Users & Scheduling</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Priority Live Support</span>
-                </div>
+              <div class="plan-price-row">
+                <span class="plan-price-amount">₹2,999</span>
+                <span class="plan-price-period">/6 months</span>
+                <span style="margin-left:.5rem;font-size:.75rem;color:#16a34a;font-weight:600;">or ₹4,999/year</span>
               </div>
-
-              <!-- Business Plan -->
-              <div class="plan-card" id="plan-business" onclick="selectPlan('business')">
-                <div class="plan-top">
-                  <div>
-                    <div class="plan-name-row"><span class="plan-name">Business</span></div>
-                    <div class="plan-desc">Best for: Large Businesses</div>
-                  </div>
-                  <div class="plan-radio"></div>
-                </div>
-                <div class="plan-price-row">
-                  <span class="plan-price-amount">₹999</span><span class="plan-price-period">/month</span>
-                </div>
-                <div class="feat-row">
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 5000 Customers</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Everything in Growth</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 200 AI Template Generations</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 300 Free WhatsApp Credits</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> 10 Staff Users</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Advanced Analytics & Custom
-                    Branding</span>
-                </div>
+              <div class="feat-row">
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> 200 Customers</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> 4,000 WhatsApp Credits/year</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> Reminders & Greetings</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> Priority Support</span>
               </div>
-
-              <!-- Enterprise Plan -->
-              <div class="plan-card" id="plan-enterprise" onclick="selectPlan('enterprise')">
-                <div class="plan-top">
-                  <div>
-                    <div class="plan-name-row"><span class="plan-name">Enterprise</span></div>
-                    <div class="plan-desc">For Multi-branch and Unlimited Scale</div>
-                  </div>
-                  <div class="plan-radio"></div>
-                </div>
-                <div class="plan-price-row">
-                  <span class="plan-price-amount">Contact Sales</span>
-                </div>
-                <div class="feat-row">
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Unlimited Customers & Staff</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Multi Branch Support</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Dedicated REST API Webhooks</span>
-                  <span class="feat-chip"><i class="fas fa-check-circle"></i> Custom On-Premise Integrations</span>
-                </div>
-              </div>
-
             </div>
+
+            <!-- Gold -->
+            <div class="plan-card" id="plan-gold" onclick="selectPlan('gold')">
+              <div class="plan-top">
+                <div>
+                  <div class="plan-name-row">
+                    <span class="plan-name">Gold</span>
+                  </div>
+                  <div class="plan-desc">Best for: Large Businesses</div>
+                </div>
+                <div class="plan-radio"></div>
+              </div>
+              <div class="plan-price-row">
+                <span class="plan-price-amount">₹4,999</span>
+                <span class="plan-price-period">/6 months</span>
+                <span style="margin-left:.5rem;font-size:.75rem;color:#16a34a;font-weight:600;">or ₹8,999/year</span>
+              </div>
+              <div class="feat-row">
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> 500 Customers</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> 8,000 WhatsApp Credits/year</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> Everything in Silver</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> Advanced Analytics</span>
+              </div>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="plan-card" id="plan-enterprise">
+              <div class="plan-top">
+                <div>
+                  <div class="plan-name-row">
+                    <span class="plan-name">Enterprise</span>
+                  </div>
+                  <div class="plan-desc">For Multi-branch and Unlimited Scale</div>
+                </div>
+              </div>
+              <div class="plan-price-row">
+                <span class="plan-price-amount" style="font-size:1.1rem;">Contact Sales</span>
+              </div>
+              <div class="feat-row">
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> Unlimited Everything</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> Multi Branch Support</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> Custom Integrations</span>
+                <span class="feat-chip"><i class="fas fa-check-circle"></i> Dedicated Support</span>
+              </div>
+              <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--slate-200);">
+                <a href="mailto:sales@numen.app"
+                  style="font-size:.8rem;color:var(--blue);font-weight:600;text-decoration:none;">
+                  <i class="fas fa-envelope"></i> Contact our team →
+                </a>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -1282,7 +1301,7 @@
         <div class="btn-row">
           <button class="btn-back" onclick="goStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
           <button class="btn-next" id="submitBtn" onclick="handleSubmit()">
-            <i class="fas fa-rocket"></i> Create Free Account
+            <i class="fas fa-rocket"></i> Start Free Trial
           </button>
         </div>
       </div>
@@ -1304,9 +1323,174 @@
 
   <div class="confetti-wrap" id="confettiWrap"></div>
 
+  <!-- Dropdown for bussiness name  -->
+  <script>
+    const allCategories = [
+      "Car Service Center", "Bike Service Center", "Car Wash",
+      "Salon", "Beauty Parlour", "Spa",
+      "Dental Clinic", "Medical Clinic", "Hospital",
+      "Gym", "Fitness Center",
+      "AC Service", "RO Service", "Electronics Service",
+      "Mobile Service", "Computer Service",
+      "Real Estate", "Education",
+      "Finance", "Insurance", "Retail",
+      "Restaurant", "Hotel", "Travel Agency",
+      "Photography", "Event Management",
+      "IT Services", "Consulting", "Legal",
+      "Accounting", "Marketing Agency",
+      "Pharmacy", "Optical Store",
+      "Jewellery", "Clothing Store",
+      "Other"
+    ];
+
+    let categorySelected = false;
+
+    function showCategoryDropdown() {
+      filterCategories(document.getElementById('bizCategoryInput').value);
+    }
+
+    function filterCategories(query) {
+      const dropdown = document.getElementById('categoryDropdown');
+      const filtered = query.trim() === ''
+        ? allCategories
+        : allCategories.filter(c => c.toLowerCase().includes(query.toLowerCase()));
+
+      dropdown.style.display = 'block';
+      categorySelected = false;
+      document.getElementById('businessCategory').value = '';
+
+      if (filtered.length === 0) {
+        dropdown.innerHTML = '<div class="cat-option no-result">No categories found</div>';
+        return;
+      }
+
+      dropdown.innerHTML = filtered.map(c => `
+    <div class="cat-option" onclick="selectCategory('${c}')">${c}</div>
+  `).join('');
+    }
+
+    function selectCategory(val) {
+      document.getElementById('bizCategoryInput').value = val;
+      document.getElementById('businessCategory').value = val;
+      document.getElementById('categoryDropdown').style.display = 'none';
+      categorySelected = true;
+      setF('f-bizCategory', true);
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function (e) {
+      const wrap = document.querySelector('#f-bizCategory .input-wrap');
+      const dropdown = document.getElementById('categoryDropdown');
+      if (wrap && !wrap.contains(e.target)) {
+        dropdown.style.display = 'none';
+        // if user typed but didn't select, validate
+        if (!categorySelected && document.getElementById('businessCategory').value === '') {
+          setF('f-bizCategory', false);
+        }
+      }
+    });
+    let referralValid = true;
+    let referralTimer = null;
+
+    function onReferralInput(value) {
+      const code = value.trim().toUpperCase();
+      const successDiv = document.getElementById('referralSuccess');
+      const spinner = document.getElementById('referralSpinner');
+
+      // Clear previous timer
+      clearTimeout(referralTimer);
+
+      // Empty — reset
+      if (code === '') {
+        referralValid = true;
+        document.getElementById('f-referralCode').classList.remove('valid', 'invalid');
+        successDiv.style.display = 'none';
+        spinner.style.display = 'none';
+        return;
+      }
+
+      // Format check immediately while typing
+      if (!code.startsWith('NUMEN-')) {
+        referralValid = false;
+        setF('f-referralCode', false);
+        document.getElementById('referralError').textContent = 'Code must start with NUMEN-';
+        successDiv.style.display = 'none';
+        spinner.style.display = 'none';
+        return;
+      }
+
+      // Has NUMEN- prefix but number part not complete yet — wait
+      const numPart = code.replace('NUMEN-', '');
+      if (numPart === '' || isNaN(numPart)) {
+        referralValid = false;
+        document.getElementById('f-referralCode').classList.remove('valid', 'invalid');
+        successDiv.style.display = 'none';
+        spinner.style.display = 'none';
+        return;
+      }
+
+      // Show spinner while waiting to type more
+      spinner.style.display = 'block';
+      document.getElementById('f-referralCode').classList.remove('valid', 'invalid');
+      successDiv.style.display = 'none';
+
+      // Debounce — wait 600ms after user stops typing before hitting API
+      referralTimer = setTimeout(async () => {
+        spinner.style.display = 'none';
+        await validateReferralCode();
+      }, 600);
+    }
+
+    async function validateReferralCode() {
+      const input = document.getElementById('referralCode');
+      const code = input.value.trim().toUpperCase();
+      const successDiv = document.getElementById('referralSuccess');
+      const successMsg = document.getElementById('referralSuccessMsg');
+      const spinner = document.getElementById('referralSpinner');
+
+      spinner.style.display = 'none';
+
+      if (code === '') {
+        referralValid = true;
+        document.getElementById('f-referralCode').classList.remove('valid', 'invalid');
+        successDiv.style.display = 'none';
+        return;
+      }
+
+      if (!code.startsWith('NUMEN-')) {
+        referralValid = false;
+        setF('f-referralCode', false);
+        document.getElementById('referralError').textContent = 'Code must start with NUMEN-';
+        successDiv.style.display = 'none';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/accounts/check-referral?code=${encodeURIComponent(code)}`);
+        const data = await res.json();
+
+        if (data.valid) {
+          referralValid = true;
+          setF('f-referralCode', true);
+          successDiv.style.display = 'block';
+          successMsg.textContent = data.message;
+        } else {
+          referralValid = false;
+          setF('f-referralCode', false);
+          document.getElementById('referralError').textContent = data.message;
+          successDiv.style.display = 'none';
+        }
+      } catch (e) {
+        referralValid = true;
+        document.getElementById('f-referralCode').classList.remove('valid', 'invalid');
+      }
+    }
+
+  </script>
+  <!-- js -->
   <script>
     let step = 1;
-    let selectedPlan = 'growth';
+    let selectedPlan = 'silver';
 
     const countryCurrencyMap = {
       "India": "INR ₹",
@@ -1326,8 +1510,14 @@
       currencySelect.value = currencyVal;
     }
 
-    function goStep(n) {
-      if (n > step && !validateStep(step)) return;
+    async function goStep(n) {
+      if (n > step) {
+        // If moving from step 1, validate referral via API first
+        if (step === 1) {
+          await validateReferralCode();
+        }
+        if (!validateStep(step)) return;
+      }
       step = n;
       document.querySelectorAll('.step-panel').forEach((p, i) => p.classList.toggle('active', i + 1 === n));
       updateStepper(n);
@@ -1360,10 +1550,10 @@
 
     function isValidPassword(v) {
       return v.length >= 8 &&
-             /[A-Z]/.test(v) &&
-             /[a-z]/.test(v) &&
-             /\d/.test(v) &&
-             /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
+        /[A-Z]/.test(v) &&
+        /[a-z]/.test(v) &&
+        /\d/.test(v) &&
+        /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v);
     }
 
     function isConfirmPasswordValid(v) {
@@ -1381,7 +1571,6 @@
         el.className = 'fas fa-eye toggle-pwd';
       }
     }
-
     function validateStep(s) {
       if (s === 1) {
         let ok = true;
@@ -1400,6 +1589,18 @@
           document.querySelector('#f-mobile .field-error').textContent = 'Mobile number already registered';
           ok = false;
         }
+        // Referral code inline format check
+        const refCode = document.getElementById('referralCode').value.trim().toUpperCase();
+        if (refCode !== '' && !refCode.startsWith('NUMEN-')) {
+          referralValid = false;
+          setF('f-referralCode', false);
+          document.getElementById('referralError').textContent = 'Code must start with NUMEN-';
+          document.getElementById('referralSuccess').style.display = 'none';
+          ok = false;
+        }
+        if (!referralValid) {
+          ok = false;
+        }
         return ok;
       }
       if (s === 2) {
@@ -1407,16 +1608,16 @@
         ok = vf('businessName', v => v.length > 0, 'f-bizName') && ok;
         ok = vf('businessEmail', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), 'f-bizEmail') && ok;
         ok = vf('businessPhone', v => v.length >= 7, 'f-bizPhone') && ok;
-        ok = vf('businessCategory', v => v !== "", 'f-bizCategory') && ok;
+        ok = vf('businessCategory', v => v.trim() !== "", 'f-bizCategory') && ok;
         return ok;
       }
       return true;
     }
-
     function vf(id, test, fid) {
       const ok = test(document.getElementById(id).value.trim());
       setF(fid, ok); return ok;
     }
+
     function setF(fid, ok) {
       const f = document.getElementById(fid);
       if (!f) return;
@@ -1424,7 +1625,7 @@
       f.classList.toggle('invalid', !ok);
     }
 
-    // real-time blur and initial input validation
+    // Real-time blur and input validation
     const rules = {
       name: { test: v => v.length >= 3, fid: 'f-name' },
       email: { test: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), fid: 'f-email' },
@@ -1434,6 +1635,7 @@
       businessPhone: { test: v => v.length >= 7, fid: 'f-bizPhone' },
       businessCategory: { test: v => v !== "", fid: 'f-bizCategory' }
     };
+
     Object.keys(rules).forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -1452,13 +1654,12 @@
       });
     });
 
-    // Real-time immediate validation for password fields
+    // Password real-time validation
     const pwdInput = document.getElementById('password');
     const cpwdInput = document.getElementById('confirmPassword');
     if (pwdInput && cpwdInput) {
       pwdInput.addEventListener('input', () => {
-        const ok = isValidPassword(pwdInput.value);
-        setF('f-password', ok);
+        setF('f-password', isValidPassword(pwdInput.value));
         if (cpwdInput.value) {
           setF('f-confirmPassword', isConfirmPasswordValid(cpwdInput.value));
         }
@@ -1474,7 +1675,7 @@
       });
     }
 
-    // tel sanitization
+    // Tel sanitization
     document.getElementById('mobile').addEventListener('input', function () {
       this.value = this.value.replace(/\D/g, '');
     });
@@ -1482,17 +1683,26 @@
       this.value = this.value.replace(/[^\d\s\-\+\(\)]/g, '');
     });
 
+    // Plan selection — silver and gold only, enterprise is contact sales
     function selectPlan(p) {
       selectedPlan = p;
-      ['starter', 'growth', 'business', 'enterprise'].forEach(x => {
-        document.getElementById('plan-' + x).classList.toggle('selected', x === p);
+      ['silver', 'gold'].forEach(x => {
+        const el = document.getElementById('plan-' + x);
+        if (el) el.classList.toggle('selected', x === p);
       });
     }
 
     async function handleSubmit() {
-      if (!validateStep(1) || !validateStep(2)) {
+      if (!validateStep(1) || !validateStep(2)) return;
+
+      await validateReferralCode();
+      if (!referralValid) {
+        document.getElementById('apiErrorMsg').textContent = 'Please fix the referral code or leave it empty.';
+        document.getElementById('apiError').classList.add('show');
         return;
       }
+
+
       if (emailDuplicate || mobileDuplicate) {
         document.getElementById('apiErrorMsg').textContent = 'Please resolve duplicate field errors before submitting.';
         document.getElementById('apiError').classList.add('show');
@@ -1518,7 +1728,8 @@
         country: document.getElementById('country').value,
         currency: document.getElementById('currency').value,
         defaultLanguage: document.getElementById('defaultLanguage').value,
-        selectedPlan: selectedPlan
+        selectedPlan: selectedPlan,
+        refAccId: document.getElementById('referralCode').value.trim().toUpperCase()
       };
 
       try {
@@ -1535,13 +1746,13 @@
           document.getElementById('apiErrorMsg').textContent = msg;
           document.getElementById('apiError').classList.add('show');
           btn.disabled = false;
-          btn.innerHTML = '<i class="fas fa-rocket"></i> Create Free Account';
+          btn.innerHTML = '<i class="fas fa-rocket"></i> Start Free Trial';
         }
       } catch (e) {
         document.getElementById('apiErrorMsg').textContent = 'Network error. Please check your connection.';
         document.getElementById('apiError').classList.add('show');
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-rocket"></i> Create Free Account';
+        btn.innerHTML = '<i class="fas fa-rocket"></i> Start Free Trial';
       }
     }
 
@@ -1554,8 +1765,6 @@
       let c = 0;
       const d = document.getElementById('rdots');
       setInterval(() => { d.textContent = '.'.repeat((c++ % 3) + 1); }, 500);
-
-      // Redirect to Dashboard (home.html mapping in controllers)
       setTimeout(() => { window.location.href = 'home.html'; }, 3000);
     }
 
@@ -1572,14 +1781,12 @@
       setTimeout(() => wrap.innerHTML = '', 5000);
     }
 
-
+    // Email duplicate check
     document.getElementById('email').addEventListener('blur', async function () {
       const email = this.value.trim();
       if (!email) return;
-
       const res = await fetch(`/api/accounts/check-email?email=${encodeURIComponent(email)}`);
       const exists = await res.json();
-
       if (exists) {
         emailDuplicate = true;
         setF('f-email', false);
@@ -1594,13 +1801,12 @@
       }
     });
 
+    // Mobile duplicate check
     document.getElementById('mobile').addEventListener('blur', async function () {
       const mobile = this.value.trim();
       if (mobile.length !== 10) return;
-
       const res = await fetch(`/api/accounts/check-mobile?mobile=${mobile}`);
       const exists = await res.json();
-      console.log('Mobile check result:', exists);
       if (exists) {
         mobileDuplicate = true;
         setF('f-mobile', false);
@@ -1615,6 +1821,8 @@
       }
     });
   </script>
+
+
 </body>
 
 </html>

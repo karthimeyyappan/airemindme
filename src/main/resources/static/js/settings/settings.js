@@ -418,5 +418,7 @@ async function saveCustomFieldsConfig(event) {
     }
 }
 
-// Initial call when page loads
-document.addEventListener('DOMContentLoaded', renderGroups);
+document.addEventListener('DOMContentLoaded', function() {
+    renderGroups();
+    switchSettingsTab('general');
+});

@@ -28,6 +28,12 @@ public class ReportController {
     @Autowired
     private com.server.realsync.services.RealSyncWhatsappService realSyncWhatsappService;
 
+    @Autowired
+    private com.server.realsync.repo.AccountPlanRepository accountPlanRepository;
+
+    @Autowired
+    private com.server.realsync.repo.CreditTransactionRepository creditTransactionRepository;
+
     @GetMapping("/public/report/{reportNumber}")
     public ResponseEntity<?> getPublicReport(@PathVariable String reportNumber) {
         Report report = reportRepository.findByReportNumber(reportNumber);
@@ -42,31 +48,77 @@ public class ReportController {
             @PathVariable Integer id,
             @RequestBody java.util.Map<String, String> payload) {
         try {
+            Account account = SecurityUtil.getCurrentAccountId();
+
+            // Credit check
+            com.server.realsync.entity.AccountPlan plan = accountPlanRepository
+                .findByAccountIdAndStatus(account.getId(),
+                    com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                .orElse(null);
+
+            if (plan == null || plan.getBalance() <= 0) {
+                // Log failed credit transaction
+                com.server.realsync.entity.CreditTransaction failCt =
+                    new com.server.realsync.entity.CreditTransaction();
+                failCt.setAccountId(account.getId());
+                if (plan != null) failCt.setAccountPlanId(plan.getId());
+                failCt.setType("WHATSAPP_FAILED_NO_CREDIT");
+                failCt.setCredits(0.0);
+                failCt.setBalanceAfter(plan != null ? plan.getBalance() : 0.0);
+                failCt.setRemarks("REPORT share failed - no credits → " + payload.get("customerName"));
+                creditTransactionRepository.save(failCt);
+
+                return ResponseEntity.status(402).body(java.util.Map.of(
+                    "success", false,
+                    "code", "NO_CREDITS",
+                    "message", "Insufficient WhatsApp credits"
+                ));
+            }
+
+            // Deduct credit
+            double newBal = plan.getBalance() - 1;
+            plan.setBalance(newBal);
+            accountPlanRepository.save(plan);
+
+            com.server.realsync.entity.CreditTransaction ct =
+                new com.server.realsync.entity.CreditTransaction();
+            ct.setAccountId(account.getId());
+            ct.setAccountPlanId(plan.getId());
+            ct.setType("WHATSAPP_SENT");
+            ct.setCredits(-1.0);
+            ct.setBalanceAfter(newBal);
+            ct.setRemarks("REPORT: " + payload.get("reportNumber") + " → " + payload.get("customerName"));
+            creditTransactionRepository.save(ct);
+
+            // Send WhatsApp
             Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Not found"));
 
             report.setStatus("Shared");
             reportRepository.save(report);
 
-            String mobile     = payload.get("mobile");
-            String custName   = payload.get("customerName");
-            String reportNum  = payload.get("reportNumber");
-            String publicUrl  = payload.get("publicUrl");
-            String tmplName   = payload.get("templateName");
-
             realSyncWhatsappService.sendDocumentReadyTemplate(
-                mobile,
-                custName,
-                reportNum,
-                publicUrl,
-                tmplName,
-                ""
+                payload.get("mobile"),
+                payload.get("customerName"),
+                payload.get("reportNumber"),
+                payload.get("publicUrl"),
+                payload.get("templateName"),
+                "",
+                "Report"
             );
 
-            return ResponseEntity.ok("Sent");
+            return ResponseEntity.ok(java.util.Map.of(
+                "success", true,
+                "newBalance", newBal,
+                "message", "Report sent successfully"
+            ));
+
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Failed: " + e.getMessage());
+            return ResponseEntity.status(500).body(java.util.Map.of(
+                "success", false,
+                "message", "Failed: " + e.getMessage()
+            ));
         }
     }
 

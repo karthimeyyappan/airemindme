@@ -225,148 +225,285 @@
     </div>
 
     <script>
-        const history = [
-            { id: 1, customer: 'Rajesh Kumar', tests: ['Complete Blood Count (CBC)', 'Lipid Profile'], channel: 'wa', sentAt: '17 Mar 2026, 10:30 AM', status: 'Read', totalMrp: 800, result: ['Hb: 14.2 g/dL — Normal', 'Total Chol: 178 mg/dL — Normal'], batchId: 'BATCH-2026-031' },
-            { id: 2, customer: 'Anjali Singh', tests: ['TSH', 'Free T3 (FT3)', 'Free T4 (FT4)'], channel: 'email', sentAt: '16 Mar 2026, 03:15 PM', status: 'Delivered', totalMrp: 480, result: ['TSH: 1.8 µIU/mL — Normal', 'FT3: 3.2 pg/mL — Normal', 'FT4: 1.1 ng/dL — Normal'], batchId: 'BATCH-2026-030' },
-            { id: 3, customer: 'Mohammed Ibrahim', tests: ['Liver Function Test', 'Complete Blood Count (CBC)'], channel: 'wa', sentAt: '15 Mar 2026, 09:45 AM', status: 'Read', totalMrp: 850, result: ['All LFT values normal', 'Hb: 13.8 g/dL — Normal'], batchId: 'BATCH-2026-029' },
-            { id: 4, customer: 'Sunita Patel', tests: ['HBA1c', 'Glucose (F)'], channel: 'sms', sentAt: '14 Mar 2026, 02:20 PM', status: 'Pending', totalMrp: 560, result: ['HbA1c: 7.8%', 'Glucose: 142 mg/dL'], batchId: 'BATCH-2026-028' },
-            { id: 5, customer: 'Vikram Nair', tests: ['Lipid Profile', 'Liver Function Test', 'Uric Acid'], channel: 'wa', sentAt: '13 Mar 2026, 11:00 AM', status: 'Read', totalMrp: 1290, result: ['Total Chol: 215 mg/dL — High', 'AST: 45 U/L — Borderline', 'Uric Acid: 6.2 mg/dL — Normal'], batchId: 'BATCH-2026-027' },
-            { id: 6, customer: 'Priya Mehta', tests: ['TSH'], channel: 'email', sentAt: '12 Mar 2026, 04:30 PM', status: 'Read', totalMrp: 120, result: ['TSH: 4.8 µIU/mL — Borderline High'], batchId: 'BATCH-2026-026' },
-            { id: 7, customer: 'Kiran Bose', tests: ['Ferritin', 'Iron Profile'], channel: 'wa', sentAt: '11 Mar 2026, 10:15 AM', status: 'Delivered', totalMrp: 2600, result: ['Ferritin: 12 ng/mL — Low', 'See iron profile details'], batchId: 'BATCH-2026-025' },
-            { id: 8, customer: 'Deepa Krishnan', tests: ['Vitamin B12', 'Vitamin D Total (25 OH)'], channel: 'wa', sentAt: '10 Mar 2026, 03:00 PM', status: 'Read', totalMrp: 1620, result: ['B12: 312 pg/mL — Normal', 'Vit D: 18 ng/mL — Deficient'], batchId: 'BATCH-2026-024' },
-            { id: 9, customer: 'Amit Gupta', tests: ['Complete Blood Count (CBC)', 'HBA1c', 'Glucose (F)'], channel: 'email', sentAt: '09 Mar 2026, 09:30 AM', status: 'Read', totalMrp: 810, result: ['CBC all normal', 'HbA1c: 7.2%', 'FBG: 118 mg/dL'], batchId: 'BATCH-2026-023' },
-            { id: 10, customer: 'Suresh Reddy', tests: ['D-Dimer (Quantitative)', 'Coagulation Profile'], channel: 'wa', sentAt: '08 Mar 2026, 02:45 PM', status: 'Delivered', totalMrp: 2350, result: ['D-Dimer: 0.42 µg/mL FEU — Normal', 'PT: 13.2 sec — Normal'], batchId: 'BATCH-2026-022' },
-            { id: 11, customer: 'Rajesh Kumar', tests: ['Thyroid Function Test (TFT)'], channel: 'wa', sentAt: '07 Mar 2026, 11:15 AM', status: 'Read', totalMrp: 400, result: ['TSH: 2.1 µIU/mL — Normal'], batchId: 'BATCH-2026-021' },
-            { id: 12, customer: 'Anjali Singh', tests: ['PAP SMEAR', 'Urine Routine Examination'], channel: 'email', sentAt: '06 Mar 2026, 04:00 PM', status: 'Pending', totalMrp: 470, result: ['PAP: Results pending review', 'Urine: Clear, No abnormality'], batchId: 'BATCH-2026-020' }
-        ];
+let history = [];
 
-        const chColors = { wa: 'bg-green-100 text-green-700', email: 'bg-violet-100 text-violet-700', sms: 'bg-blue-100 text-blue-700' };
-        const chIcons = { wa: '💬', email: '📧', sms: '📱' };
-        const chLabel = { wa: 'WhatsApp', email: 'Email', sms: 'SMS' };
-        const statusColors = { Read: 'bg-emerald-100 text-emerald-700', Delivered: 'bg-blue-100 text-blue-700', Pending: 'bg-amber-100 text-amber-700', Failed: 'bg-red-100 text-red-700' };
-        const statusIcons = { Read: '✓✓', Delivered: '✓', Pending: '⏳', Failed: '✗' };
+const chColors  = { wa: 'bg-green-100 text-green-700', email: 'bg-violet-100 text-violet-700', sms: 'bg-blue-100 text-blue-700' };
+const chIcons   = { wa: '💬', email: '📧', sms: '📱' };
+const chLabel   = { wa: 'WhatsApp', email: 'Email', sms: 'SMS' };
+const statusColors = {
+    SENT:      'bg-blue-100 text-blue-700',
+    DELIVERED: 'bg-indigo-100 text-indigo-700',
+    READ:      'bg-emerald-100 text-emerald-700',
+    FAILED:    'bg-red-100 text-red-700'
+};
+const statusIcons = { SENT: '✓', DELIVERED: '✓✓', READ: '✓✓', FAILED: '✗' };
 
-        function renderHistory() {
-            const q = (document.getElementById('hSearch').value || '').toLowerCase();
-            const chF = document.getElementById('hChannelFilter').value;
-            const stF = document.getElementById('hStatusFilter').value;
-            const filtered = history.filter(h => {
-                const matchQ = !q || h.customer.toLowerCase().includes(q) || h.tests.some(t => t.toLowerCase().includes(q));
-                const matchCh = !chF || h.channel === chF;
-                const matchSt = !stF || h.status === stF;
-                return matchQ && matchCh && matchSt;
-            });
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-            if (!filtered.length) { list.innerHTML = `<div class="text-center py-16 bg-white rounded-2xl border border-gray-100"><svg class="w-10 h-10 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><p class="text-sm text-gray-500">No send history found</p></div>`; return; }
-            // Group by date
-            const byDate = {};
-            filtered.forEach(h => { const d = h.sentAt.split(',')[0]; if (!byDate[d]) byDate[d] = []; byDate[d].push(h); });
-            Object.entries(byDate).forEach(([date, items]) => {
-                list.innerHTML += `<div class="flex items-center gap-3 mb-2 mt-4 first:mt-0"><div class="h-px flex-1 bg-gray-200"></div><span class="text-xs text-gray-400 font-medium whitespace-nowrap">${date}</span><div class="h-px flex-1 bg-gray-200"></div></div>`;
-                items.forEach(h => {
-                    list.innerHTML += `
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-              <div class="flex items-start gap-3">
-                <div class="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 text-white text-sm font-bold">${h.customer.charAt(0)}</div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap mb-1">
-                    <p class="text-sm font-bold text-gray-900">${h.customer}</p>
-                    <span class="text-xs ${chColors[h.channel]} px-2 py-0.5 rounded-full font-semibold">${chIcons[h.channel]} ${chLabel[h.channel]}</span>
-                    <span class="text-xs ${statusColors[h.status]} px-2 py-0.5 rounded-full font-semibold">${statusIcons[h.status]} ${h.status}</span>
-                  </div>
-                  <div class="flex flex-wrap gap-1 mb-1.5">
-                    ${h.tests.map(t => `<span class="text-[10px] px-2 py-0.5 rounded-lg bg-gray-100 text-gray-600 font-medium">🧪 ${t}</span>`).join('')}
-                  </div>
-                  <div class="flex items-center gap-3 flex-wrap">
-                    <span class="text-xs text-gray-400 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>${h.sentAt}</span>
-                    <span class="text-xs font-bold text-emerald-600">₹${h.totalMrp.toLocaleString('en-IN')}</span>
-                    <span class="text-[10px] text-gray-400 font-mono">${h.batchId}</span>
-                  </div>
-                </div>
-                <div class="flex items-center gap-1 flex-shrink-0">
-                  <button onclick="openDetail(${h.id})" class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-600 text-xs font-semibold hover:bg-indigo-100 transition">Details</button>
-                  <button onclick="resend(${h.id})" class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-semibold hover:bg-emerald-100 transition">Resend</button>
-                </div>
-              </div>
-            </div>`;
-                });
-            });
-        }
+async function loadHistory() {
+    try {
+        const [logsRes, statsRes] = await Promise.all([
+            fetch('/api/reports/send-history'),
+            fetch('/api/reports/send-history/stats')
+        ]);
 
-        function openDetail(id) {
-            const h = history.find(x => x.id === id);
-            if (!h) return;
-            document.getElementById('detailContent').innerHTML = `
-        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
-          <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white text-lg font-bold flex-shrink-0">${h.customer.charAt(0)}</div>
-          <div><p class="text-base font-bold text-gray-900">${h.customer}</p><p class="text-xs text-gray-400 mt-0.5">${h.sentAt}</p></div>
-        </div>
-        <div class="grid grid-cols-3 gap-3">
-          <div class="text-center p-3 bg-gray-50 rounded-2xl"><p class="text-[10px] text-gray-400 mb-1">Channel</p><p class="text-sm font-bold text-gray-800">${chIcons[h.channel]} ${chLabel[h.channel]}</p></div>
-          <div class="text-center p-3 ${statusColors[h.status].replace('text-', 'bg-').split(' ')[0].replace('bg-', '').includes('emerald') ? 'bg-emerald-50' : 'bg-blue-50'} rounded-2xl"><p class="text-[10px] text-gray-400 mb-1">Status</p><p class="text-sm font-bold text-gray-800">${statusIcons[h.status]} ${h.status}</p></div>
-          <div class="text-center p-3 bg-emerald-50 rounded-2xl"><p class="text-[10px] text-gray-400 mb-1">Total MRP</p><p class="text-sm font-bold text-emerald-700">₹${h.totalMrp.toLocaleString('en-IN')}</p></div>
-        </div>
-        <div>
-          <p class="text-xs font-semibold text-gray-500 mb-3">Tests Included</p>
-          <div class="space-y-2">
-            ${h.tests.map((t, i) => `<div class="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100"><div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center flex-shrink-0 text-base border border-gray-100">🧪</div><div class="flex-1 min-w-0"><p class="text-sm font-semibold text-gray-800">${t}</p>${h.result[i] ? `<p class="text-xs text-gray-500 mt-0.5">${h.result[i]}</p>` : ''}</div></div>`).join('')}
-          </div>
-        </div>
-        <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100">
-          <p class="text-[10px] font-semibold text-gray-400 mb-1.5">BATCH REFERENCE</p>
-          <p class="text-xs font-mono text-gray-700">${h.batchId}</p>
-          <p class="text-[10px] text-gray-400 mt-1">Sent: ${h.sentAt}</p>
-        </div>
-        <button onclick="resend(${h.id}); closeDetail();" class="w-full py-3.5 rounded-2xl bg-emerald-600 text-white font-semibold text-sm flex items-center justify-center gap-2 hover:bg-emerald-700 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-          Resend Report
-        </button>`;
-            document.getElementById('detailModal').classList.remove('hidden');
-        }
+        const logs  = await logsRes.json();
+        const stats = await statsRes.json();
 
-        function closeDetail() { document.getElementById('detailModal').classList.add('hidden'); }
+        history = logs.map(l => ({
+            id:           l.id,
+            reportId:     l.reportId || l.id,
+            customer:     l.customerName  || 'Unknown',
+            phone:        l.customerPhone || '',
+            tests:        [l.templateName || 'Report'],
+            channel:      l.channel || 'wa',
+            sentAt:       new Date(l.sentAt || l.updatedAt).toLocaleString('en-IN', {
+                              day: '2-digit', month: 'short', year: 'numeric',
+                              hour: '2-digit', minute: '2-digit'
+                          }),
+            status:       l.status || 'SENT',
+            totalMrp:     l.mrp || 0,
+            reportNumber: l.reportNumber || '',
+            batchId:      l.reportNumber || 'RPT-' + l.id
+        }));
 
-        function resend(id) {
-            const h = history.find(x => x.id === id);
-            if (!h) return;
-            const tests = h.tests.map((t, i) => `${i + 1}. ${t}${h.result[i] ? ': ' + h.result[i] : ''}`).join('\n');
-            const msg = encodeURIComponent(`Hello ${h.customer},\n\nHere are your lab reports (resent):\n\n${tests}\n\nTotal: ₹${h.totalMrp.toLocaleString('en-IN')}\n\nRef: ${h.batchId}\nView: https://reminderme.app/reports/${h.batchId}\n\nThank you.`);
-            if (h.channel === 'wa') window.open(`https://wa.me/?text=${msg}`, '_blank');
-            else if (h.channel === 'email') window.open(`mailto:?subject=Your Lab Reports (Resent) - ${h.batchId}&body=${decodeURIComponent(msg)}`, '_blank');
-            else if (h.channel === 'sms') window.open(`sms:?&body=${decodeURIComponent(msg)}`, '_blank');
-            showToast('Reports resent via ' + chLabel[h.channel]);
-        }
-
-        function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').textContent = msg; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
-
-        function toggleSub(id) {
-            const sub = document.getElementById('sub-' + id);
-            const ch = document.getElementById('ch-' + id);
-            if (!sub) return;
-            const hidden = sub.classList.contains('hidden');
-            sub.classList.toggle('hidden', !hidden);
-            if (ch) ch.style.transform = hidden ? 'rotate(180deg)' : 'rotate(0deg)';
-        }
+        document.getElementById('hStatTotal').textContent     = stats.total     || 0;
+        document.getElementById('hStatRead').textContent      = stats.read      || 0;
+        document.getElementById('hStatDelivered').textContent = stats.delivered || 0;
+        document.getElementById('hStatPending').textContent   = stats.sent      || 0;
 
         renderHistory();
-    </script>
-    <script>
-  function toggleSub(menuId) {
-      const subMenu = document.getElementById('sub-' + menuId);
-      const chevron = document.getElementById('ch-' + menuId);
-
-      if (subMenu) {
-        // Toggle the hidden class
-        const isCollapsed = subMenu.classList.toggle('hidden');
-
-        // Rotate chevron
-        if (chevron) {
-          chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
-        }
-      }
+    } catch(e) {
+        console.error(e);
+        document.getElementById('historyList').innerHTML = `
+            <div class="text-center py-16 bg-white rounded-2xl border border-gray-100">
+                <p class="text-sm text-gray-500">Failed to load history. Try again.</p>
+            </div>`;
     }
-</script>
+}
+
+function renderHistory() {
+    const q   = (document.getElementById('hSearch').value || '').toLowerCase();
+    const chF = document.getElementById('hChannelFilter').value;
+    const stF = document.getElementById('hStatusFilter').value;
+
+    const filtered = history.filter(h => {
+        const matchQ  = !q   || h.customer.toLowerCase().includes(q) ||
+                        h.tests.some(t => t.toLowerCase().includes(q));
+        const matchCh = !chF || h.channel === chF;
+        const matchSt = !stF || h.status  === stF;
+        return matchQ && matchCh && matchSt;
+    });
+
+    const list = document.getElementById('historyList');
+    list.innerHTML = '';
+
+    if (!filtered.length) {
+        list.innerHTML = `
+            <div class="text-center py-16 bg-white rounded-2xl border border-gray-100">
+                <svg class="w-10 h-10 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-sm text-gray-500">No send history found</p>
+            </div>`;
+        return;
+    }
+
+    const byDate = {};
+    filtered.forEach(h => {
+        const d = h.sentAt.split(',')[0];
+        if (!byDate[d]) byDate[d] = [];
+        byDate[d].push(h);
+    });
+
+    Object.entries(byDate).forEach(([date, items]) => {
+        list.innerHTML += `
+            <div class="flex items-center gap-3 mb-2 mt-4 first:mt-0">
+                <div class="h-px flex-1 bg-gray-200"></div>
+                <span class="text-xs text-gray-400 font-medium whitespace-nowrap">${date}</span>
+                <div class="h-px flex-1 bg-gray-200"></div>
+            </div>`;
+
+        items.forEach(h => {
+            const statusColor = statusColors[h.status] || 'bg-gray-100 text-gray-600';
+            const statusIcon  = statusIcons[h.status]  || '?';
+            const chColor     = chColors[h.channel]    || 'bg-gray-100 text-gray-600';
+            const chIcon      = chIcons[h.channel]     || '📨';
+            const chLbl       = chLabel[h.channel]     || h.channel;
+
+            list.innerHTML += `
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center
+                                flex-shrink-0 text-white text-sm font-bold">
+                        ${h.customer.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <p class="text-sm font-bold text-gray-900">${h.customer}</p>
+                            <span class="text-xs ${chColor} px-2 py-0.5 rounded-full font-semibold">
+                                ${chIcon} ${chLbl}
+                            </span>
+                            <span class="text-xs ${statusColor} px-2 py-0.5 rounded-full font-semibold">
+                                ${statusIcon} ${h.status}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mb-1.5">
+                            ${h.tests.map(t => `
+                                <span class="text-[10px] px-2 py-0.5 rounded-lg bg-gray-100 text-gray-600 font-medium">
+                                    🧪 ${t}
+                                </span>`).join('')}
+                        </div>
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <span class="text-xs text-gray-400">${h.sentAt}</span>
+                            <span class="text-xs font-bold text-emerald-600">
+                                ₹${(h.totalMrp || 0).toLocaleString('en-IN')}
+                            </span>
+                            <span class="text-[10px] text-gray-400 font-mono">${h.batchId}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <button onclick="openDetail(${h.id})"
+                            class="px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-600 text-xs font-semibold hover:bg-indigo-100 transition">
+                            Details
+                        </button>
+                        <button onclick="resend(${h.id})"
+                            class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-semibold hover:bg-emerald-100 transition">
+                            Resend
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        });
+    });
+}
+
+function openDetail(id) {
+    const h = history.find(x => x.id === id);
+    if (!h) return;
+
+    const statusColor = statusColors[h.status] || 'bg-gray-100 text-gray-600';
+    const chColor     = chColors[h.channel]    || 'bg-gray-100 text-gray-600';
+
+    document.getElementById('detailContent').innerHTML = `
+        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
+            <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center
+                        text-white text-lg font-bold flex-shrink-0">
+                ${h.customer.charAt(0).toUpperCase()}
+            </div>
+            <div>
+                <p class="text-base font-bold text-gray-900">${h.customer}</p>
+                <p class="text-xs text-gray-400 mt-0.5">${h.sentAt}</p>
+                ${h.phone ? `<p class="text-xs text-gray-400">📱 ${h.phone}</p>` : ''}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+            <div class="text-center p-3 bg-gray-50 rounded-2xl">
+                <p class="text-[10px] text-gray-400 mb-1">Channel</p>
+                <p class="text-sm font-bold text-gray-800">
+                    ${chIcons[h.channel] || '📨'} ${chLabel[h.channel] || h.channel}
+                </p>
+            </div>
+            <div class="text-center p-3 ${statusColor} rounded-2xl">
+                <p class="text-[10px] text-gray-400 mb-1">Status</p>
+                <p class="text-sm font-bold">
+                    ${statusIcons[h.status] || '?'} ${h.status}
+                </p>
+            </div>
+            <div class="text-center p-3 bg-emerald-50 rounded-2xl">
+                <p class="text-[10px] text-gray-400 mb-1">Total MRP</p>
+                <p class="text-sm font-bold text-emerald-700">
+                    ₹${(h.totalMrp || 0).toLocaleString('en-IN')}
+                </p>
+            </div>
+        </div>
+
+        <div>
+            <p class="text-xs font-semibold text-gray-500 mb-3">Tests Included</p>
+            <div class="space-y-2">
+                ${h.tests.map(t => `
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <div class="w-7 h-7 rounded-lg bg-white flex items-center justify-center
+                                    flex-shrink-0 text-base border border-gray-100">🧪</div>
+                        <p class="text-sm font-semibold text-gray-800">${t}</p>
+                    </div>`).join('')}
+            </div>
+        </div>
+
+        <div class="p-3 bg-gray-50 rounded-2xl border border-gray-100">
+            <p class="text-[10px] font-semibold text-gray-400 mb-1.5">REPORT REFERENCE</p>
+            <p class="text-xs font-mono text-gray-700">${h.batchId}</p>
+            <p class="text-[10px] text-gray-400 mt-1">Sent: ${h.sentAt}</p>
+            ${h.reportNumber ? `
+                <a href="${window.location.origin}/r/${h.reportNumber}"
+                   target="_blank"
+                   class="text-xs text-indigo-600 font-semibold hover:underline mt-2 block">
+                    🔗 View Public Report
+                </a>` : ''}
+        </div>
+
+        <button onclick="resend(${h.id}); closeDetail();"
+            class="w-full py-3.5 rounded-2xl bg-emerald-600 text-white font-semibold text-sm
+                   flex items-center justify-center gap-2 hover:bg-emerald-700 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+            Resend Report
+        </button>`;
+
+    document.getElementById('detailModal').classList.remove('hidden');
+}
+
+async function resend(id) {
+    const h = history.find(x => x.id === id);
+    if (!h) return;
+
+    const publicUrl = `${window.location.origin}/r/${h.reportNumber}`;
+
+    try {
+        await fetch(`/api/reports/${h.reportId}/share-whatsapp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mobile:       h.phone,
+                customerName: h.customer,
+                reportNumber: h.reportNumber,
+                publicUrl:    publicUrl,
+                templateName: h.tests[0],
+                channel:      h.channel
+            })
+        });
+        showToast('Report resent ✅');
+    } catch(e) {
+        const message = `Hello ${h.customer} 👋,\n\nYour *${h.tests[0]}* is ready.\n📄 Ref: ${h.batchId}\n\nView: ${publicUrl}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        showToast('Opened WhatsApp');
+    }
+}
+
+function closeDetail() {
+    document.getElementById('detailModal').classList.add('hidden');
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 3000);
+}
+
+function toggleSub(menuId) {
+    const subMenu = document.getElementById('sub-' + menuId);
+    const chevron = document.getElementById('ch-' + menuId);
+    if (subMenu) {
+        const isCollapsed = subMenu.classList.toggle('hidden');
+        if (chevron) chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+}
+
+loadHistory();
+    </script>
 </body>
 
 </html>

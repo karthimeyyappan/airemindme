@@ -1,9 +1,33 @@
-ALTER TABLE reminders ADD COLUMN reminder_purpose VARCHAR(50) NULL;
+ALTER TABLE
+    account DROP COLUMN referral_id;
 
-ALTER TABLE schedule_entry
-  ADD COLUMN IF NOT EXISTS paid_amount DECIMAL(10,2) DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS balance_amount DECIMAL(10,2) DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS payment_mode VARCHAR(50) NULL,
-  ADD COLUMN IF NOT EXISTS payment_date DATE NULL,
-  ADD COLUMN IF NOT EXISTS reference_no VARCHAR(255) NULL,
-  ADD COLUMN IF NOT EXISTS payment_notes VARCHAR(1000) NULL;
+-- Drop the wrong global unique constraint
+ALTER TABLE
+    customer DROP INDEX uk_customer_email_mobile;
+
+-- Add account-scoped unique constraint (same mobile only unique within same account)
+ALTER TABLE
+    customer
+ADD
+    UNIQUE KEY uk_customer_account_mobile (account_id, mobile);
+
+ALTER TABLE
+    account
+ADD
+    COLUMN wallet_balance DECIMAL(12, 2) NOT NULL DEFAULT 0.00;
+
+CREATE TABLE referral_transaction (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    referrer_account_id INT NOT NULL,
+    referred_account_id INT NOT NULL,
+    transaction_id INT NOT NULL,
+    purchase_amount DECIMAL(12, 2) NOT NULL,
+    commission_percent DECIMAL(5, 2) NOT NULL,
+    commission_amount DECIMAL(12, 2) NOT NULL,
+    status ENUM('PENDING', 'CREDITED') NOT NULL DEFAULT 'CREDITED',
+    created_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_referral_referrer FOREIGN KEY (referrer_account_id) REFERENCES account(id),
+    CONSTRAINT fk_referral_referred FOREIGN KEY (referred_account_id) REFERENCES account(id),
+    CONSTRAINT fk_referral_transaction FOREIGN KEY (transaction_id) REFERENCES transaction(id),
+    UNIQUE KEY uk_referral_transaction (transaction_id)
+);

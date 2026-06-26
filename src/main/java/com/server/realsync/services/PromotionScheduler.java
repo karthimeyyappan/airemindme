@@ -38,6 +38,12 @@ public class PromotionScheduler {
     @Autowired
     private RealSyncWhatsappService realSyncWhatsappService;
 
+    @Autowired
+    private com.server.realsync.repo.AccountPlanRepository accountPlanRepository;
+
+    @Autowired
+    private com.server.realsync.repo.CreditTransactionRepository creditTransactionRepository;
+
     @Scheduled(fixedRate = 60000)
     @Transactional
     public void executeScheduledPromotions() {
@@ -154,6 +160,37 @@ public class PromotionScheduler {
 
             logger.info("SCHEDULER - SENDING WHATSAPP: mobile={}, customerName={}, businessName={}, businessMobile={}, content={}", 
                     mobile, custName, busName, busPhone, content);
+
+            // Credit check
+            com.server.realsync.entity.AccountPlan accountPlan = accountPlanRepository
+                .findByAccountIdAndStatus(account.getId(), 
+                    com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                .orElse(null);
+
+            if (accountPlan == null || accountPlan.getBalance() <= 0) {
+                log.setStatus(ExecutionResult.FAILED);
+                String errMsg = "Insufficient WhatsApp credits";
+                log.setResponse(errMsg);
+                entry.setStatus("FAILED");
+                entry.setFailureReason(errMsg);
+                entryService.save(entry);
+                logRepository.save(log);
+                return;
+            }
+
+            // Deduct 1 credit
+            double newBal = accountPlan.getBalance() - 1;
+            accountPlan.setBalance(newBal);
+            accountPlanRepository.save(accountPlan);
+
+            com.server.realsync.entity.CreditTransaction ct = new com.server.realsync.entity.CreditTransaction();
+            ct.setAccountId(account.getId());
+            ct.setAccountPlanId(accountPlan.getId());
+            ct.setType("WHATSAPP_SENT");
+            ct.setCredits(-1.0);
+            ct.setBalanceAfter(newBal);
+            ct.setRemarks("SCHEDULED PROMO #" + promo.getId() + " → " + (c != null ? c.getName() : "Customer"));
+            creditTransactionRepository.save(ct);
 
             kong.unirest.HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
                     mobile,

@@ -12,12 +12,19 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Optional;
 
+import com.server.realsync.services.PasswordResetService;
+import org.springframework.http.ResponseEntity;
+import java.util.Map;
+
 @RestController
 public class OAuth2Controller {
     private final OAuth2AuthorizedClientService clientService;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordResetService passwordResetService;
 
     @Autowired
     public OAuth2Controller(OAuth2AuthorizedClientService clientService) {
@@ -44,5 +51,25 @@ public class OAuth2Controller {
         System.out.println("USER FOUND = " + existingUser.isPresent());
 
         return new RedirectView("/login-success");
+    }
+
+    @PostMapping("/api/auth/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        try {
+            passwordResetService.sendResetLink(body.get("email"));
+            return ResponseEntity.ok(Map.of("message", "Reset link sent to your email."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/auth/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        try {
+            passwordResetService.resetPassword(body.get("token"), body.get("password"));
+            return ResponseEntity.ok(Map.of("message", "Password reset successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

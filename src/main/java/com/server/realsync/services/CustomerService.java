@@ -78,6 +78,13 @@ public class CustomerService {
         customerRepository.deleteById(id);
     }
 
+    public boolean isCustomerLimitReached(Integer accountId, Integer customerLimit) {
+        if (customerLimit == null)
+            return false; // null = unlimited (Gold/Enterprise)
+        long currentCount = customerRepository.countByAccountId(accountId);
+        return currentCount >= customerLimit;
+    }
+
     // delete the cutomer grouping
     @Transactional
     public void cleanupDeletedGroup(Integer groupId) {
