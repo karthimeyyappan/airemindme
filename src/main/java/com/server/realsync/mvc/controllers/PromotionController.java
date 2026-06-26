@@ -1,34 +1,55 @@
 package com.server.realsync.mvc.controllers;
 
-import com.server.realsync.entity.*;
-import com.server.realsync.services.*;
-import com.server.realsync.repo.PromotionItemRepository;
-import com.server.realsync.repo.PromotionExecutionLogRepository;
-import com.server.realsync.dto.PromotionResponseDTO;
-import com.server.realsync.util.SecurityUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
-
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import org.json.JSONObject;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.server.realsync.dto.PromotionResponseDTO;
+import com.server.realsync.entity.Account;
+import com.server.realsync.entity.CatalogPlan;
+import com.server.realsync.entity.CatalogProduct;
+import com.server.realsync.entity.Channel;
+import com.server.realsync.entity.Customer;
+import com.server.realsync.entity.ExecutionResult;
+import com.server.realsync.entity.Promotion;
+import com.server.realsync.entity.PromotionEntry;
+import com.server.realsync.entity.PromotionExecutionLog;
+import com.server.realsync.entity.PromotionItem;
+import com.server.realsync.repo.PromotionExecutionLogRepository;
+import com.server.realsync.repo.PromotionItemRepository;
+import com.server.realsync.services.AccountService;
+import com.server.realsync.services.CatalogProductService;
+import com.server.realsync.services.CatlogPlanService;
+import com.server.realsync.services.CustomerService;
+import com.server.realsync.services.PromotionEntryService;
+import com.server.realsync.services.PromotionService;
+import com.server.realsync.services.RealSyncWhatsappService;
+import com.server.realsync.util.SecurityUtil;
 
 @RestController
 @RequestMapping("/api/promotions")
@@ -68,6 +89,52 @@ public class PromotionController {
 
     @Autowired
     private CatalogProductService catalogProductService;
+
+    @Autowired
+    private com.server.realsync.repo.AccountPlanRepository accountPlanRepository;
+
+    @Autowired
+    private com.server.realsync.repo.CreditTransactionRepository creditTransactionRepository;
+
+    private boolean deductPromotionCredit(Account account, String customerName, Long promotionId) {
+        try {
+            java.util.Optional<com.server.realsync.entity.AccountPlan> planOpt = accountPlanRepository
+                .findByAccountIdAndStatus(account.getId(), 
+                    com.server.realsync.entity.AccountPlan.PlanStatus.active);
+
+            if (planOpt.isEmpty()) {
+                logger.warn("CREDIT_CHECK_FAILED | No active plan for accountId={}", account.getId());
+                return false;
+            }
+
+            com.server.realsync.entity.AccountPlan accountPlan = planOpt.get();
+
+            if (accountPlan.getBalance() <= 0) {
+                logger.warn("CREDIT_EXHAUSTED | accountId={}", account.getId());
+                return false;
+            }
+
+            double newBalance = accountPlan.getBalance() - 1;
+            accountPlan.setBalance(newBalance);
+            accountPlanRepository.save(accountPlan);
+
+            com.server.realsync.entity.CreditTransaction ct = new com.server.realsync.entity.CreditTransaction();
+            ct.setAccountId(account.getId());
+            ct.setAccountPlanId(accountPlan.getId());
+            ct.setType("WHATSAPP_SENT");
+            ct.setCredits(-1.0);
+            ct.setBalanceAfter(newBalance);
+            ct.setRemarks("PROMOTION #" + promotionId + " → " + customerName);
+            creditTransactionRepository.save(ct);
+
+            logger.info("PROMO_CREDIT_DEDUCTED | accountId={} | newBalance={}", account.getId(), newBalance);
+            return true;
+
+        } catch (Exception e) {
+            logger.error("Promo credit deduction failed: {}", e.getMessage());
+            return false;
+        }
+    }
 
     /**
      * Creates a promotion, stores selected catalog items, and generates entries for
@@ -228,6 +295,8 @@ public class PromotionController {
             logger.info("STEP 6 - Re-saving Promotion with URL (before save): id={}, URL={}", saved.getId(), link);
             saved = promotionService.save(saved);
             logger.info("STEP 6 - Re-saving Promotion with URL (after save): id={}", saved.getId());
+            
+            final Long promotionId = saved.getId();
 
             logger.info("STEP 8 - Saving Promotion Entries: Target count={}", customers.size());
             boolean isSendNow = (sched == null);
@@ -261,61 +330,100 @@ public class PromotionController {
                 log.setChannel(ch);
 
                 if (isSendNow && ch == Channel.WHATSAPP) {
-                    // Send Now Flow using existing Invoice WhatsApp sender
                     String mobile = c.getMobile();
                     if (mobile == null || mobile.isBlank()) {
                         log.setStatus(ExecutionResult.FAILED);
                         String errMsg = "Customer mobile number is missing";
                         log.setResponse(errMsg);
-
                         savedEntry.setStatus("FAILED");
                         savedEntry.setFailureReason(errMsg);
                         entryService.save(savedEntry);
                         failedCount++;
                     } else {
-                        try {
-                            String custName = c.getName() != null ? c.getName() : "Customer";
-                            String content = saved.getAiWhatsappContent() != null ? saved.getAiWhatsappContent()
-                                    : "Hi {NAME}, check out our new promotion: {PROMOTION_URL}"
-                                            .replace("{NAME}", custName).replace("{PROMOTION_URL}", link);
-                            logger.info(
-                                    "CONTROLLER - SENDING WHATSAPP NOW: mobile={}, customerName={}, businessName={}, businessMobile={}, content={}",
-                                    mobile, custName, busName, busPhone, content);
-                            kong.unirest.HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
-                                    mobile,
-                                    custName,
-                                    content,
-                                    busName,
-                                    busPhone);
+                        // CREDIT CHECK before sending
+                        String custName = c.getName() != null ? c.getName() : "Customer";
+                        boolean hasCreditResult = deductPromotionCredit(account, custName, promotionId);
+                        
+                        if (!hasCreditResult) {
+                            // No credits — log failed credit transaction
+                            com.server.realsync.entity.CreditTransaction failCt = 
+                                new com.server.realsync.entity.CreditTransaction();
+                            failCt.setAccountId(account.getId());
+                            accountPlanRepository.findByAccountIdAndStatus(
+                                account.getId(), 
+                                com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                                .ifPresent(ap -> failCt.setAccountPlanId(ap.getId()));
+                            failCt.setType("WHATSAPP_FAILED_NO_CREDIT");
+                            failCt.setCredits(0.0);
+                            failCt.setBalanceAfter(0.0);
+                            failCt.setRemarks("PROMOTION #" + promotionId + " → " + custName + " (no credits)");
+                            creditTransactionRepository.save(failCt);
 
-                            if (response.getStatus() == 200) {
-                                log.setStatus(ExecutionResult.SENT);
-                                log.setResponse("WhatsApp message sent successfully: " + response.getBody());
-                                savedEntry.setSentWhatsapp(true);
-                                savedEntry.setStatus("SENT");
-                                savedEntry.setSentAt(LocalDateTime.now());
-                                savedEntry.setFailureReason(null);
-                                entryService.save(savedEntry);
-                                sentCount++;
-                            } else {
+                            log.setStatus(ExecutionResult.FAILED);
+                            log.setResponse("Insufficient WhatsApp credits");
+                            savedEntry.setStatus("FAILED");
+                            savedEntry.setFailureReason("Insufficient WhatsApp credits");
+                            entryService.save(savedEntry);
+                            failedCount++;
+                        } else {
+                            try {
+                                String content = saved.getAiWhatsappContent() != null ? saved.getAiWhatsappContent()
+                                        : "Hi {NAME}, check out our new promotion: {PROMOTION_URL}"
+                                                .replace("{NAME}", custName)
+                                                .replace("{PROMOTION_URL}", link);
+
+                                logger.info("PROMO_WHATSAPP_SEND | mobile={} | customer={}", mobile, custName);
+
+                                kong.unirest.HttpResponse<String> response = realSyncWhatsappService.sendReminderTemplate(
+                                        mobile, custName, content, busName, busPhone);
+
+                                if (response.getStatus() == 200) {
+                                    log.setStatus(ExecutionResult.SENT);
+                                    log.setResponse("WhatsApp sent: " + response.getBody());
+                                    savedEntry.setSentWhatsapp(true);
+                                    savedEntry.setStatus("SENT");
+                                    savedEntry.setSentAt(LocalDateTime.now());
+                                    savedEntry.setFailureReason(null);
+                                    entryService.save(savedEntry);
+                                    sentCount++;
+                                } else {
+                                    // Send failed — refund the credit back
+                                    accountPlanRepository.findByAccountIdAndStatus(
+                                        account.getId(),
+                                        com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                                        .ifPresent(ap -> {
+                                            ap.setBalance(ap.getBalance() + 1);
+                                            accountPlanRepository.save(ap);
+                                            
+                                            com.server.realsync.entity.CreditTransaction refundCt =
+                                                new com.server.realsync.entity.CreditTransaction();
+                                            refundCt.setAccountId(account.getId());
+                                            refundCt.setAccountPlanId(ap.getId());
+                                            refundCt.setType("WHATSAPP_FAILED_REFUND");
+                                            refundCt.setCredits(1.0);
+                                            refundCt.setBalanceAfter(ap.getBalance());
+                                            refundCt.setRemarks("PROMO #" + promotionId + " send failed, refunded");
+                                            creditTransactionRepository.save(refundCt);
+                                        });
+
+                                    log.setStatus(ExecutionResult.FAILED);
+                                    String errMsg = "MSG91 error HTTP " + response.getStatus() + ": " + response.getBody();
+                                    log.setResponse(errMsg);
+                                    savedEntry.setStatus("FAILED");
+                                    savedEntry.setFailureReason(errMsg);
+                                    entryService.save(savedEntry);
+                                    failedCount++;
+                                }
+                            } catch (Exception ex) {
+                                logger.error("Promo WhatsApp send failed for {}", mobile, ex);
                                 log.setStatus(ExecutionResult.FAILED);
-                                String errMsg = "Failed to send: HTTP " + response.getStatus() + " - "
-                                        + response.getBody();
+                                String errMsg = "Exception: " + ex.getMessage();
                                 log.setResponse(errMsg);
                                 savedEntry.setStatus("FAILED");
                                 savedEntry.setFailureReason(errMsg);
                                 entryService.save(savedEntry);
                                 failedCount++;
                             }
-                        } catch (Exception ex) {
-                            logger.error("Failed to send WhatsApp message to {}", mobile, ex);
-                            log.setStatus(ExecutionResult.FAILED);
-                            String errMsg = "Failed to send: " + ex.getMessage();
-                            log.setResponse(errMsg);
-                            savedEntry.setStatus("FAILED");
-                            savedEntry.setFailureReason(errMsg);
-                            entryService.save(savedEntry);
-                            failedCount++;
                         }
                     }
                 } else {

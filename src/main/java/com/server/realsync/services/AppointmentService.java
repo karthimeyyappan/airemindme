@@ -33,6 +33,46 @@ public class AppointmentService {
     @Autowired
     private RealSyncWhatsappService whatsappService;
 
+    @Autowired
+    private com.server.realsync.repo.AccountPlanRepository accountPlanRepository;
+
+    @Autowired
+    private com.server.realsync.repo.CreditTransactionRepository creditTransactionRepository;
+
+    private boolean deductAppointmentCredit(Integer accountId, String customerName, String reason) {
+        try {
+            com.server.realsync.entity.AccountPlan plan = accountPlanRepository
+                .findByAccountIdAndStatus(accountId,
+                    com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                .orElse(null);
+
+            if (plan == null || plan.getBalance() <= 0) {
+                System.out.println("APPT_CREDIT_FAILED | accountId=" + accountId + " | reason=no balance");
+                return false;
+            }
+
+            double newBal = plan.getBalance() - 1;
+            plan.setBalance(newBal);
+            accountPlanRepository.save(plan);
+
+            com.server.realsync.entity.CreditTransaction ct = new com.server.realsync.entity.CreditTransaction();
+            ct.setAccountId(accountId);
+            ct.setAccountPlanId(plan.getId());
+            ct.setType("WHATSAPP_SENT");
+            ct.setCredits(-1.0);
+            ct.setBalanceAfter(newBal);
+            ct.setRemarks("APPOINTMENT: " + reason + " → " + customerName);
+            creditTransactionRepository.save(ct);
+
+            System.out.println("APPT_CREDIT_DEDUCTED | accountId=" + accountId + " | newBalance=" + newBal);
+            return true;
+
+        } catch (Exception e) {
+            System.err.println("Appointment credit deduction failed: " + e.getMessage());
+            return false;
+        }
+    }
+
     @Value("${app.public.base-url:https://numen.uno}")
     private String publicBaseUrl;
 
@@ -117,16 +157,33 @@ public class AppointmentService {
                     ? account.getBusinessPhone() : (account != null ? account.getMobile() : "");
 
             if (customer.getMobile() != null && !customer.getMobile().isBlank()) {
-                whatsappService.sendAppointmentTemplate(
-                        customer.getMobile(),
-                        customer.getName() != null ? customer.getName() : "Customer",
-                        "Appointment Confirmation",
-                        saved.getAppointmentNumber(),
-                        publicUrl,
-                        businessName,
-                        businessPhone
-                );
-                System.out.println("APPOINTMENT_CONFIRMATION_SENT | appointmentId=" + saved.getId());
+                String custName = customer.getName() != null ? customer.getName() : "Customer";
+                boolean credited = deductAppointmentCredit(accountId, custName, "Confirmation #" + saved.getAppointmentNumber());
+                if (!credited) {
+                    // Log failed credit transaction
+                    com.server.realsync.entity.CreditTransaction failCt = new com.server.realsync.entity.CreditTransaction();
+                    failCt.setAccountId(accountId);
+                    accountPlanRepository.findByAccountIdAndStatus(accountId,
+                        com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                        .ifPresent(ap -> failCt.setAccountPlanId(ap.getId()));
+                    failCt.setType("WHATSAPP_FAILED_NO_CREDIT");
+                    failCt.setCredits(0.0);
+                    failCt.setBalanceAfter(0.0);
+                    failCt.setRemarks("APPOINTMENT Confirmation failed - no credits → " + custName);
+                    creditTransactionRepository.save(failCt);
+                    System.out.println("APPT_CONFIRMATION_SKIPPED_NO_CREDIT | appointmentId=" + saved.getId());
+                } else {
+                    whatsappService.sendAppointmentTemplate(
+                            customer.getMobile(),
+                            custName,
+                            "Appointment Confirmation",
+                            saved.getAppointmentNumber(),
+                            publicUrl,
+                            businessName,
+                            businessPhone
+                    );
+                    System.out.println("APPOINTMENT_CONFIRMATION_SENT | appointmentId=" + saved.getId());
+                }
             }
         } catch (Exception e) {
             System.err.println("Failed to send automatic WhatsApp confirmation: " + e.getMessage());
@@ -337,14 +394,25 @@ public class AppointmentService {
                         "Your appointment has been cancelled.\nReason: %s\n\nPlease contact the business to reschedule.",
                         cancelReason != null ? cancelReason : "No reason specified"
                     );
-                    whatsappService.sendReminderTemplate(
-                        customerMobile,
-                        customerName,
-                        dynamicContent,
-                        businessName,
-                        businessMobile
-                    );
-                    System.out.println("APPOINTMENT_REMINDER_CANCELLED | appointmentId=" + saved.getId());
+                    boolean credited = deductAppointmentCredit(accountId, customerName, "Cancellation #" + saved.getAppointmentNumber());
+                    if (!credited) {
+                        com.server.realsync.entity.CreditTransaction failCt = new com.server.realsync.entity.CreditTransaction();
+                        failCt.setAccountId(accountId);
+                        accountPlanRepository.findByAccountIdAndStatus(accountId,
+                            com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                            .ifPresent(ap -> failCt.setAccountPlanId(ap.getId()));
+                        failCt.setType("WHATSAPP_FAILED_NO_CREDIT");
+                        failCt.setCredits(0.0);
+                        failCt.setBalanceAfter(0.0);
+                        failCt.setRemarks("APPOINTMENT Cancellation failed - no credits → " + customerName);
+                        creditTransactionRepository.save(failCt);
+                        System.out.println("APPT_CANCEL_MSG_SKIPPED_NO_CREDIT | appointmentId=" + saved.getId());
+                    } else {
+                        whatsappService.sendReminderTemplate(
+                            customerMobile, customerName, dynamicContent, businessName, businessMobile
+                        );
+                        System.out.println("APPOINTMENT_REMINDER_CANCELLED | appointmentId=" + saved.getId());
+                    }
                 }
 
                 // Cancel pending ScheduleEntry records
@@ -364,14 +432,25 @@ public class AppointmentService {
                         "Thank you for visiting! Your appointment for %s has been completed successfully. We appreciate your business and hope to see you again soon.",
                         saved.getServiceName() != null ? saved.getServiceName() : "your service"
                     );
-                    whatsappService.sendReminderTemplate(
-                        customerMobile,
-                        customerName,
-                        dynamicContent,
-                        businessName,
-                        businessMobile
-                    );
-                    System.out.println("APPOINTMENT_COMPLETED_MESSAGE_SENT | appointmentId=" + saved.getId());
+                    boolean credited = deductAppointmentCredit(accountId, customerName, "Completion #" + saved.getAppointmentNumber());
+                    if (!credited) {
+                        com.server.realsync.entity.CreditTransaction failCt = new com.server.realsync.entity.CreditTransaction();
+                        failCt.setAccountId(accountId);
+                        accountPlanRepository.findByAccountIdAndStatus(accountId,
+                            com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                            .ifPresent(ap -> failCt.setAccountPlanId(ap.getId()));
+                        failCt.setType("WHATSAPP_FAILED_NO_CREDIT");
+                        failCt.setCredits(0.0);
+                        failCt.setBalanceAfter(0.0);
+                        failCt.setRemarks("APPOINTMENT Completion failed - no credits → " + customerName);
+                        creditTransactionRepository.save(failCt);
+                        System.out.println("APPT_COMPLETE_MSG_SKIPPED_NO_CREDIT | appointmentId=" + saved.getId());
+                    } else {
+                        whatsappService.sendReminderTemplate(
+                            customerMobile, customerName, dynamicContent, businessName, businessMobile
+                        );
+                        System.out.println("APPOINTMENT_COMPLETED_MESSAGE_SENT | appointmentId=" + saved.getId());
+                    }
                 }
 
                 // Cancel pending ScheduleEntry records

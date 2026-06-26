@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body {
+      font-family: 'Inter', sans-serif;
+    }
   </style>
 </head>
+
 <body class="bg-gray-50 text-gray-800">
 
   <div th:replace="~{remindmeui/fragments/layout :: sidebar(activePage='settings')}"></div>
@@ -26,34 +30,38 @@
       <div class="flex items-center justify-between">
         <h1 class="text-xl font-bold text-gray-900">Subscription & Plans</h1>
         <a href="settings.html"
-           class="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">
+          class="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">
           ← Back to Settings
         </a>
       </div>
     </div>
 
     <div class="px-4 md:px-6 py-5">
-      
+
       <div id="loader" class="flex flex-col items-center justify-center py-20">
-        <svg class="animate-spin h-8 w-8 text-indigo-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg class="animate-spin h-8 w-8 text-indigo-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+          viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          <path class="opacity-75" fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+          </path>
         </svg>
         <p class="text-sm text-gray-500 font-medium">Loading subscription details...</p>
       </div>
 
       <div id="subscriptionContent" class="hidden">
-        
+
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          
+
           <!-- Card 1: Current Plan -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col justify-between">
             <div>
               <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">Current Plan</p>
               <div class="flex items-center gap-3 mb-4">
                 <h2 id="planName" class="text-2xl font-bold text-gray-900">Loading...</h2>
-                <span id="planStatus" class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600">...</span>
+                <span id="planStatus"
+                  class="px-2.5 py-1 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600">...</span>
               </div>
               <div class="space-y-2 mb-6">
                 <div class="flex items-center justify-between">
@@ -67,7 +75,8 @@
               </div>
             </div>
             <div>
-              <button id="cardUpgradeBtn" onclick="scrollToPlans()" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition">
+              <button id="cardUpgradeBtn" onclick="scrollToPlans()"
+                class="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition">
                 Upgrade Plan
               </button>
             </div>
@@ -76,29 +85,33 @@
           <!-- Card 2: Usage -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-4">Usage</p>
-            
+
             <!-- WhatsApp Credits -->
             <div class="mb-5">
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-sm font-semibold text-gray-900">WhatsApp Credits</span>
-                <span class="text-xs text-gray-500"><span id="waUsed" class="font-bold text-gray-900">0</span> used</span>
+                <span class="text-xs text-gray-500"><span id="waUsed" class="font-bold text-gray-900">0</span>
+                  used</span>
               </div>
               <div class="w-full bg-gray-100 rounded-full h-2 mb-1.5">
                 <div id="waProgress" class="bg-indigo-600 h-2 rounded-full" style="width: 0%"></div>
               </div>
-              <p class="text-xs text-gray-500 text-right"><span id="waRemaining" class="font-bold text-gray-900">0</span> remaining</p>
+              <p class="text-xs text-gray-500 text-right"><span id="waRemaining"
+                  class="font-bold text-gray-900">0</span> remaining</p>
             </div>
 
             <!-- Customer Usage -->
             <div>
               <div class="flex items-center justify-between mb-1.5">
                 <span class="text-sm font-semibold text-gray-900">Customer Capacity</span>
-                <span class="text-xs text-gray-500"><span id="custUsed" class="font-bold text-gray-900">0</span> used</span>
+                <span class="text-xs text-gray-500"><span id="custUsed" class="font-bold text-gray-900">0</span>
+                  used</span>
               </div>
               <div class="w-full bg-gray-100 rounded-full h-2 mb-1.5">
                 <div id="custProgress" class="bg-blue-600 h-2 rounded-full" style="width: 0%"></div>
               </div>
-              <p class="text-xs text-gray-500 text-right"><span id="custRemaining" class="font-bold text-gray-900">0</span> remaining</p>
+              <p class="text-xs text-gray-500 text-right"><span id="custRemaining"
+                  class="font-bold text-gray-900">0</span> remaining</p>
             </div>
           </div>
         </div>
@@ -106,12 +119,14 @@
         <!-- Available Plans Header & Toggle -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4" id="plansSection">
           <h3 class="text-lg font-bold text-gray-900">Available Plans</h3>
-          
+
           <div class="inline-flex rounded-xl bg-gray-100 p-1">
-            <button id="toggleHalfYearly" onclick="setBillingCycle('half_yearly')" class="px-4 py-1.5 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-900 transition">
+            <button id="toggleHalfYearly" onclick="setBillingCycle('half_yearly')"
+              class="px-4 py-1.5 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-900 transition">
               Half Yearly
             </button>
-            <button id="toggleYearly" onclick="setBillingCycle('yearly')" class="px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-gray-900 shadow-sm transition">
+            <button id="toggleYearly" onclick="setBillingCycle('yearly')"
+              class="px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-gray-900 shadow-sm transition">
               Yearly
             </button>
           </div>
@@ -126,6 +141,72 @@
     </div>
   </div>
 
+  <!-- Modals -->
+  <!-- Confirm Purchase Modal -->
+  <div id="confirmModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden transform scale-95 transition-all duration-300 opacity-0" id="confirmModalContent">
+      <div class="p-5 border-b border-gray-100">
+        <h3 class="text-lg font-bold text-gray-900">Confirm Purchase</h3>
+      </div>
+      <div class="p-5 space-y-4">
+        <div>
+          <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Plan Details</p>
+          <div class="flex justify-between items-center bg-gray-50 rounded-xl p-3 border border-gray-100">
+            <div>
+              <p id="confirmPlanName" class="font-bold text-gray-900"></p>
+              <p id="confirmPlanCycle" class="text-xs text-gray-500 capitalize"></p>
+            </div>
+            <p id="confirmPlanPrice" class="text-lg font-bold text-indigo-600"></p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+            <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">New Expiry</p>
+            <p id="confirmNewExpiry" class="font-bold text-gray-900 text-sm"></p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3 border border-gray-100">
+            <p class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider">Total Credits After</p>
+            <p id="confirmNewCredits" class="font-bold text-emerald-600 text-sm"></p>
+          </div>
+        </div>
+      </div>
+      <div class="p-5 bg-gray-50 border-t border-gray-100 flex gap-3">
+        <button onclick="closeModals()" class="flex-1 py-2.5 rounded-xl bg-white border border-gray-200 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition shadow-sm">Cancel</button>
+        <button id="confirmPurchaseBtn" class="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition shadow-sm flex justify-center items-center gap-2">
+          Confirm Purchase
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl p-6 text-center transform scale-95 transition-all duration-300 opacity-0" id="successModalContent">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Subscription Updated!</h3>
+      <p class="text-sm text-gray-500 mb-6">Plan activated, expiry extended, and credits added successfully.</p>
+      <button onclick="closeModals()" class="w-full py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition shadow-sm">
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Modal -->
+  <div id="errorModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl p-6 text-center transform scale-95 transition-all duration-300 opacity-0" id="errorModalContent">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-2">Subscription Failed</h3>
+      <p class="text-sm text-gray-500 mb-6" id="errorModalMsg">Something went wrong. Please try again.</p>
+      <button onclick="closeModals()" class="w-full py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-semibold hover:bg-gray-200 transition shadow-sm">
+        Close
+      </button>
+    </div>
+  </div>
+
   <div th:replace="~{remindmeui/fragments/layout :: bottomNav(activePage='settings')}"></div>
 
   <script>
@@ -137,14 +218,14 @@
       try {
         const res = await fetch('/api/account/subscription');
         if (!res.ok) throw new Error("Failed to load subscription data");
-        
+
         const data = await res.json();
         currentPlanData = data;
         globalPlans = data.availablePlans || [];
-        
+
         renderSummary(data);
         setBillingCycle('yearly'); // renders plans
-        
+
         document.getElementById('loader').classList.add('hidden');
         document.getElementById('subscriptionContent').classList.remove('hidden');
       } catch (err) {
@@ -161,10 +242,10 @@
       // 1. Current Plan Card
       const pName = data.currentPlan ? data.currentPlan.name : "No Active Plan";
       document.getElementById('planName').textContent = pName;
-      
+
       const bCycle = data.currentPlan && data.currentPlan.billingCycle ? data.currentPlan.billingCycle.replace('_', ' ') : "N/A";
       document.getElementById('planCycle').textContent = bCycle;
-      
+
       const statusEl = document.getElementById('planStatus');
       statusEl.textContent = data.status;
       if (data.status === 'Active') {
@@ -203,7 +284,7 @@
 
     function setBillingCycle(cycle) {
       selectedCycle = cycle;
-      
+
       if (cycle === 'yearly') {
         document.getElementById('toggleYearly').className = 'px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-gray-900 shadow-sm transition';
         document.getElementById('toggleHalfYearly').className = 'px-4 py-1.5 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-900 transition';
@@ -211,22 +292,28 @@
         document.getElementById('toggleHalfYearly').className = 'px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-gray-900 shadow-sm transition';
         document.getElementById('toggleYearly').className = 'px-4 py-1.5 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-900 transition';
       }
-      
+
       renderPlans();
     }
 
     function renderPlans() {
       const grid = document.getElementById('plansGrid');
       grid.innerHTML = '';
-      
+
       const isTrialOrExpired = !currentPlanData.currentPlan || currentPlanData.currentPlan.isTrial || currentPlanData.status === 'Expired';
       const hasPaidPlan = currentPlanData.currentPlan && !currentPlanData.currentPlan.isTrial && currentPlanData.status === 'Active';
 
-      const filteredPlans = globalPlans.filter(p => p.billingCycle === selectedCycle && (p.name.toLowerCase() === 'silver' || p.name.toLowerCase() === 'gold'));
+      const filteredPlans = globalPlans.filter(p =>
+        p.billingCycle === selectedCycle &&
+        (
+          p.name.toLowerCase().includes("silver") ||
+          p.name.toLowerCase().includes("gold")
+        )
+      );
 
       filteredPlans.forEach(plan => {
         const isCurrent = hasPaidPlan && currentPlanData.currentPlan.id === plan.id;
-        
+
         let buttonHtml = '';
         if (isCurrent) {
           buttonHtml = `<button disabled class="w-full mt-5 py-2.5 rounded-xl bg-green-50 text-green-600 text-sm font-bold border border-green-200 cursor-not-allowed">
@@ -234,9 +321,9 @@
           </button>`;
         } else {
           const btnText = isTrialOrExpired ? "Buy Plan" : "Upgrade Plan";
-          buttonHtml = `<a href="/checkout.html?planId=${plan.id}" class="block text-center w-full mt-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition shadow-sm">
+          buttonHtml = `<button onclick="openConfirmModal(${plan.id})" class="w-full mt-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition shadow-sm">
             ${btnText}
-          </a>`;
+          </button>`;
         }
 
         const months = plan.billingCycle === 'half_yearly' ? '6 Months' : '12 Months';
@@ -271,11 +358,105 @@
         `;
         grid.appendChild(card);
       });
-      
+
       if (filteredPlans.length === 0) {
         grid.innerHTML = `<div class="col-span-2 text-center py-8 text-sm text-gray-500 bg-white rounded-2xl border border-gray-100">No plans found for the selected billing cycle.</div>`;
       }
     }
+
+    function closeModals() {
+      document.querySelectorAll('.fixed.z-50').forEach(m => {
+        m.classList.add('hidden');
+        if (m.children[0]) {
+          m.children[0].classList.remove('scale-100', 'opacity-100');
+          m.children[0].classList.add('scale-95', 'opacity-0');
+        }
+      });
+    }
+
+    function showModal(id) {
+      const modal = document.getElementById(id);
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.children[0].classList.remove('scale-95', 'opacity-0');
+        modal.children[0].classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function openConfirmModal(planId) {
+      const plan = globalPlans.find(p => p.id === planId);
+      if (!plan) return;
+
+      document.getElementById('confirmPlanName').textContent = plan.name;
+      document.getElementById('confirmPlanCycle').textContent = plan.billingCycle ? plan.billingCycle.replace('_', ' ') : '';
+      document.getElementById('confirmPlanPrice').textContent = plan.priceInr ? `₹${plan.priceInr.toLocaleString('en-IN')}` : 'Free';
+
+      let baseDate = new Date();
+      if (currentPlanData && currentPlanData.status === 'Active' && currentPlanData.expiryDate) {
+        const expDate = new Date(currentPlanData.expiryDate);
+        if (expDate > baseDate) baseDate = expDate;
+      }
+      
+      let newExp = new Date(baseDate);
+      if (plan.billingCycle === 'half_yearly') {
+        newExp.setMonth(newExp.getMonth() + 6);
+      } else {
+        newExp.setFullYear(newExp.getFullYear() + 1);
+      }
+      document.getElementById('confirmNewExpiry').textContent = newExp.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      const currentBalance = currentPlanData ? currentPlanData.remainingCredits : 0;
+      const totalAfter = currentBalance + (plan.whatsappCredits || 0);
+      document.getElementById('confirmNewCredits').textContent = totalAfter;
+
+      const btn = document.getElementById('confirmPurchaseBtn');
+      btn.onclick = () => doPurchase(planId);
+
+      showModal('confirmModal');
+    }
+
+    async function doPurchase(planId) {
+      const btn = document.getElementById('confirmPurchaseBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...`;
+
+      try {
+        const pRes = await fetch('/api/subscription/purchase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planId: planId })
+        });
+        const pData = await pRes.json();
+        
+        if (pData.transactionId) {
+          const sRes = await fetch(`/api/subscription/mock-success/${pData.transactionId}`, { method: 'POST' });
+          const sData = await sRes.json();
+          if (sData.success) {
+            // Fetch updated data and re-render seamlessly
+            const refreshRes = await fetch('/api/account/subscription');
+            if (refreshRes.ok) {
+              const newData = await refreshRes.json();
+              currentPlanData = newData;
+              globalPlans = newData.availablePlans || [];
+              renderSummary(newData);
+              setBillingCycle(selectedCycle);
+            }
+            closeModals();
+            showModal('successModal');
+            return;
+          }
+        }
+        throw new Error("Transaction could not be completed.");
+      } catch (e) {
+        console.error(e);
+        closeModals();
+        showModal('errorModal');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `Confirm Purchase`;
+      }
+    }
   </script>
 </body>
+
 </html>

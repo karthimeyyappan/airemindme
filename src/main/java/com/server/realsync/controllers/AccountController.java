@@ -226,6 +226,24 @@ public class AccountController {
             "planName", plan.getPlan().getName()
         ));
     }
+
+    @GetMapping("/wallet-balance")
+    @ResponseBody
+    public ResponseEntity<?> getWalletBalance() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof CustomUserDetails)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not logged in"));
+        }
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        int accountId = userDetails.getAccountId();
+        Account fullAccount = service.findById(accountId).orElse(null);
+        if (fullAccount == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Account not found"));
+        }
+        return ResponseEntity.ok(Map.of(
+            "walletBalance", fullAccount.getWalletBalance() != null ? fullAccount.getWalletBalance() : 0.0
+        ));
+    }
 }
 
 @RestController

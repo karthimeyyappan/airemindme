@@ -98,6 +98,9 @@ public class Account {
 	@Column(name = "referred_by")
 	private Integer referredBy;
 
+	@Column(name = "wallet_balance")
+	private Double walletBalance = 0.00;
+
 	// Getters and Setters
 	public Integer getId() {
 		return id;
@@ -308,6 +311,14 @@ public class Account {
 
 	public void setReferredBy(Integer referredBy) {
 		this.referredBy = referredBy;
+	}
+
+	public Double getWalletBalance() {
+		return walletBalance;
+	}
+
+	public void setWalletBalance(Double walletBalance) {
+		this.walletBalance = walletBalance;
 	}
 
 }
