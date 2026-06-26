@@ -1234,20 +1234,37 @@ Thanks,
     }
 
     /** Opens the WhatsApp editor modal and pre-fills the message. */
-    function openWhatsappModal() {
-      if (!invoice || !invoice.id) {
-        showToast('No invoice loaded');
-        return;
-      }
+    async function openWhatsappModal() {
+        if (!invoice || !invoice.id) {
+            showToast('No invoice loaded');
+            return;
+        }
 
-      const phone = (invoice.customerPhone || '').replace(/\D/g, '');
-      const phoneDisplay = document.getElementById('waPhoneDisplay');
-      if (phoneDisplay) phoneDisplay.textContent = phone || 'No phone on file';
+        // Credit check first
+        try {
+            const res = await fetch('/api/accounts/credit-status');
+            const data = await res.json();
 
-      const textarea = document.getElementById('waMessageTextarea');
-      if (textarea) textarea.value = generateWhatsappMessage();
+            if (data.planExpired || !data.hasActivePlan) {
+                showInvoiceLock('plan_expired');
+                return;
+            }
+            if (data.balance <= 0) {
+                showInvoiceLock('no_credits');
+                return;
+            }
+        } catch (e) {
+            // on error don't block
+        }
 
-      document.getElementById('whatsappModal').classList.remove('hidden');
+        const phone = (invoice.customerPhone || '').replace(/\D/g, '');
+        const phoneDisplay = document.getElementById('waPhoneDisplay');
+        if (phoneDisplay) phoneDisplay.textContent = phone || 'No phone on file';
+
+        const textarea = document.getElementById('waMessageTextarea');
+        if (textarea) textarea.value = generateWhatsappMessage();
+
+        document.getElementById('whatsappModal').classList.remove('hidden');
     }
 
     /** Closes the WhatsApp editor modal. */
@@ -2198,37 +2215,82 @@ Thanks,
     }
 
     async function sendInvoice() {
-      if (!invoice || !invoice.id) {
-        showToast("No invoice loaded");
-        return;
-      }
-      const btn = document.getElementById("sendInvoiceWhatsAppBtn");
-      const originalText = btn ? btn.innerHTML : "";
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="20"></circle></svg> Sending…`;
-      }
-      try {
-        const response = await fetch(`/api/invoices/${invoice.id}/send`, {
-          method: "POST"
-        });
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({ message: "Failed to send invoice" }));
-          throw new Error(err.message || "Failed to send invoice");
+        if (!invoice || !invoice.id) {
+            showToast('No invoice loaded');
+            return;
         }
-        showToast("✅ Invoice sent to customer via WhatsApp!");
-      } catch (err) {
-        console.error("Send Invoice Error:", err);
-        showToast(`Failed to send: ${err.message}`);
-      } finally {
+        const btn = document.getElementById('sendInvoiceWhatsAppBtn');
+        const originalHTML = btn ? btn.innerHTML : '';
         if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = originalText;
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" 
+                stroke-dasharray="60" stroke-dashoffset="20"></circle></svg> Sending…`;
         }
-      }
+        try {
+            const res = await fetch(`/api/invoices/${invoice.id}/send`, { method: 'POST' });
+            const data = await res.json();
+
+            if (res.status === 500 && data.message && data.message.includes('credits')) {
+                showInvoiceLock('no_credits');
+                return;
+            }
+            if (!res.ok) {
+                showToast(data.message || 'Failed to send invoice');
+                return;
+            }
+            showToast('✅ Invoice sent via WhatsApp!');
+            // Reload timeline
+            if (invoice.id) loadTimeline(invoice.id);
+        } catch (e) {
+            showToast('Network error. Please try again.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
     }
 
+    function showInvoiceLock(reason) {
+        const isExpired = reason === 'plan_expired';
+        const existing = document.getElementById('invoiceLockOverlay');
+        if (existing) existing.remove();
 
+        const overlay = document.createElement('div');
+        overlay.id = 'invoiceLockOverlay';
+        overlay.className = 'fixed inset-0 z-[999] flex items-center justify-center bg-black/40 backdrop-blur-sm';
+        overlay.innerHTML = `
+            <div class="bg-white rounded-3xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl">
+                <div class="w-16 h-16 rounded-full ${isExpired ? 'bg-red-100' : 'bg-orange-100'} 
+                    flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 ${isExpired ? 'text-red-500' : 'text-orange-500'}" 
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">
+                    ${isExpired ? '⛔ Plan Expired' : '💳 No WhatsApp Credits'}
+                </h3>
+                <p class="text-sm text-gray-500 mb-6">
+                    ${isExpired
+                        ? 'Your plan has expired. Upgrade to continue sending invoices via WhatsApp.'
+                        : 'You have 0 WhatsApp credits. Buy credits to send this invoice.'}
+                </p>
+                <div class="flex flex-col gap-2">
+                    <a href="/settings.html"
+                       class="px-6 py-3 rounded-2xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition">
+                        🚀 Upgrade / Buy Credits
+                    </a>
+                    <button onclick="document.getElementById('invoiceLockOverlay').remove()"
+                        class="px-6 py-3 rounded-2xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+    }
   </script>
 </body>
 

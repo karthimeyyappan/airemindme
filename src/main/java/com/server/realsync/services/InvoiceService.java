@@ -51,6 +51,12 @@ public class InvoiceService {
     @Autowired
     private InvoicePaymentRepository invoicePaymentRepository;
 
+    @Autowired
+    private com.server.realsync.repo.AccountPlanRepository accountPlanRepository;
+
+    @Autowired
+    private com.server.realsync.repo.CreditTransactionRepository creditTransactionRepository;
+
     @Value("${app.public.base-url:https://numen.uno}")
     private String publicBaseUrl;
 
@@ -443,7 +449,7 @@ public class InvoiceService {
         // Build token & public URL
         String token = PublicTokenUtil.encode(invoiceId);
 
-        // Build slug from business name
+        // Resolve account
         Account account = null;
         if (invoice.getCustomerId() != null) {
             Optional<Customer> optCustomer = customerRepository.findById(invoice.getCustomerId().intValue());
@@ -451,7 +457,6 @@ public class InvoiceService {
                 account = accountRepository.findById(optCustomer.get().getAccountId()).orElse(null);
             }
         }
-        // Fallback: use current logged-in account
         if (account == null) {
             Integer currentAccountId = SecurityUtil.getCurrentAccountId().getId();
             if (currentAccountId != null && currentAccountId > 0) {
@@ -459,16 +464,65 @@ public class InvoiceService {
             }
         }
 
-        String rawName = (account != null && account.getBusinessName() != null)
-                ? account.getBusinessName() : (account != null ? account.getName() : "invoice");
-        String slug = toSlug(rawName);
+        // ── CREDIT CHECK ──────────────────────────────────────────────
+        if (account != null) {
+            final Integer accountId = account.getId();
 
+            com.server.realsync.entity.AccountPlan plan = accountPlanRepository
+                .findByAccountIdAndStatus(accountId,
+                    com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                .orElse(null);
+
+            if (plan == null || plan.getBalance() <= 0) {
+                // Log failed credit transaction
+                com.server.realsync.entity.CreditTransaction failCt =
+                    new com.server.realsync.entity.CreditTransaction();
+                failCt.setAccountId(accountId);
+                if (plan != null) failCt.setAccountPlanId(plan.getId());
+                failCt.setType("WHATSAPP_FAILED_NO_CREDIT");
+                failCt.setCredits(0.0);
+                failCt.setBalanceAfter(plan != null ? plan.getBalance() : 0.0);
+                failCt.setRemarks("INVOICE " + invoice.getInvoiceNumber()
+                    + " → " + invoice.getCustomerName() + " (no credits)");
+                creditTransactionRepository.save(failCt);
+
+                throw new RuntimeException("Insufficient WhatsApp credits. Please upgrade your plan.");
+            }
+
+            // Deduct 1 credit
+            double newBal = plan.getBalance() - 1;
+            plan.setBalance(newBal);
+            accountPlanRepository.save(plan);
+
+            com.server.realsync.entity.CreditTransaction ct =
+                new com.server.realsync.entity.CreditTransaction();
+            ct.setAccountId(accountId);
+            ct.setAccountPlanId(plan.getId());
+            ct.setType("WHATSAPP_SENT");
+            ct.setCredits(-1.0);
+            ct.setBalanceAfter(newBal);
+            ct.setRemarks("INVOICE: " + invoice.getInvoiceNumber()
+                + " → " + invoice.getCustomerName());
+            creditTransactionRepository.save(ct);
+
+            System.out.println("INVOICE_CREDIT_DEDUCTED | accountId=" + accountId
+                + " | invoice=" + invoice.getInvoiceNumber()
+                + " | newBalance=" + newBal);
+        }
+        // ─────────────────────────────────────────────────────────────
+
+        String rawName = (account != null && account.getBusinessName() != null)
+                ? account.getBusinessName()
+                : (account != null ? account.getName() : "invoice");
+        String slug = toSlug(rawName);
         String publicUrl = publicBaseUrl + "/" + slug + "/invoice/" + token;
 
         String businessName = (account != null && account.getBusinessName() != null)
-                ? account.getBusinessName() : (account != null ? account.getName() : "");
+                ? account.getBusinessName()
+                : (account != null ? account.getName() : "");
         String businessPhone = (account != null && account.getBusinessPhone() != null)
-                ? account.getBusinessPhone() : (account != null ? account.getMobile() : "");
+                ? account.getBusinessPhone()
+                : (account != null ? account.getMobile() : "");
 
         try {
             whatsappService.sendDocumentReadyTemplate(
@@ -480,7 +534,37 @@ public class InvoiceService {
                     businessPhone,
                     "Invoice"
             );
+
+            // Add timeline entry
+            try {
+                timelineService.addEntry(invoiceId, "whatsapp_sent");
+            } catch (Exception ignore) { }
+
+        } catch (RuntimeException re) {
+            throw re; // rethrow credit errors
         } catch (Exception e) {
+            // MSG91 failed — refund the credit
+            final Account finalAccount = account; // effectively final copy
+            if (finalAccount != null) {
+                accountPlanRepository
+                    .findByAccountIdAndStatus(finalAccount.getId(),
+                        com.server.realsync.entity.AccountPlan.PlanStatus.active)
+                    .ifPresent(ap -> {
+                        ap.setBalance(ap.getBalance() + 1);
+                        accountPlanRepository.save(ap);
+
+                        com.server.realsync.entity.CreditTransaction refund =
+                            new com.server.realsync.entity.CreditTransaction();
+                        refund.setAccountId(finalAccount.getId());
+                        refund.setAccountPlanId(ap.getId());
+                        refund.setType("WHATSAPP_FAILED_REFUND");
+                        refund.setCredits(1.0);
+                        refund.setBalanceAfter(ap.getBalance());
+                        refund.setRemarks("INVOICE " + invoice.getInvoiceNumber()
+                            + " MSG91 send failed — refunded");
+                        creditTransactionRepository.save(refund);
+                    });
+            }
             throw new RuntimeException("Failed to send WhatsApp message: " + e.getMessage(), e);
         }
 

@@ -133,6 +133,162 @@ public class HomeController {
 	@Autowired
 	private InvoicePaymentRepository invoicePaymentRepository;
 
+    @Autowired
+    private com.server.realsync.repo.TransactionRepository transactionRepository;
+
+    @Autowired
+    private com.server.realsync.repo.ReferralTransactionRepository referralTransactionRepository;
+
+    @GetMapping("/transactions.html")
+    public String getTransactions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
+            Model model) {
+
+        Account loggedIn = SecurityUtil.getCurrentAccountId();
+        Account account = accountService.getById(loggedIn.getId());
+
+        org.springframework.data.domain.Pageable pageable = 
+            org.springframework.data.domain.PageRequest.of(page, 16,
+                org.springframework.data.domain.Sort.by(
+                    org.springframework.data.domain.Sort.Direction.DESC, "createdAt"));
+
+        org.springframework.data.domain.Page<com.server.realsync.entity.Transaction> transactions;
+
+        java.time.LocalDateTime from = fromDate != null && !fromDate.isBlank()
+            ? java.time.LocalDate.parse(fromDate).atStartOfDay()
+            : java.time.LocalDateTime.of(2020, 1, 1, 0, 0);
+        java.time.LocalDateTime to = toDate != null && !toDate.isBlank()
+            ? java.time.LocalDate.parse(toDate).atTime(23, 59, 59)
+            : java.time.LocalDateTime.now();
+
+        boolean hasStatus = status != null && !status.isBlank();
+        boolean hasDates = fromDate != null && !fromDate.isBlank();
+
+        if (hasStatus && hasDates) {
+            transactions = transactionRepository.findByAccountIdAndPaymentStatusAndCreatedAtBetween(
+                account.getId(),
+                com.server.realsync.entity.Transaction.PaymentStatus.valueOf(status),
+                from, to, pageable);
+        } else if (hasStatus) {
+            transactions = transactionRepository.findByAccountIdAndPaymentStatus(
+                account.getId(),
+                com.server.realsync.entity.Transaction.PaymentStatus.valueOf(status),
+                pageable);
+        } else if (hasDates) {
+            transactions = transactionRepository.findByAccountIdAndCreatedAtBetween(
+                account.getId(), from, to, pageable);
+        } else {
+            transactions = transactionRepository.findByAccountId(account.getId(), pageable);
+        }
+
+        // Summary cards
+        java.util.List<com.server.realsync.entity.Transaction> all =
+            transactionRepository.findByAccountIdOrderByCreatedAtDesc(account.getId());
+        java.math.BigDecimal totalPaid = all.stream()
+            .filter(t -> t.getPaymentStatus() == com.server.realsync.entity.Transaction.PaymentStatus.success)
+            .map(com.server.realsync.entity.Transaction::getAmount)
+            .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        model.addAttribute("account", account);
+        model.addAttribute("transactions", transactions.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", transactions.getTotalPages());
+        model.addAttribute("totalElements", transactions.getTotalElements());
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("totalPaid", totalPaid);
+        model.addAttribute("totalCount", all.size());
+        model.addAttribute("successCount", all.stream()
+            .filter(t -> t.getPaymentStatus() == com.server.realsync.entity.Transaction.PaymentStatus.success)
+            .count());
+
+        return "remindmeui/transactions";
+    }
+
+    @GetMapping("/referral-transactions.html")
+    public String getReferralTransactions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
+            Model model) {
+
+        Account loggedIn = SecurityUtil.getCurrentAccountId();
+        Account account = accountService.getById(loggedIn.getId());
+
+        org.springframework.data.domain.Pageable pageable =
+            org.springframework.data.domain.PageRequest.of(page, 16,
+                org.springframework.data.domain.Sort.by(
+                    org.springframework.data.domain.Sort.Direction.DESC, "createdDate"));
+
+        org.springframework.data.domain.Page<com.server.realsync.entity.ReferralTransaction> referrals;
+
+        java.time.LocalDateTime from = fromDate != null && !fromDate.isBlank()
+            ? java.time.LocalDate.parse(fromDate).atStartOfDay()
+            : java.time.LocalDateTime.of(2020, 1, 1, 0, 0);
+        java.time.LocalDateTime to = toDate != null && !toDate.isBlank()
+            ? java.time.LocalDate.parse(toDate).atTime(23, 59, 59)
+            : java.time.LocalDateTime.now();
+
+        boolean hasStatus = status != null && !status.isBlank();
+        boolean hasDates = fromDate != null && !fromDate.isBlank();
+
+        if (hasStatus && hasDates) {
+            referrals = referralTransactionRepository
+                .findByReferrerAccountIdAndStatusAndCreatedDateBetween(
+                    account.getId(),
+                    com.server.realsync.entity.ReferralTransaction.ReferralStatus.valueOf(status),
+                    from, to, pageable);
+        } else if (hasStatus) {
+            referrals = referralTransactionRepository.findByReferrerAccountIdAndStatus(
+                account.getId(),
+                com.server.realsync.entity.ReferralTransaction.ReferralStatus.valueOf(status),
+                pageable);
+        } else if (hasDates) {
+            referrals = referralTransactionRepository
+                .findByReferrerAccountIdAndCreatedDateBetween(
+                    account.getId(), from, to, pageable);
+        } else {
+            referrals = referralTransactionRepository.findByReferrerAccountId(
+                account.getId(), pageable);
+        }
+
+        // Summary
+        java.util.List<com.server.realsync.entity.ReferralTransaction> allReferrals =
+            referralTransactionRepository.findByReferrerAccountId(
+                account.getId(),
+                org.springframework.data.domain.Pageable.unpaged()).getContent();
+
+        java.math.BigDecimal totalEarned = allReferrals.stream()
+            .filter(r -> r.getStatus() == com.server.realsync.entity.ReferralTransaction.ReferralStatus.CREDITED)
+            .map(com.server.realsync.entity.ReferralTransaction::getCommissionAmount)
+            .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        java.math.BigDecimal totalPending = allReferrals.stream()
+            .filter(r -> r.getStatus() == com.server.realsync.entity.ReferralTransaction.ReferralStatus.PENDING)
+            .map(com.server.realsync.entity.ReferralTransaction::getCommissionAmount)
+            .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        model.addAttribute("account", account);
+        model.addAttribute("referrals", referrals.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", referrals.getTotalPages());
+        model.addAttribute("totalElements", referrals.getTotalElements());
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("totalEarned", totalEarned);
+        model.addAttribute("totalPending", totalPending);
+        model.addAttribute("walletBalance", account.getWalletBalance());
+        model.addAttribute("totalReferrals", allReferrals.size());
+
+        return "remindmeui/referral-transactions";
+    }
+
 	@GetMapping
 	public String getWebHomePage(Model model) {
 		Account account = SecurityUtil.getCurrentAccountId();
